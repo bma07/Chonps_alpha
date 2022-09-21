@@ -1,12 +1,13 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include "Core.h"
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
 
 namespace Chonps
 {
-	class Log
+	class CHONPS_API Log
 	{
 	public:
 		static void Init();

@@ -14,7 +14,9 @@ endif()
 
 # Platform
 if (WIN32)
-    add_definitions(-DCHONPS_PLATFORM_WINDOWS)
+    add_definitions(
+        -DCHONPS_PLATFORM_WINDOWS
+    )
     set(PLATFORM_TYPE windows)
 
 elseif(APPLE)
@@ -40,6 +42,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${PLATFORM_TYPE}-${AR
 # GLFW
 add_subdirectory(${CMAKE_SOURCE_DIR}/Chonps/Dependencies/GLFW)
 
+# glad
+add_subdirectory(${CMAKE_SOURCE_DIR}/Chonps/Dependencies/glad)
+
 # ------------------------------------------------------- /
 
 set(INCLUDE_HEADERS
@@ -47,10 +52,20 @@ set(INCLUDE_HEADERS
 )
 
 set(SOURCES
+    ${INCLUDE_HEADERS}
     Chonps/src/Core.h
     Chonps/src/Log.cpp
     Chonps/src/Log.h
-    ${INCLUDE_HEADERS}
+    Chonps/src/Window.cpp
+    Chonps/src/Window.cpp
+    Chonps/src/cepch.cpp
+    Chonps/src/cepch.h
+    Chonps/src/Events/Event.h
+    Chonps/src/Events/KeyEvents.h
+    Chonps/src/Events/MouseEvents.h
+    Chonps/src/Events/WindowEvents.h
+    Chonps/src/Platform/OpenGL/OpenGLContext.cpp
+    Chonps/src/Platform/OpenGL/OpenGLContext.h
 )
 
 add_library(Chonps STATIC ${SOURCES})
@@ -61,6 +76,7 @@ target_include_directories(Chonps
         ${PROJECT_SOURCE_DIR}/Chonps/src
         ${PROJECT_SOURCE_DIR}/Chonps/include
         ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/GLFW/include
+        ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/glad/include
 )
 
 
@@ -70,12 +86,13 @@ target_compile_definitions(Chonps PRIVATE
     $<$<CONFIG:Release>:CHONPS_RELEASE>
 )
 
-# target_precompile_headers(Pulsar PRIVATE Pulsar/src/pch.h)
+target_precompile_headers(Chonps PRIVATE Chonps/src/cepch.h)
 
 # GLFW
 target_link_libraries(Chonps 
     PRIVATE 
         GLFW
+        glad
         opengl32
 )
 
@@ -91,12 +108,12 @@ target_include_directories(Sandbox
             ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/spdlog/include
         PRIVATE
             ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/GLFW/include
+            ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/glad/include
 )
 
 target_link_libraries(Sandbox
     PRIVATE
         Chonps
-        GLFW
 )
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
