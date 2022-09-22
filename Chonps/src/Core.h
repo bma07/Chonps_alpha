@@ -3,6 +3,7 @@
 
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) 
+	#undef CHONPS_PLATFORM_WINDOWS
 	#define CHONPS_PLATFORM_WINDOWS
 	#ifdef CHONPS_PLATFORM_WINDOWS
 		#ifdef CHONPS_SHARED_LIBRARY

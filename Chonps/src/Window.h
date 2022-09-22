@@ -1,20 +1,19 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#include "Core.h"
+#include "Events/Event.h"
+
 #ifdef CHONPS_USE_WIN32
 	#define CHONPS_WIN32_API
 #else
 	#define CHONPS_GLFW_API
-	#define GLFW_INCLUDE_NONE
 #endif
 
 #ifdef CHONPS_GLFW_API
-	#include <glad/glad.h>
-	#include <GLFW/glfw3.h>
+	struct GLFWwindow;
+	#define WINDOW_API GLFWwindow*
 #endif
-
-#include "Core.h"
-#include "Events/Event.h"
 
 namespace Chonps
 {
@@ -54,10 +53,7 @@ namespace Chonps
 
 		WindowData m_Data;
 
-
-	#ifdef CHONPS_GLFW_API
-		GLFWwindow* m_Window;
-	#endif
+		WINDOW_API m_Window;
 
 	};
 }

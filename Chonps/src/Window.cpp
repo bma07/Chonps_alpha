@@ -1,14 +1,22 @@
 #include "cepch.h"
 #include "Window.h"
 
+#ifdef CHONPS_GLFW_API
+	#define GLFW_INCLUDE_NONE
+	#include <GLFW/glfw3.h>
+	#include "Platform/OpenGL/OpenGLContext.h"
+#endif
+
 #include "Events/KeyEvents.h"
 #include "Events/MouseEvents.h"
 #include "Events/WindowEvents.h"
 
+//#include "Platform/OpenGL/OpenGLContext.h"
+
 namespace Chonps
 {
 
-#ifdef CHONPS_GLFW_API // GLFW API ---------------------------------- /
+
 
 	static bool s_glfwInit = false;
 
@@ -23,6 +31,7 @@ namespace Chonps
 		m_Data.Width = Width;
 		m_Data.Height = Height;
 		Init();
+		SetEventCallback(std::bind(&Chonps::Window::OnEvent, this, std::placeholders::_1));
 	}
 
 	void Window::Init()
@@ -39,8 +48,7 @@ namespace Chonps
 		m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
 		CHONPS_CORE_ASSERT(m_Window, "Window failed to load!");
 
-		glfwMakeContextCurrent(m_Window);
-		gladLoadGL(); // INPORTANT: load glad before creating window or else it will throw exeption
+		gladInit(m_Window);
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		glfwSwapInterval(true);
@@ -71,7 +79,7 @@ namespace Chonps
 			{
 				case GLFW_PRESS:
 				{
-					KeyPressedEvent event(key, 0);
+					KeyPressedEvent event(key, false);
 					data.EventCallback(event);
 					break;
 				}
@@ -83,7 +91,7 @@ namespace Chonps
 				}
 				case GLFW_REPEAT:
 				{
-					KeyPressedEvent event(key, 1);
+					KeyPressedEvent event(key, true);
 					data.EventCallback(event);
 					break;
 				}
@@ -134,11 +142,11 @@ namespace Chonps
 			MouseMovedEvent event((float)xPos, (float)yPos);
 			data.EventCallback(event);
 		});
+
 	}
 
 	void Window::OnUpdate()
 	{
-		glClear(GL_COLOR_BUFFER_BIT);
 		glfwSwapBuffers(m_Window);
 		glfwPollEvents();
 	}
@@ -163,7 +171,5 @@ namespace Chonps
 	{
 		glfwTerminate();
 	}
-
-#endif // CHONPS_GLFW_API ------------------------------------------- /
 
 }

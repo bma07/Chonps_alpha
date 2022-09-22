@@ -10,8 +10,6 @@ int main()
 	CHONPS_INFO("Initialized Log");
 
 	Chonps::Window window("window", 800, 600);
-
-	window.SetEventCallback(std::bind(&Chonps::Window::OnEvent, &window, _1));
 	
 
 	while (true)

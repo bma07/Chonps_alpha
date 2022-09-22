@@ -21,15 +21,15 @@ namespace Chonps
 	class CHONPS_API KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(int keycode, int repeatCount)
-			: KeyEvent(keycode), m_RepeatCount(repeatCount) {}
+		KeyPressedEvent(int keycode, bool repeat)
+			: KeyEvent(keycode), m_Repeat(repeat) {}
 
-		inline int GetRepeatCount() const { return m_RepeatCount; }
+		inline bool IsRepeat() const { return m_Repeat; }
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyPressedEvent: " << m_KeyCode << " (" << m_RepeatCount << " repeats)";
+			ss << "KeyPressedEvent: " << m_KeyCode << " (Repeat: " << m_Repeat << ")";
 			return ss.str();
 		}
 
@@ -38,7 +38,7 @@ namespace Chonps
 		virtual const char* GetName() const override { return "KeyPressed"; }
 
 	private:
-		int m_RepeatCount;
+		bool m_Repeat;
 	};
 
 	class CHONPS_API KeyReleasedEvent : public KeyEvent
