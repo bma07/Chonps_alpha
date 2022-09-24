@@ -7,7 +7,7 @@ struct GLFWwindow;
 
 namespace Chonps
 {
-	void gladInit(GLFWwindow* window);
+	CHONPS_API void gladInit(GLFWwindow* window);
 }
 
 

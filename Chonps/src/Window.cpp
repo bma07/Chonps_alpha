@@ -16,7 +16,7 @@
 namespace Chonps
 {
 
-
+#ifdef CHONPS_GLFW_API // GLFW_API -------------------------------/
 
 	static bool s_glfwInit = false;
 
@@ -171,5 +171,7 @@ namespace Chonps
 	{
 		glfwTerminate();
 	}
+
+#endif // --------------------------------------------------------/
 
 }
