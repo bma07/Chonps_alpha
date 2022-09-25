@@ -1,33 +1,68 @@
 #include <iostream>
 #include <Chonps.h>
 
-class ExampleLayer : public Chonps::Layer
+class Layer1 : public Chonps::Layer
 {
 public:
-	ExampleLayer()
+	Layer1(std::string name)
+		: m_Name(name)
 	{
-		std::cout << "Hello\n";
+		m_Window = std::unique_ptr<Chonps::Window>(Chonps::createWindow("window1", 800, 600));
 	}
 
 	virtual void OnUpdate() override
 	{
-		std::cout << "Hello\n";
+		m_Window->OnUpdate();
+		if (!m_Window->WindowIsOpen())
+		{
+			m_Window->Delete();
+			m_UseLayer = false;
+		}
 	}
+
+	virtual bool LayerStatus() override
+	{
+		return m_UseLayer;
+	}
+
+private:
+	std::unique_ptr<Chonps::Window> m_Window;
+	std::string m_Name;
+	bool m_UseLayer = true;
 };
 
-class OtherLayer : public Chonps::Layer
+class Layer2 : public Chonps::Layer
 {
 public:
-	virtual void OnUpdate() override
+	Layer2(std::string name)
+		: m_Name(name)
 	{
-		CHONPS_CRITICAL("oh no");
+		m_Window = std::unique_ptr<Chonps::Window>(Chonps::createWindow("window2", 400, 400));
 	}
 
-	void Print()
+	virtual void OnUpdate() override
 	{
-		CHONPS_CRITICAL("oh no");
+		m_Window->OnUpdate();
+		m_Window->LogEvents(true);
+
+		if (!m_Window->WindowIsOpen())
+		{
+			m_Window->Delete();
+			m_UseLayer = false;
+		}
 	}
+
+	virtual bool LayerStatus() override
+	{
+		return m_UseLayer;
+	}
+
+private:
+	std::unique_ptr<Chonps::Window> m_Window;
+	std::string m_Name;
+	bool m_UseLayer = true;
 };
+
 
 int main()
 {
@@ -35,24 +70,24 @@ int main()
 
 	CHONPS_INFO("Initialized Log");
 
-	Chonps::Window window("window", 800, 600);
-
-	ExampleLayer* el = new ExampleLayer;
-	OtherLayer* ol = new OtherLayer;
+	Chonps::initWindowAPI();
 
 	Chonps::LayerStack ls;
-	ls.AddLayer(el);
-	ls.AddLayer(ol);
+	ls.AddLayer(new Layer1("l1"));
+	ls.AddLayer(new Layer2("ol"));
 
 	while (true)
 	{
-		window.OnUpdate();
-
 		for (int i = 0; i < ls.size(); i++)
 		{
 			ls.GetLayer(i)->OnUpdate();
+			if (!ls.GetLayer(i)->LayerStatus())
+				ls.RemoveLayer(ls.GetLayer(i));
 		}
 	}
+
+	Chonps::terminateWindowAPI();
+
 
 	return 0;
 }

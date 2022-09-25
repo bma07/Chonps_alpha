@@ -6,6 +6,7 @@ namespace Chonps
 	void LayerStack::AddLayer(Layer* layer)
 	{
 		Layers.emplace_back(layer);
+		layer->OnAttach();
 	}
 
 	void LayerStack::InsertLayer(Layer* layer, unsigned int index)
@@ -18,6 +19,7 @@ namespace Chonps
 		auto it = std::find(Layers.begin(), Layers.end(), layer);
 		if (it != Layers.end())
 		{
+			layer->OnDetach();
 			Layers.erase(it);
 		}
 	}
@@ -35,6 +37,8 @@ namespace Chonps
 	void LayerStack::DeleteAll()
 	{
 		for (Layer* layer : Layers)
+		{
 			delete layer;
+		}
 	}
 }

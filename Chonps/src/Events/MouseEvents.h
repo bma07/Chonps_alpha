@@ -40,7 +40,7 @@ namespace Chonps
 		inline float GetMouseScrollX() const { return m_OffsetX; }
 		inline float GetMouseScrollY() const { return m_OffsetY; }
 
-		virtual int GetCategoryFlags() const override { return (EventCategoryInput | EventCategoryMouse); }
+		virtual int GetCategoryFlags() const override { return (EventCategoryInput | EventCategoryMouse | EventCategoryMouseButton); }
 
 		std::string ToString() const override
 		{
@@ -61,7 +61,7 @@ namespace Chonps
 	{
 	public:
 		inline int GetMouseButton() const { return m_Button; }
-		virtual int GetCategoryFlags() const override { return (EventCategoryInput | EventCategoryMouse); }
+		virtual int GetCategoryFlags() const override { return (EventCategoryInput | EventCategoryMouse | EventCategoryMouseButton); }
 
 	protected:
 		MouseButtonEvent(int button)

@@ -4,58 +4,38 @@
 #include "Core.h"
 #include "Events/Event.h"
 
-#ifdef CHONPS_USE_WIN32
-	#define CHONPS_WIN32_API
-#else
-	#define CHONPS_GLFW_API
-#endif
-
-#ifdef CHONPS_GLFW_API
-	struct GLFWwindow;
-	#define WINDOW_API GLFWwindow*
-#endif
-
 namespace Chonps
 {
 	class CHONPS_API Window
 	{
 	public:
-		Window(std::string Title, int Width, int Height);
+		Window(std::string Title, int Width, int Height) {}
 
 		using EventCallbackFn = std::function<void(Event&)>;
 
-		void Init();
-		void OnUpdate();
-		void OnEvent(Event& e);
+		virtual void OnUpdate() = 0;
+		virtual void OnEvent(Event& e) = 0;
+		virtual bool WindowIsOpen() = 0;
 
-		unsigned int GetWidth() const { return m_Data.Width; }
-		unsigned int GetHeight() const { return m_Data.Height; }
+		virtual unsigned int GetWidth() const = 0;
+		virtual unsigned int GetHeight() const = 0;
+
 
 		// Window attributes
-		inline void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; }
-		void SetVSync(bool enabled);
-		bool IsVSync() const { return m_Data.VSync; }
+		virtual inline void SetEventCallback(const EventCallbackFn& callback) = 0;
+		virtual void LogEvents(bool enable) = 0;
 
-		void* GetNativeWindow() const { return m_Window; }
+		virtual void SetVSync(bool enabled) = 0;
+		virtual bool IsVSync() const = 0;
 
-		void Shutdown();
-		void Terminate();
+		virtual void* GetNativeWindow() const = 0;
 
-	private:
-		struct WindowData
-		{
-			std::string Title;
-			int Width, Height;
-			bool VSync;
-
-			EventCallbackFn EventCallback;
-		};
-
-		WindowData m_Data;
-
-		WINDOW_API m_Window;
-
+		virtual void Delete() = 0;
 	};
+
+	Window* createWindow(std::string title, unsigned int width, unsigned int height, bool fullScreen = false);
+	void initWindowAPI();
+	void terminateWindowAPI();
 }
 
 

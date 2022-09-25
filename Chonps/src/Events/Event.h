@@ -4,7 +4,7 @@
 #include "cepch.h"
 #include "Core.h"
 
-#define BIT(x) (x << 1)
+#define BIT(x) (1 << x)
 
 namespace Chonps
 {
@@ -12,6 +12,7 @@ namespace Chonps
 	{
 		None = 0,
 		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
+		AppTick, AppRender,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};
@@ -75,6 +76,7 @@ namespace Chonps
 	{
 		return os << e.ToString();
 	}
+
 }
 
 #endif
