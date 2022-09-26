@@ -20,18 +20,18 @@ namespace Chonps
 		virtual void OnEvent(Event& e) override;
 		virtual bool WindowIsOpen() override;
 
-		virtual unsigned int GetWidth() const { return m_Data.Width; }
+		virtual unsigned int GetWidth() const override { return m_Data.Width; }
 		virtual unsigned int GetHeight() const { return m_Data.Height; }
 
 
 		// Window attributes
-		virtual inline void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; }
-		virtual void LogEvents(bool enable) { m_LogEvents = enable; }
+		virtual inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
+		virtual void LogEvents(bool enable) override { m_LogEvents = enable; }
 
 		virtual void SetVSync(bool enabled) override;
-		virtual bool IsVSync() const { return m_Data.VSync; }
+		virtual bool IsVSync() const override { return m_Data.VSync; }
 
-		virtual void* GetNativeWindow() const { return m_Window; }
+		virtual void* GetNativeWindow() const override { return m_Window; }
 
 		virtual void Delete() override;
 

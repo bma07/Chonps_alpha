@@ -8,6 +8,9 @@
 #include "Window.h"
 #include "Layer.h"
 #include "LayerStack.h"
+#include "Input.h"
+#include "KeyCodes.h"
+#include "MouseButtonCodes.h"
 
 // Events
 #include "Events/Event.h"

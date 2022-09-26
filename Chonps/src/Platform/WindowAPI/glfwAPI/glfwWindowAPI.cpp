@@ -89,6 +89,28 @@ namespace Chonps
 				data.EventCallback(eventType);
 			});
 
+		glfwSetWindowPosCallback(m_Window, [](GLFWwindow* window, int x, int y)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+				WindowMovedEvent eventType(x, y);
+				data.EventCallback(eventType);
+			});
+
+		glfwSetWindowFocusCallback(m_Window, [](GLFWwindow* window, int focused)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+				if (focused)
+				{
+					WindowFocusEvent eventType;
+					data.EventCallback(eventType);
+				}
+				else
+				{
+					WindowLostFocusEvent eventType;
+					data.EventCallback(eventType);
+				}
+			});
+
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);

@@ -13,6 +13,9 @@ public:
 	virtual void OnUpdate() override
 	{
 		m_Window->OnUpdate();
+		if (Chonps::keyPressed(&(*m_Window), CHONPS_KEY_0))
+			CHONPS_INFO("{0}", CHONPS_KEY_0);
+
 		if (!m_Window->WindowIsOpen())
 		{
 			m_Window->Delete();
@@ -69,12 +72,12 @@ int main()
 	Chonps::Log::Init();
 
 	CHONPS_INFO("Initialized Log");
-
+	
 	Chonps::initWindowAPI();
 
 	Chonps::LayerStack ls;
 	ls.AddLayer(new Layer1("l1"));
-	ls.AddLayer(new Layer2("ol"));
+	ls.AddLayer(new Layer2("l2"));
 
 	while (true)
 	{
@@ -87,7 +90,6 @@ int main()
 	}
 
 	Chonps::terminateWindowAPI();
-
 
 	return 0;
 }
