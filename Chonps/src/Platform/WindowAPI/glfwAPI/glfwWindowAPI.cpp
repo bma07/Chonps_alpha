@@ -5,6 +5,8 @@
 	#include "Platform/OpenGL/OpenGLContext.h"
 #endif
 
+#include <glad/glad.h>
+
 #include "Events/KeyEvents.h"
 #include "Events/MouseEvents.h"
 #include "Events/WindowEvents.h"
@@ -60,7 +62,7 @@ namespace Chonps
 		m_Data.Height = Height;
 		m_Data.FullScreen = fullScreen;
 		Create();
-		SetEventCallback(std::bind(&Chonps::Window::OnEvent, this, std::placeholders::_1));
+		SetEventCallback(std::bind(&Window::OnEvent, this, std::placeholders::_1));
 	}
 
 	void glfwWindowAPI::Create()
@@ -73,7 +75,10 @@ namespace Chonps
 		m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), fullScreen, nullptr);
 		CHONPS_CORE_ASSERT(m_Window, "Window failed to load!");
 
+#ifdef CHONPS_OPENGL_API
 		gladInit(m_Window);
+		glViewport(0, 0, m_Data.Width, m_Data.Height);
+#endif
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
@@ -196,6 +201,7 @@ namespace Chonps
 	{
 		glfwSwapBuffers(m_Window);
 		glfwPollEvents();
+		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
 	void glfwWindowAPI::OnEvent(Event& e)
@@ -209,6 +215,11 @@ namespace Chonps
 	bool glfwWindowAPI::WindowIsOpen()
 	{
 		return (!glfwWindowShouldClose(m_Window));
+	}
+
+	void glfwWindowAPI::SetContextCurrent()
+	{
+		glfwMakeContextCurrent(m_Window);
 	}
 
 	void glfwWindowAPI::SetVSync(bool enabled)

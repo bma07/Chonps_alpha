@@ -6,7 +6,7 @@
 
 namespace Chonps
 {
-	class CHONPS_API Layer
+	class Layer
 	{
 	public:
 		Layer(std::string name = "Layer") {}

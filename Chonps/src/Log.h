@@ -7,7 +7,7 @@
 
 namespace Chonps
 {
-	class CHONPS_API Log
+	class Log
 	{
 	public:
 		static void Init();

@@ -45,10 +45,13 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/Chonps/Dependencies/GLFW)
 # glad
 add_subdirectory(${CMAKE_SOURCE_DIR}/Chonps/Dependencies/glad)
 
+# Imgui
+add_subdirectory(${CMAKE_SOURCE_DIR}/Chonps/Dependencies/imgui)
+
 # ------------------------------------------------------- /
 
 set(INCLUDE_HEADERS
-    Chonps/include/Chonps/Chonps.h    
+    Chonps/include/Chonps/Header.h    
 )
 
 set(SOURCES
@@ -56,8 +59,7 @@ set(SOURCES
     Chonps/src/Core.h
     Chonps/src/Log.cpp
     Chonps/src/Log.h
-    Chonps/src/Window.cpp
-    Chonps/src/Window.cpp
+    Chonps/src/Window.h
     Chonps/src/cepch.cpp
     Chonps/src/cepch.h
     Chonps/src/Events/Event.h
@@ -66,6 +68,22 @@ set(SOURCES
     Chonps/src/Events/WindowEvents.h
     Chonps/src/Platform/OpenGL/OpenGLContext.cpp
     Chonps/src/Platform/OpenGL/OpenGLContext.h
+    Chonps/src/KeyCodes.h
+    Chonps/src/MouseButtonCodes.h
+    Chonps/src/Layer.h
+    Chonps/src/LayerStack.h
+    Chonps/src/LayerStack.cpp
+    Chonps/src/Input.h
+    Chonps/src/Application.h
+    Chonps/src/Application.cpp
+    Chonps/src/Imgui/ImguiBuild.cpp
+    Chonps/src/Imgui/ImguiEditor.h
+    Chonps/src/Imgui/ImguiEditor.cpp
+    Chonps/src/Imgui/ImguiWindow.h
+    Chonps/src/Imgui/ImguiWindow.cpp
+    Chonps/src/Platform/WindowAPI/glfwAPI/glfwInput.cpp
+    Chonps/src/Platform/WindowAPI/glfwAPI/glfwWindowAPI.h
+    Chonps/src/Platform/WindowAPI/glfwAPI/glfwWindowAPI.cpp
 )
 
 add_library(Chonps STATIC ${SOURCES})
@@ -77,6 +95,7 @@ target_include_directories(Chonps
         ${PROJECT_SOURCE_DIR}/Chonps/include
         ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/GLFW/include
         ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/glad/include
+        ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/imgui/include
 )
 
 
@@ -94,6 +113,8 @@ target_link_libraries(Chonps
         GLFW
         glad
         opengl32
+    PUBLIC
+        Imgui
 )
 
 # Sandbox
@@ -106,9 +127,6 @@ add_executable(Sandbox ${SOURCES})
 target_include_directories(Sandbox 
         PUBLIC
             ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/spdlog/include
-        PRIVATE
-            ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/GLFW/include
-            ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/glad/include
 )
 
 target_link_libraries(Sandbox

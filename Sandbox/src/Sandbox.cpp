@@ -7,20 +7,32 @@ public:
 	Layer1(std::string name)
 		: m_Name(name)
 	{
-		m_Window = std::unique_ptr<Chonps::Window>(Chonps::createWindow("window1", 800, 600));
+		CHONPS_INFO("Layer created: {0}", name);
+	}
+
+	virtual ~Layer1() override
+	{
+		
+	}
+
+	virtual void OnAttach() override
+	{
+		CHONPS_INFO("Layer attached");
+	}
+
+	virtual void OnDetach() override
+	{
+
 	}
 
 	virtual void OnUpdate() override
 	{
-		m_Window->OnUpdate();
-		if (Chonps::keyPressed(&(*m_Window), CHONPS_KEY_0))
-			CHONPS_INFO("{0}", CHONPS_KEY_0);
+		//CHONPS_INFO("Layer update: {0}", m_UseLayer);
+	}
 
-		if (!m_Window->WindowIsOpen())
-		{
-			m_Window->Delete();
-			m_UseLayer = false;
-		}
+	virtual void OnEvent(Chonps::Event& e) override
+	{
+		CHONPS_INFO(e.ToString());
 	}
 
 	virtual bool LayerStatus() override
@@ -29,39 +41,6 @@ public:
 	}
 
 private:
-	std::unique_ptr<Chonps::Window> m_Window;
-	std::string m_Name;
-	bool m_UseLayer = true;
-};
-
-class Layer2 : public Chonps::Layer
-{
-public:
-	Layer2(std::string name)
-		: m_Name(name)
-	{
-		m_Window = std::unique_ptr<Chonps::Window>(Chonps::createWindow("window2", 400, 400));
-	}
-
-	virtual void OnUpdate() override
-	{
-		m_Window->OnUpdate();
-		m_Window->LogEvents(true);
-
-		if (!m_Window->WindowIsOpen())
-		{
-			m_Window->Delete();
-			m_UseLayer = false;
-		}
-	}
-
-	virtual bool LayerStatus() override
-	{
-		return m_UseLayer;
-	}
-
-private:
-	std::unique_ptr<Chonps::Window> m_Window;
 	std::string m_Name;
 	bool m_UseLayer = true;
 };
@@ -75,19 +54,11 @@ int main()
 	
 	Chonps::initWindowAPI();
 
-	Chonps::LayerStack ls;
-	ls.AddLayer(new Layer1("l1"));
-	ls.AddLayer(new Layer2("l2"));
+	Chonps::Application app("Chonps", 800, 600);
 
-	while (true)
-	{
-		for (int i = 0; i < ls.size(); i++)
-		{
-			ls.GetLayer(i)->OnUpdate();
-			if (!ls.GetLayer(i)->LayerStatus())
-				ls.RemoveLayer(ls.GetLayer(i));
-		}
-	}
+	app.add_layer(new Layer1("l1"));
+
+	app.Run();
 
 	Chonps::terminateWindowAPI();
 

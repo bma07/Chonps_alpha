@@ -5,7 +5,7 @@
 
 namespace Chonps
 {
-	class CHONPS_API KeyEvent : public Event
+	class KeyEvent : public Event
 	{
 	public:
 		inline int GetKeyCode() const { return m_KeyCode; }
@@ -18,7 +18,7 @@ namespace Chonps
 		int m_KeyCode;
 	};
 
-	class CHONPS_API KeyPressedEvent : public KeyEvent
+	class KeyPressedEvent : public KeyEvent
 	{
 	public:
 		KeyPressedEvent(int keycode, bool repeat)
@@ -41,7 +41,7 @@ namespace Chonps
 		bool m_Repeat;
 	};
 
-	class CHONPS_API KeyReleasedEvent : public KeyEvent
+	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
 		KeyReleasedEvent(int keycode)

@@ -9,7 +9,7 @@
 
 namespace Chonps
 {
-	class CHONPS_API glfwWindowAPI : public Window
+	class glfwWindowAPI : public Window
 	{
 	public:
 		glfwWindowAPI(std::string Title, int Width, int Height, bool fullScreen = false);
@@ -32,6 +32,7 @@ namespace Chonps
 		virtual bool IsVSync() const override { return m_Data.VSync; }
 
 		virtual void* GetNativeWindow() const override { return m_Window; }
+		virtual void SetContextCurrent() override;
 
 		virtual void Delete() override;
 

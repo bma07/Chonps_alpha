@@ -10,18 +10,26 @@ namespace Chonps
 	class LayerStack
 	{
 	public:
-		void AddLayer(Layer* layer);
-		void InsertLayer(Layer* layer, unsigned int index);
-		void RemoveLayer(Layer* layer);
-		void DeleteLayer(Layer* layer);
-		void DeleteAll();
+		void add(Layer* layer);
+		void add_overlay(Layer* layer);
+		
+		void insert(Layer* layer, unsigned int index);
+		void remove(Layer* layer);
+
+		void delete_layer(Layer* layer);
+		void delete_all();
 
 		size_t size() { return Layers.size(); }
+		std::vector<Layer*>::iterator begin() { return Layers.begin(); }
+		std::vector<Layer*>::iterator end() { return Layers.end(); }
 
 		// Use GetLayer function instead to avoid manipulating Layers data
-		Layer* GetLayer(int index) { return Layers[index]; }
+		Layer* get(int index) { return Layers[index]; }
 
 		std::vector<Layer*> Layers;
+
+	private:
+		unsigned int m_LayerInsertIndex = 0;
 	};
 }
 

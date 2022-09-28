@@ -7,7 +7,8 @@
 
 namespace Chonps
 {
-	class CHONPS_API Window
+
+	class Window
 	{
 	public:
 		Window(std::string Title, int Width, int Height) {}
@@ -30,11 +31,13 @@ namespace Chonps
 		virtual bool IsVSync() const = 0;
 
 		virtual void* GetNativeWindow() const = 0;
+		virtual void SetContextCurrent() = 0;
 
 		virtual void Delete() = 0;
 	};
 
 	Window* createWindow(std::string title, unsigned int width, unsigned int height, bool fullScreen = false);
+	
 	void initWindowAPI();
 	void terminateWindowAPI();
 }

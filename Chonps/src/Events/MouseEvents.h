@@ -5,7 +5,7 @@
 
 namespace Chonps
 {
-	class CHONPS_API MouseMovedEvent : public Event
+	class MouseMovedEvent : public Event
 	{
 	public:
 		MouseMovedEvent(float x, float y)
@@ -31,7 +31,7 @@ namespace Chonps
 		float m_MouseX, m_MouseY;
 	};
 
-	class CHONPS_API MouseScrolledEvent : public Event
+	class MouseScrolledEvent : public Event
 	{
 	public:
 		MouseScrolledEvent(float xOffset, float yOffset)
@@ -57,7 +57,7 @@ namespace Chonps
 		float m_OffsetX, m_OffsetY;
 	};
 
-	class CHONPS_API MouseButtonEvent : public Event
+	class MouseButtonEvent : public Event
 	{
 	public:
 		inline int GetMouseButton() const { return m_Button; }
@@ -69,7 +69,7 @@ namespace Chonps
 		int m_Button;
 	};
 
-	class CHONPS_API MouseButtonPressedEvent : public MouseButtonEvent
+	class MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
 		MouseButtonPressedEvent(int button)
@@ -87,7 +87,7 @@ namespace Chonps
 		virtual const char* GetName() const override { return "MouseButtonPressed"; }
 	};
 
-	class CHONPS_API MouseButtonReleasedEvent : public MouseButtonEvent
+	class MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
 		MouseButtonReleasedEvent(int button)

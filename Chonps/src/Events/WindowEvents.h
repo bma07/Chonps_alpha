@@ -5,7 +5,7 @@
 
 namespace Chonps
 {
-	class CHONPS_API WindowCloseEvent : public Event
+	class WindowCloseEvent : public Event
 	{
 	public:
 		WindowCloseEvent() {}
@@ -17,7 +17,7 @@ namespace Chonps
 		virtual const char* GetName() const override { return "WindowClose"; }
 	};
 
-	class CHONPS_API WindowResizeEvent : public Event
+	class WindowResizeEvent : public Event
 	{
 	public:
 		WindowResizeEvent(int width, int height) 
@@ -41,7 +41,7 @@ namespace Chonps
 
 	};
 
-	class CHONPS_API WindowFocusEvent : public Event
+	class WindowFocusEvent : public Event
 	{
 	public:
 		WindowFocusEvent() {}
@@ -53,7 +53,7 @@ namespace Chonps
 		virtual const char* GetName() const override { return "WindowFocus"; }
 	};
 
-	class CHONPS_API WindowLostFocusEvent : public Event
+	class WindowLostFocusEvent : public Event
 	{
 	public:
 		WindowLostFocusEvent() {}
@@ -65,7 +65,7 @@ namespace Chonps
 		virtual const char* GetName() const override { return "WindowLostFocus"; }
 	};
 
-	class CHONPS_API WindowMovedEvent : public Event
+	class WindowMovedEvent : public Event
 	{
 	public:
 		WindowMovedEvent(int x, int y) 

@@ -29,7 +29,7 @@ namespace Chonps
 	};
 
 
-	class CHONPS_API Event
+	class Event
 	{
 
 		friend class EventDispatcher;
