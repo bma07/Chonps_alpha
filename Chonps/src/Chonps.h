@@ -1,7 +1,6 @@
 #ifndef CHONPS_H
 #define CHONPS_H
 
-#include "../include/Chonps/Header.h"
 
 // Core
 #include "Core.h"
@@ -23,5 +22,8 @@
 // Imgui
 #include "Imgui/ImguiEditor.h"
 #include "Imgui/ImguiWindow.h"
+
+// Graphics
+#include "Graphics/Graphics.h"
 
 #endif

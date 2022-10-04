@@ -7,6 +7,12 @@
 
 namespace Chonps
 {
+	enum class WindowAPI
+	{
+		None = 0,
+		Glfw,
+		Win32
+	};
 
 	class Window
 	{
@@ -37,9 +43,16 @@ namespace Chonps
 	};
 
 	Window* createWindow(std::string title, unsigned int width, unsigned int height, bool fullScreen = false);
-	
-	void initWindowAPI();
-	void terminateWindowAPI();
+
+	bool windowInitAPI(WindowAPI api = WindowAPI::Glfw);
+	bool windowTerminateAPI();
+
+	WindowAPI getWindowContext();
+	std::string getWindowContextName();
+
+
+	void glfwInitWindowAPI();
+	void glfwTerminateWindowAPI();
 }
 
 

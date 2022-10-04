@@ -1,6 +1,8 @@
 #include <iostream>
 #include <Chonps.h>
 
+#include <Imgui/imgui.h>
+
 class Layer1 : public Chonps::Layer
 {
 public:
@@ -27,12 +29,19 @@ public:
 
 	virtual void OnUpdate() override
 	{
-		//CHONPS_INFO("Layer update: {0}", m_UseLayer);
+
 	}
 
 	virtual void OnEvent(Chonps::Event& e) override
 	{
-		CHONPS_INFO(e.ToString());
+		
+	}
+
+	virtual void OnImGuiRender() override
+	{
+		ImGui::Begin("Console");
+		ImGui::Text("oh no");
+		ImGui::End();
 	}
 
 	virtual bool LayerStatus() override
@@ -52,15 +61,17 @@ int main()
 
 	CHONPS_INFO("Initialized Log");
 	
-	Chonps::initWindowAPI();
+	Chonps::windowInitAPI(Chonps::WindowAPI::Glfw);
 
 	Chonps::Application app("Chonps", 800, 600);
 
-	app.add_layer(new Layer1("l1"));
+	Layer1 l1("l1");
+
+	app.add_layer(&l1);
 
 	app.Run();
 
-	Chonps::terminateWindowAPI();
+	Chonps::windowTerminateAPI();
 
 	return 0;
 }

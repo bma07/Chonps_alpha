@@ -1,5 +1,5 @@
 #include "cepch.h"
-#include "Platform/OpenGL/OpenGLContext.h"
+#include "OpenGLContext.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -8,7 +8,7 @@ namespace Chonps
 {
 	static bool s_GladInit = false;
 
-	void gladInit(GLFWwindow* window)
+	void gladInit(GLFWwindow* window, unsigned int width, unsigned int height)
 	{
 		glfwMakeContextCurrent(window);
 
@@ -24,5 +24,6 @@ namespace Chonps
 
 			s_GladInit = true;
 		}
+		glViewport(0, 0, width, height);
 	}
 }

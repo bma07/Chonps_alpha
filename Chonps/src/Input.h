@@ -3,20 +3,10 @@
 
 #include "Core.h"
 #include "Window.h"
+#include "DataTypes.h"
 
 namespace Chonps
 {
-
-	struct vec2f
-	{
-		float x, y;
-	};
-
-	struct vec2i
-	{
-		int x, y;
-	};
-
 	bool keyPressed(Window* window, int keycode);
 	bool mouseButtonPressed(Window* window, int button);
 
@@ -29,7 +19,6 @@ namespace Chonps
 	void getWindowPos(Window* window, int* xpos, int* ypos);
 	vec2i getWindowSize(Window* window);
 	void getWindowSize(Window* window, int* width, int* height);
-
 }
 
 

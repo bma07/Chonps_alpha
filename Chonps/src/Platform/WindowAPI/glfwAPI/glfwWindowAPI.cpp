@@ -1,15 +1,13 @@
 #include "cepch.h"
 #include "glfwWindowAPI.h"
 
-#ifdef CHONPS_OPENGL_API
-	#include "Platform/OpenGL/OpenGLContext.h"
-#endif
-
-#include <glad/glad.h>
+#include "Graphics/RendererAPI.h"
+#include "Platform/OpenGL/OpenGLContext.h"
 
 #include "Events/KeyEvents.h"
 #include "Events/MouseEvents.h"
 #include "Events/WindowEvents.h"
+
 
 
 namespace Chonps
@@ -21,9 +19,7 @@ namespace Chonps
 		CHONPS_CORE_ERROR("GLFW ERROR ({0}): {1}", error, descripion);
 	}
 
-#ifdef CHONPS_GLFW_API
-
-	void initWindowAPI()
+	void glfwInitWindowAPI()
 	{
 		if (!s_glfwInit)
 		{
@@ -32,11 +28,10 @@ namespace Chonps
 			glfwSetErrorCallback(GLFWerrorCallback);
 			s_glfwInit = true;
 		}
-		else
-			CHONPS_CORE_WARN("glfw already initialized");
+		else CHONPS_CORE_WARN("glfw already initialized");
 	}
 
-	void terminateWindowAPI()
+	void glfwTerminateWindowAPI()
 	{
 		if (s_glfwInit)
 		{
@@ -46,8 +41,6 @@ namespace Chonps
 		else
 			CHONPS_CORE_WARN("glfw already terminated!");
 	}
-
-#endif
 
 	Window* createWindow(std::string title, unsigned int width, unsigned int height, bool fullScreen)
 	{
@@ -75,10 +68,37 @@ namespace Chonps
 		m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), fullScreen, nullptr);
 		CHONPS_CORE_ASSERT(m_Window, "Window failed to load!");
 
-#ifdef CHONPS_OPENGL_API
-		gladInit(m_Window);
-		glViewport(0, 0, m_Data.Width, m_Data.Height);
-#endif
+		switch (getGraphicsContext())
+		{
+			case Chonps::API::None:
+			{
+				CHONPS_CORE_WARN("WANRING: No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WARNING: WINDOW: Automatically initializing rendering context...");
+				CHONPS_CORE_ASSERT(renderInit(), "No graphics API found or can be used!");
+			}
+
+			case Chonps::API::OpenGL:
+			{
+				gladInit(m_Window, m_Data.Width, m_Data.Height);
+				break;
+			}
+
+			case Chonps::API::Vulkan:
+			{
+				break;
+			}
+
+			case Chonps::API::DirectX:
+			{
+				break;
+			}
+
+			default:
+			{
+				CHONPS_CORE_ERROR("Cannot find the graphics API selected!");
+				break;
+			}
+		}
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
@@ -201,7 +221,6 @@ namespace Chonps
 	{
 		glfwSwapBuffers(m_Window);
 		glfwPollEvents();
-		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
 	void glfwWindowAPI::OnEvent(Event& e)
