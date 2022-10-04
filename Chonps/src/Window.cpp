@@ -50,7 +50,7 @@ namespace Chonps
 			case Chonps::WindowAPI::None:
 			{
 				CHONPS_CORE_WARN("No Windows API initialized!");
-				break;
+				return false;
 			}
 			case Chonps::WindowAPI::Glfw:
 			{
@@ -65,7 +65,7 @@ namespace Chonps
 			default:
 			{
 				CHONPS_CORE_ERROR("ERROR: WINDOW: windowTerminateAPI() - Cannot find the Windows API selected!");
-				break;
+				return false;
 			}
 		}
 
@@ -83,26 +83,12 @@ namespace Chonps
 	{
 		switch (getWindowContext())
 		{
-			case Chonps::WindowAPI::None:
-			{
-				return "None";
-				break;
-			}
-			case Chonps::WindowAPI::Glfw:
-			{
-				return "glfw";
-				break;
-			}
-			case Chonps::WindowAPI::Win32:
-			{
-				return "WIN32";
-				break;
-			}
-			default:
-			{
-				CHONPS_CORE_ERROR("ERROR: WINDOW: getWindowContextName() - Cannot find the Windows API selected!");
-				break;
-			}
+			case Chonps::WindowAPI::None: return "None";
+			case Chonps::WindowAPI::Glfw: return "glfw";
+			case Chonps::WindowAPI::Win32: return "WIN32";
 		}
+
+		CHONPS_CORE_ERROR("ERROR: WINDOW: getWindowContextName() - Cannot find the Windows API selected!");
+		return "null";
 	}
 }

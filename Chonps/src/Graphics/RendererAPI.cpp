@@ -30,32 +30,13 @@ namespace Chonps
 	{
 		switch (getGraphicsContext())
 		{
-			case Chonps::API::None:
-			{
-				return "None";
-				break;
-			}
-			case Chonps::API::OpenGL:
-			{
-				return "OpenGL";
-				break;
-			}
-			case Chonps::API::Vulkan:
-			{
-				return "Vulkan";
-				break;
-			}
-			case Chonps::API::DirectX:
-			{
-				return "DirectX";
-				break;
-			}
-			default:
-			{
-				CHONPS_CORE_ERROR("Cannot find the graphics API selected!");
-				break;
-			}
+			case Chonps::API::None: return "None";
+			case Chonps::API::OpenGL: return "OpenGL";
+			case Chonps::API::Vulkan: return "Vulkan";
+			case Chonps::API::DirectX: return "DirectX";
 		}
+
+		CHONPS_CORE_ERROR("Cannot find the graphics API selected!");
 		return "null";
 	}
 }
