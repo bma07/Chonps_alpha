@@ -3,7 +3,7 @@
 
 #include "Graphics/Graphics.h"
 
-#include <glad/glad.h>
+#include "Imgui/ImguiWindow.h"
 
 // TEMPORARY: will remove later
 #include <filesystem>
@@ -45,6 +45,8 @@ namespace Chonps
 
 		Shader* shader = createShader(resPathDir + "shaders/vertex.glsl", resPathDir + "shaders/fragment.glsl");
 
+		Camera camera(m_Window->GetWidth(), m_Window->GetHeight(), glm::vec3(0.0f, 0.0f, 5.0f));
+
 		VAO* vao = createVAO();
 
 		vao->Bind();
@@ -59,13 +61,16 @@ namespace Chonps
 
 		while (m_Running)
 		{
-			glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
+			renderClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+			renderClear();
 
+			camera.updateMatrix(45.0f, 0.01f, 1000.0f, m_Window->GetWidth(), m_Window->GetHeight());
+			camera.Matrix(shader, "camMatrix");
+			
 			shader->Bind();
 
 			vao->Bind();
-			glDrawElements(GL_TRIANGLES, sizeof(vertices) / sizeof(int), GL_UNSIGNED_INT, 0);
+			renderDraw(sizeof(vertices) / sizeof(float));
 
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
@@ -75,8 +80,12 @@ namespace Chonps
 				layer->OnImGuiRender();
 			m_ImguiEditor->Render();
 
+			camera.Inputs(&(*m_Window));
+
 			m_Window->OnUpdate();
 		}
+
+		m_Window->Delete();
 	}
 
 	void Application::OnEvent(Event& e)

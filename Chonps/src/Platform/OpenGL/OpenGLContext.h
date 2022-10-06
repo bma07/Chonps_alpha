@@ -8,6 +8,8 @@ struct GLFWwindow;
 namespace Chonps
 {
 	void gladInit(GLFWwindow* window, unsigned int width, unsigned int height);
+
+	void gladUpdateViewPort(GLFWwindow* window, unsigned int width, unsigned int height);
 }
 
 

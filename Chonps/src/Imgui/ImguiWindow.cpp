@@ -62,11 +62,4 @@ namespace Chonps
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
-
-	void ImguiDraw()
-	{
-		ImGui::Begin("window");
-		ImGui::Text("oh no");
-		ImGui::End();
-	}
 }

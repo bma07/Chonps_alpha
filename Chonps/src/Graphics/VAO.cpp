@@ -19,7 +19,6 @@ namespace Chonps
 			case API::OpenGL:
 			{
 				return new OpenGLVAO();
-				break;
 			}
 
 			case API::Vulkan:
@@ -29,12 +28,6 @@ namespace Chonps
 
 			case API::DirectX:
 			{
-				break;
-			}
-
-			default:
-			{
-				CHONPS_CORE_ERROR("Cannot find the graphics API selected!");
 				break;
 			}
 		}

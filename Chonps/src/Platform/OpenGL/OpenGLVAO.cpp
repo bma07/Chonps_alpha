@@ -36,15 +36,17 @@ namespace Chonps
 	{
 		VBO.Bind();
 		glEnableVertexAttribArray(layout);
-		glVertexAttribPointer(layout, numComponents, getShaderDataTypeConvertOpenGL(type), GL_FALSE, (GLsizeiptr)stride, offset);
+		glVertexAttribPointer(layout, numComponents, getShaderDataTypeConvertOpenGL(type), GL_FALSE, stride, offset);
 		VBO.Unbind();
+
+		
 	}
 
 	void OpenGLVAO::LinkAttributes(VBO& VBO, uint32_t layout, ShaderDataType numComponents, ShaderDataType type, size_t stride, void* offset)
 	{
 		VBO.Bind();
 		glEnableVertexAttribArray(layout);
-		glVertexAttribPointer(layout, getShaderDataTypeComponent(numComponents), getShaderDataTypeConvertOpenGL(type), GL_FALSE, (GLsizeiptr)stride, offset);
+		glVertexAttribPointer(layout, getShaderDataTypeComponent(numComponents), getShaderDataTypeConvertOpenGL(type), GL_FALSE, stride, offset);
 		VBO.Unbind();
 	}
 

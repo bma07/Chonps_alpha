@@ -26,4 +26,10 @@ namespace Chonps
 		}
 		glViewport(0, 0, width, height);
 	}
+
+	void gladUpdateViewPort(GLFWwindow* window, unsigned int width, unsigned int height)
+	{
+		glfwMakeContextCurrent(window);
+		glViewport(0, 0, width, height);
+	}
 }

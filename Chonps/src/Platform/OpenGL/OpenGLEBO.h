@@ -17,7 +17,6 @@ namespace Chonps
 		virtual void Unbind() const override;
 		virtual void Delete() override;
 
-
 	private:
 		uint32_t m_ID;
 	};

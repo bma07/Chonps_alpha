@@ -8,5 +8,6 @@
 #include "VBO.h"
 #include "VAO.h"
 #include "EBO.h"
+#include "Camera.h"
 
 #endif

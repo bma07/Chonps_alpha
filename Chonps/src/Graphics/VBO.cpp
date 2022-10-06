@@ -74,12 +74,6 @@ namespace Chonps
 			{
 				break;
 			}
-
-			default:
-			{
-				CHONPS_CORE_ERROR("Cannot find the graphics API selected!");
-				break;
-			}
 		}
 		CHONPS_CORE_ERROR("ERROR: VBO: Could not create VBO!");
 		return nullptr;
@@ -89,33 +83,26 @@ namespace Chonps
 	{
 		switch (getGraphicsContext())
 		{
-		case API::None:
-		{
-			CHONPS_CORE_WARN("WANRING: VBO: createVBO(vertices) - No graphics API selected beforehand!");
-			break;
-		}
+			case API::None:
+			{
+				CHONPS_CORE_WARN("WANRING: VBO: createVBO(vertices) - No graphics API selected beforehand!");
+				break;
+			}
 
-		case API::OpenGL:
-		{
-			return new OpenGLVBO(vertices);
-			break;
-		}
+			case API::OpenGL:
+			{
+				return new OpenGLVBO(vertices);
+			}
 
-		case API::Vulkan:
-		{
-			break;
-		}
+			case API::Vulkan:
+			{
+				break;
+			}
 
-		case API::DirectX:
-		{
-			break;
-		}
-
-		default:
-		{
-			CHONPS_CORE_ERROR("Cannot find the graphics API selected!");
-			break;
-		}
+			case API::DirectX:
+			{
+				break;
+			}
 		}
 		CHONPS_CORE_ERROR("ERROR: VBO: Could not create VBO!");
 		return nullptr;

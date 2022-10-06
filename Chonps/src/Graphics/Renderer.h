@@ -1,18 +1,20 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "RendererAPI.h"
+
 namespace Chonps
 {
-	class Renderer
-	{
-	public:
+	void renderDraw(const size_t& count);
 
-		static void Init();
-		static void Draw();
+	void renderBeginScene();
+	void renderEndScene();
 
-	private:
+	void renderClear();
+	void renderClearColor(const float r, const float g, const float b, const float w = 0.0f);
 
-	};
+	void setRendererAPI();
+	RendererAPI* getRendererAPI();
 }
 
 #endif

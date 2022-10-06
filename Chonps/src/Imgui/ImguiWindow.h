@@ -14,8 +14,6 @@ namespace Chonps
 	void ImguiRender();
 
 	void ImguiShutdown();
-
-	void ImguiDraw();
 }
 
 

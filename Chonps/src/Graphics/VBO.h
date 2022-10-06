@@ -19,7 +19,6 @@ namespace Chonps
 	typedef ShaderDataType SDT;
 
 	uint32_t getShaderDataTypeSize(ShaderDataType type);
-
 	uint32_t getShaderDataTypeComponent(ShaderDataType type);
 
 	class VBO

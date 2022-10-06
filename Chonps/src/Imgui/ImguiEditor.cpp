@@ -54,7 +54,6 @@ namespace Chonps
 
 	void ImguiEditor::NewFrame()
 	{
-		m_Window->SetContextCurrent();
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();

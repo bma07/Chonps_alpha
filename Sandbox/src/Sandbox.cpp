@@ -1,6 +1,8 @@
 #include <iostream>
 #include <Chonps.h>
 
+#include <glm/glm.hpp>
+
 #include <Imgui/imgui.h>
 
 class Layer1 : public Chonps::Layer

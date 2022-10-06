@@ -112,6 +112,8 @@ namespace Chonps
 
 				WindowResizeEvent eventType(width, height);
 				data.EventCallback(eventType);
+
+				gladUpdateViewPort(window, width, height);
 			});
 
 		glfwSetWindowPosCallback(m_Window, [](GLFWwindow* window, int x, int y)

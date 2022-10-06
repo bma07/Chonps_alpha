@@ -32,12 +32,6 @@ namespace Chonps
 			{
 				break;
 			}
-
-			default:
-			{
-				CHONPS_CORE_ERROR("Cannot find the graphics API selected!");
-				break;
-			}
 		}
 		CHONPS_CORE_ERROR("ERROR: SHADER: Could not create Shader!");
 		return nullptr;
@@ -56,7 +50,6 @@ namespace Chonps
 			case API::OpenGL:
 			{
 				return new OpenGLShader(filepath);
-				break;
 			}
 
 			case API::Vulkan:
@@ -68,14 +61,9 @@ namespace Chonps
 			{
 				break;
 			}
-
-			default:
-			{
-				CHONPS_CORE_ERROR("Cannot find the graphics API selected!");
-				break;
-			}
 		}
 		CHONPS_CORE_ERROR("ERROR: SHADER: Could not create Shader!");
 		return nullptr;
 	}
+
 }
