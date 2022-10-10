@@ -17,8 +17,11 @@ namespace Chonps
 		virtual void Unbind() const override;
 		virtual void Delete() override;
 
+		virtual uint32_t GetCount() const override { return m_Count; }
+
 	private:
 		uint32_t m_ID;
+		uint32_t m_Count;
 	};
 }
 

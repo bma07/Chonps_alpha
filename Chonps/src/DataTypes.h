@@ -13,8 +13,8 @@ namespace Chonps
 		vec1_t(T x)
 			: x(x) {}
 		T x;
-		unsigned int length() { return 1; }
-		T& operator[](unsigned int i)
+		int length() { return 1; }
+		T& operator[](int i)
 		{
 			switch (i)
 			{
@@ -37,8 +37,8 @@ namespace Chonps
 		vec2_t(T n)
 			: x(n), y(n) {}
 		T x, y;
-		unsigned int length() { return 2; }
-		T& operator[](unsigned int i)
+		int length() { return 2; }
+		T& operator[](int i)
 		{
 			switch (i)
 			{
@@ -62,8 +62,8 @@ namespace Chonps
 		vec3_t(T n)
 			: x(n), y(n), z(n) {}
 		T x, y, z;
-		unsigned int length() { return 3; }
-		T& operator[](unsigned int i)
+		int length() { return 3; }
+		T& operator[](int i)
 		{
 			switch (i)
 			{
@@ -88,8 +88,8 @@ namespace Chonps
 		vec4_t(T n)
 			: x(n), y(n), z(n), w(n) {}
 		T x, y, z, w;
-		unsigned int length() { return 4; }
-		T& operator[](unsigned int i)
+		int length() { return 4; }
+		T& operator[](int i)
 		{
 			switch (i)
 			{
@@ -167,8 +167,8 @@ namespace Chonps
 			: x(n, 0), y(0, n) {}
 
 		vec2_t<T> x, y;
-		unsigned int length() { return 2; }
-		T& operator[](unsigned int i)
+		int length() { return 2; }
+		T& operator[](int i)
 		{
 			switch (i)
 			{
@@ -194,8 +194,8 @@ namespace Chonps
 			: x(n, 0, 0), y(0, n, 0), z(0, 0, n) {}
 
 		vec3_t<T> x, y, z;
-		unsigned int length() { return 3; }
-		T& operator[](unsigned int i)
+		int length() { return 3; }
+		T& operator[](int i)
 		{
 			switch (i)
 			{
@@ -223,8 +223,8 @@ namespace Chonps
 			: x(n, 0, 0, 0), y(0, n, 0, 0), z(0, 0, n, 0), w(0, 0, 0, n) {}
 
 		vec4_t<T> x, y, z, w;
-		unsigned int length() { return 4; }
-		vec4_t<T>& operator[](unsigned int i)
+		int length() { return 4; }
+		vec4_t<T>& operator[](int i)
 		{
 			switch (i)
 			{

@@ -15,6 +15,8 @@ namespace Chonps
 		virtual void Unbind() const = 0;
 		virtual void Delete() = 0;
 
+		virtual uint32_t GetCount() const = 0;
+
 	};
 
 	EBO* createEBO(uint32_t* indices, size_t size);

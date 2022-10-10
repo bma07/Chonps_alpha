@@ -74,7 +74,7 @@ namespace Chonps
 			{
 				CHONPS_CORE_WARN("WANRING: No graphics API selected beforehand!");
 				CHONPS_CORE_WARN("WARNING: WINDOW: Automatically initializing rendering context...");
-				CHONPS_CORE_ASSERT(renderInit(), "No graphics API found or can be used!");
+				CHONPS_CORE_ASSERT(setRenderAPI(), "No graphics API found or can be used!");
 			}
 
 			case Chonps::API::OpenGL:

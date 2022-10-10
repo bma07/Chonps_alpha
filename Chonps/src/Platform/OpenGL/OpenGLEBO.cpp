@@ -6,7 +6,7 @@
 namespace Chonps
 {
 	OpenGLEBO::OpenGLEBO(uint32_t* indices, size_t size)
-		: EBO(indices, size)
+		: EBO(indices, size), m_Count(size / sizeof(uint32_t))
 	{
 		glGenBuffers(1, &m_ID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ID);
@@ -18,7 +18,7 @@ namespace Chonps
 	{
 		glGenBuffers(1, &m_ID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
 	}
 
 	void OpenGLEBO::Bind() const

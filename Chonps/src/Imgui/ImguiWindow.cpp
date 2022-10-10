@@ -9,6 +9,7 @@
 
 namespace Chonps
 {
+	// NOTE: If you are using multiple windows in your program, it is STROGNLY advised to create only one ImGui context for all windows
 	void ImguiInit(Window* window)
 	{
 		IMGUI_CHECKVERSION();

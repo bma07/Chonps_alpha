@@ -33,20 +33,34 @@ namespace Chonps
 		void remove_layer(Layer* layer);
 		void delete_layer(Layer* layer);
 
-		inline Window& GetWindow() { return *m_Window; }
 		inline static Application& GetApp() { return *s_Instance; }
+		inline Window& GetWindow() { return *m_Window; }
+		inline float GetTimestep() { return m_Timestep; }
+		inline void UpdateWindowRender(bool update) { m_UpdateWindowRender = update; }
 
 	private:
 		std::unique_ptr<Window> m_Window;
 		LayerStack m_LayerStack;
 		ImguiEditor* m_ImguiEditor;
+		float m_Timestep = 0.0f;
 		bool m_Running = true;
+		bool m_UpdateWindowRender = true;
 
 		bool OnWindowClose(WindowCloseEvent& e);
 
 
 		static Application* s_Instance;
 	};
+
+	static unsigned int getAppWindowWidth()
+	{
+		return Application::GetApp().GetWindow().GetWidth();
+	}
+
+	static unsigned int getAppWindowHeight()
+	{
+		return Application::GetApp().GetWindow().GetHeight();
+	}
 }
 
 

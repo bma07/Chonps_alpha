@@ -32,22 +32,27 @@ namespace Chonps
 		glGenVertexArrays(1, &m_ID);
 	}
 
-	void OpenGLVAO::LinkAttributes(VBO& VBO, uint32_t layout, uint32_t numComponents, ShaderDataType type, size_t stride, void* offset)
+	void OpenGLVAO::LinkVBO(VBO* VBO, uint32_t layout, uint32_t numComponents, ShaderDataType type, size_t stride, void* offset)
 	{
-		VBO.Bind();
+		VBO->Bind();
 		glEnableVertexAttribArray(layout);
-		glVertexAttribPointer(layout, numComponents, getShaderDataTypeConvertOpenGL(type), GL_FALSE, stride, offset);
-		VBO.Unbind();
+		glVertexAttribPointer(layout, numComponents, getShaderDataTypeConvertOpenGL(type), GL_FALSE, (GLsizei)stride, offset);
+		VBO->Unbind();
 
 		
 	}
 
-	void OpenGLVAO::LinkAttributes(VBO& VBO, uint32_t layout, ShaderDataType numComponents, ShaderDataType type, size_t stride, void* offset)
+	void OpenGLVAO::LinkVBO(VBO* VBO, uint32_t layout, ShaderDataType numComponents, ShaderDataType type, size_t stride, void* offset)
 	{
-		VBO.Bind();
+		VBO->Bind();
 		glEnableVertexAttribArray(layout);
-		glVertexAttribPointer(layout, getShaderDataTypeComponent(numComponents), getShaderDataTypeConvertOpenGL(type), GL_FALSE, stride, offset);
-		VBO.Unbind();
+		glVertexAttribPointer(layout, getShaderDataTypeComponent(numComponents), getShaderDataTypeConvertOpenGL(type), GL_FALSE, (GLsizei)stride, offset);
+		VBO->Unbind();
+	}
+
+	void OpenGLVAO::LinkEBO(EBO* EBO)
+	{
+		m_Count = EBO->GetCount();
 	}
 
 	void OpenGLVAO::Bind() const

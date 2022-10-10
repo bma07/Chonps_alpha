@@ -44,7 +44,7 @@ namespace Chonps
 
 	Window* createWindow(std::string title, unsigned int width, unsigned int height, bool fullScreen = false);
 
-	bool windowInitAPI(WindowAPI api = WindowAPI::Glfw);
+	bool setWindowAPI(WindowAPI api = WindowAPI::Glfw);
 	bool windowTerminateAPI();
 
 	WindowAPI getWindowContext();

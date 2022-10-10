@@ -1,19 +1,21 @@
 #include "cepch.h"
 #include "Window.h"
 
+#include "Input.h"
+
 namespace Chonps
 {
 	static WindowAPI s_WindowAPI = WindowAPI::None;
 
-	bool windowInitAPI(WindowAPI api /*= WindowAPI::Glfw*/)
+	bool setWindowAPI(WindowAPI api /*= WindowAPI::Glfw*/)
 	{
+		s_WindowAPI = api;
+		
 		if (api == WindowAPI::None)
 		{
-			s_WindowAPI = api;
 			CHONPS_CORE_WARN("No Windows API selected!");
 			return false;
 		}
-		s_WindowAPI = api;
 
 		switch (getWindowContext())
 		{
@@ -38,6 +40,8 @@ namespace Chonps
 				break;
 			}
 		}
+
+		windowInputInit();
 
 		CHONPS_CORE_INFO("Window Context Initialized: {0}", getWindowContextName());
 		return true;

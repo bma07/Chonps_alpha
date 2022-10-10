@@ -1,32 +1,40 @@
 #include "cepch.h"
-
-#ifdef CHONPS_GLFW_API
-	#include "Input.h"
-#endif
+#include "glfwInput.h"
 
 #include "Window.h"
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
 namespace Chonps
 {
-
-#ifdef CHONPS_GLFW_API
-
-	bool keyPressed(Window* window, int keycode)
+	bool glfwInput::KeyPressed(Window* window, int keycode)
 	{
 		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
 		int state = glfwGetKey(glfwWin, keycode);
 		return state == GLFW_PRESS || state == GLFW_REPEAT;
 	}
 
-	bool mouseButtonPressed(Window* window, int button)
+	bool glfwInput::KeyReleased(Window* window, int keycode)
+	{
+		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
+		int state = glfwGetKey(glfwWin, keycode);
+		return state == GLFW_RELEASE;
+	}
+
+	bool glfwInput::MouseButtonPressed(Window* window, int button)
 	{
 		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
 		int state = glfwGetMouseButton(glfwWin, button);
 		return state == GLFW_PRESS;
 	}
 
-	vec2f getMousePos(Window* window)
+	bool glfwInput::MouseButtonReleased(Window* window, int button)
+	{
+		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
+		int state = glfwGetMouseButton(glfwWin, button);
+		return state == GLFW_RELEASE;
+	}
+
+	vec2f glfwInput::GetMousePos(Window* window)
 	{
 		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
 		double xpos, ypos;
@@ -34,7 +42,7 @@ namespace Chonps
 		return { (float)xpos, (float)ypos };
 	}
 
-	void getMousePos(Window* window, float* xpos, float* ypos)
+	void glfwInput::GetMousePos(Window* window, float* xpos, float* ypos)
 	{
 		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
 		double xPos = (double)*xpos, yPos = (double)*ypos;
@@ -43,19 +51,25 @@ namespace Chonps
 		*ypos = (float)yPos;
 	}
 
-	float getMouseX(Window* window)
+	float glfwInput::GetMouseX(Window* window)
 	{
 		vec2f MousePos = getMousePos(window);
 		return MousePos.x;
 	}
 
-	float getMouseY(Window* window)
+	float glfwInput::GetMouseY(Window* window)
 	{
 		vec2f MousePos = getMousePos(window);
 		return MousePos.y;
 	}
 
-	vec2i getWindowPos(Window* window)
+	void glfwInput::SetMousePos(Window* window, float x, float y)
+	{
+		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
+		glfwSetCursorPos(glfwWin, (double)x, (double)y);
+	}
+
+	vec2i glfwInput::GetWindowPos(Window* window)
 	{
 		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
 		int xpos, ypos;
@@ -63,13 +77,13 @@ namespace Chonps
 		return { xpos, ypos };
 	}
 
-	void getWindowPos(Window* window, int* xpos, int* ypos)
+	void glfwInput::GetWindowPos(Window* window, int* xpos, int* ypos)
 	{
 		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
 		glfwGetWindowPos(glfwWin, &(*xpos), &(*ypos));
 	}
 
-	vec2i getWindowSize(Window* window)
+	vec2i glfwInput::GetWindowSize(Window* window)
 	{
 		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
 		int width, height;
@@ -77,12 +91,21 @@ namespace Chonps
 		return { width, height };
 	}
 
-	void getWindowSize(Window* window, int* width, int* height)
+	void glfwInput::GetWindowSize(Window* window, int* width, int* height)
 	{
 		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
 		glfwGetWindowSize(glfwWin, &(*width), &(*height));
 	}
 
-#endif
+	void glfwInput::SetMouseModeHide(Window* window, bool hide)
+	{
+		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
+		int mode = hide ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL;
+		glfwSetInputMode(glfwWin, GLFW_CURSOR, mode);
+	}
 
+	float glfwInput::GetTimestep()
+	{
+		return (float)glfwGetTime();
+	}
 }
