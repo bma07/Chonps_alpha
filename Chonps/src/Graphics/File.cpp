@@ -19,7 +19,7 @@ namespace Chonps
 		CHONPS_CORE_ERROR("ERROR: FILE: Cannot open file: {0}", filename);
 	}
 
-	bool get_file_contents(const char* filename, std::string& source)
+	bool get_file_contents(const char* filename, std::string* source)
 	{
 		std::ifstream in(filename, std::ios::binary);
 		if (in)
@@ -30,7 +30,7 @@ namespace Chonps
 			in.seekg(0, std::ios::beg);
 			in.read(&contents[0], contents.size());
 			in.close();
-			source = contents;
+			*source = contents;
 			return true;
 		}
 		CHONPS_CORE_ERROR("ERROR: FILE: Cannot open file: {0}", filename);

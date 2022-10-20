@@ -41,7 +41,7 @@ namespace Chonps
 		{
 			case API::None:
 			{
-				CHONPS_CORE_WARN("WANRING: EBO: createEBO(indices) - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: EBO: createVertexEBO(indices) - No graphics API selected beforehand!");
 				break;
 			}
 

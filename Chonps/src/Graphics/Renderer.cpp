@@ -4,7 +4,7 @@
 
 namespace Chonps
 {
-	// Static Renderer API - Determines the graphics platform API for draw functions
+	// Static Renderer API - Determines the graphics platform API for draw functions and uniforms
 	static RendererAPI* s_RendererAPI;
 
 	// Sets and init specific render function calls before drawing vertices
@@ -26,13 +26,16 @@ namespace Chonps
 		s_RendererAPI->Draw(VAO->GetIndexCount());
 	}
 
-	// Call this function when beginning the scene before drawing the vertices
-	void Renderer::BeginScene()
+	// Call before renderering or drawing
+	void Renderer::BeginScene(Camera camera, Shader* shader, const char* uniform /*= "camMatrix"*/)
 	{
-
+		shader->Bind();
+		glm::vec3 camPos = camera.GetPosition();
+		Chonps::uploadUniform3f(shader->GetID(), "camPos", camPos.x, camPos.y, camPos.z);
+		camera.UploadMatrix(shader, "camMatrix");
 	}
 
-	// Call this function when ending the scene after the vertices have been drawn
+	// Call after scene has finished
 	void Renderer::EndScene()
 	{
 
@@ -82,14 +85,17 @@ namespace Chonps
 	{
 		s_RendererAPI->Draw(VAO->GetIndexCount());
 	}
-	
-	// Call this function when beginning the scene before drawing the vertices
-	void renderBeginScene()
-	{
 
+	// Call before renderering or drawing
+	void renderBeginScene(Camera camera, Shader* shader, const char* uniform /*= "camMatrix"*/)
+	{
+		shader->Bind();
+		glm::vec3 camPos = camera.GetPosition();
+		Chonps::uploadUniform3f(shader->GetID(), "camPos", camPos.x, camPos.y, camPos.z);
+		camera.UploadMatrix(shader, "camMatrix");
 	}
 
-	// Call this function when ending the scene after the vertices have been drawn
+	// Call after scene has finished
 	void renderEndScene()
 	{
 

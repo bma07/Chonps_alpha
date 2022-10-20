@@ -88,7 +88,7 @@ namespace Chonps
 		m_ID = glCreateProgram();
 		std::string source;
 		
-		if (get_file_contents(filepath.c_str(), source))
+		if (get_file_contents(filepath.c_str(), &source))
 		{
 			std::unordered_map<GLenum, std::string> shaders;
 

@@ -7,8 +7,12 @@ namespace Chonps
 {
 	void OpenGLRendererAPI::Init()
 	{
+		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glFrontFace(GL_CCW);
 	}
 
 	void OpenGLRendererAPI::SetClearColor(const float r, const float g, const float b, const float w)
@@ -18,7 +22,7 @@ namespace Chonps
 
 	void OpenGLRendererAPI::Clear()
 	{
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	
 	void OpenGLRendererAPI::Draw(const size_t& count)

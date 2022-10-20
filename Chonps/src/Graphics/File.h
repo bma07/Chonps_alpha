@@ -9,7 +9,7 @@ namespace Chonps
 {
 	std::string get_file_contents(const char* filename);
 
-	bool get_file_contents(const char* filename, std::string& source);
+	bool get_file_contents(const char* filename, std::string* source);
 }
 
 #endif

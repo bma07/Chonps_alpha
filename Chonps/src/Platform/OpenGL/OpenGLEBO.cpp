@@ -14,7 +14,7 @@ namespace Chonps
 	}
 
 	OpenGLEBO::OpenGLEBO(std::vector<uint32_t>& indices)
-		: EBO(indices)
+		: EBO(indices), m_Count(indices.size())
 	{
 		glGenBuffers(1, &m_ID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ID);

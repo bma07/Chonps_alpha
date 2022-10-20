@@ -11,5 +11,9 @@
 #include "Camera.h"
 #include "OrthographicCamera.h"
 #include "Texture.h"
+#include "Mesh.h"
+#include "Model.h"
+#include "Lighting.h"
+#include "FBO.h"
 
 #endif

@@ -10,12 +10,14 @@ namespace Chonps
 	{
 		switch (type)
 		{
+			case ShaderDataType::Float: return sizeof(float);
 			case ShaderDataType::Float1: return sizeof(float);
 			case ShaderDataType::Float2: return sizeof(float) * 2;
 			case ShaderDataType::Float3: return sizeof(float) * 3;
 			case ShaderDataType::Float4: return sizeof(float) * 4;
 			case ShaderDataType::Mat3: return sizeof(float) * 3 * 3;
 			case ShaderDataType::Mat4: return sizeof(float) * 4 * 4;
+			case ShaderDataType::Int: return sizeof(int);
 			case ShaderDataType::Int1: return sizeof(int);
 			case ShaderDataType::Int2: return sizeof(int) * 2;
 			case ShaderDataType::Int3: return sizeof(int) * 3;
@@ -31,6 +33,7 @@ namespace Chonps
 	{
 		switch (type)
 		{
+			case ShaderDataType::Float: return 1;
 			case ShaderDataType::Float1: return 1;
 			case ShaderDataType::Float2: return 2;
 			case ShaderDataType::Float3: return 3;
@@ -38,6 +41,7 @@ namespace Chonps
 			case ShaderDataType::Mat2: return 2 * 2;
 			case ShaderDataType::Mat3: return 3 * 3;
 			case ShaderDataType::Mat4: return 4 * 4;
+			case ShaderDataType::Int: return 1;
 			case ShaderDataType::Int1: return 1;
 			case ShaderDataType::Int2: return 2;
 			case ShaderDataType::Int3: return 3;
@@ -85,7 +89,7 @@ namespace Chonps
 		{
 			case API::None:
 			{
-				CHONPS_CORE_WARN("WANRING: VBO: createVBO(vertices) - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: VBO: createVertexVBO(vertices) - No graphics API selected beforehand!");
 				break;
 			}
 

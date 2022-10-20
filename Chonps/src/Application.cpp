@@ -4,9 +4,9 @@
 #include "Graphics/Graphics.h"
 #include "Imgui/ImguiWindow.h"
 
-// TEMPORARY: will remove later
-#include <filesystem>
-namespace fs = std::filesystem;
+#ifdef CHONPS_BUILD_LIBS
+	#include "Chonps/Chonps.h"
+#endif
 
 namespace Chonps
 {
@@ -29,7 +29,6 @@ namespace Chonps
 	void Application::Run()
 	{
 		float previousFrameTime = 0.0f;
-		int FPS = 0;
 
 		while (m_Running)
 		{

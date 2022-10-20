@@ -7,7 +7,7 @@
 
 namespace Chonps
 {
-	Texture* createTexture(const std::string& filepath)
+	Texture* createTexture(const std::string& filepath, TexF texFilter /*= TexF::Linear*/, TexW texWrap /*= TexW::Repeat*/)
 	{
 		switch (getGraphicsContext())
 		{
@@ -19,7 +19,7 @@ namespace Chonps
 
 			case API::OpenGL:
 			{
-				return new OpenGLTexture(filepath);
+				return new OpenGLTexture(filepath, texFilter, texWrap);
 				break;
 			}
 

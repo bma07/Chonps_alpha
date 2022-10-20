@@ -3,6 +3,7 @@
 
 #include "RendererAPI.h"
 #include "VAO.h"
+#include "Camera.h"
 
 namespace Chonps
 {
@@ -14,7 +15,7 @@ namespace Chonps
 		static void Draw(const size_t& count);
 		static void Draw(VAO* VAO);
 
-		static void BeginScene();
+		static void BeginScene(Camera camera, Shader* shader, const char* uniform = "camMatrix");
 		static void EndScene();
 
 		static void Clear();
@@ -29,7 +30,7 @@ namespace Chonps
 	void renderDraw(const size_t& count);
 	void renderDraw(VAO* VAO);
 
-	void renderBeginScene();
+	void renderBeginScene(Camera camera, Shader* shader, const char* uniform = "camMatrix");
 	void renderEndScene();
 
 	void renderClear();
