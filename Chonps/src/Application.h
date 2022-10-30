@@ -37,6 +37,8 @@ namespace Chonps
 		inline Window& GetWindow() { return *m_Window; }
 		inline float GetTimestep() { return m_Timestep; }
 		inline void UpdateWindowRender(bool update) { m_UpdateWindowRender = update; }
+		inline bool Running() { return m_Running; }
+		inline void SetRun(bool run) { m_Running = run; }
 
 	private:
 		std::unique_ptr<Window> m_Window;

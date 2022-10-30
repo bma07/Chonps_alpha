@@ -29,7 +29,7 @@ namespace Chonps
 		virtual void LogEvents(bool enable) override { m_LogEvents = enable; }
 
 		virtual void SetVSync(bool enabled) override;
-		virtual bool IsVSync() const override { return m_Data.VSync; }
+		virtual bool GetVSync() const override { return m_Data.VSync; }
 
 		virtual void* GetNativeWindow() const override { return m_Window; }
 		virtual void SetContextCurrent() override;

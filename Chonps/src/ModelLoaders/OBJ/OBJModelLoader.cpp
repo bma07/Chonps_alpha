@@ -17,6 +17,8 @@ namespace Chonps
 
 		Texture* map_Kd = nullptr;
 		Texture* map_Ks = nullptr;
+
+		bool HasMaterials = false;
 	};
 
 	std::vector<Mesh> loadOBJModel(const std::string& filepath)
@@ -211,12 +213,13 @@ namespace Chonps
 						size_t mtleol = materialSource.find_first_of("\r\n", mtldataTypePos);
 						std::string getTexturePath = materialSource.substr(mtldataTypePos + mtldataTypeLength, mtleol - mtldataTypePos - mtldataTypeLength);
 						
-						Texture* tex = createTexture(getTexturePath);
-						tex->SetTexType(TexT::Diffuse);
+						Texture* tex = createTexture(getTexturePath, TexT::Diffuse);
 						objMat.map_Kd = tex;
 
 						size_t nextLineTexPos = data.find_first_not_of("\r\n", materialeol);
 						mtldataTypePos = data.find(materialSource, nextLineTexPos);
+
+						objMat.HasMaterials = true;
 					}
 
 					mtldataType = "map_Ks ";
@@ -227,12 +230,21 @@ namespace Chonps
 						size_t mtleol = materialSource.find_first_of("\r\n", mtldataTypePos);
 						std::string getTexturePath = materialSource.substr(mtldataTypePos + mtldataTypeLength, mtleol - mtldataTypePos - mtldataTypeLength);
 
-						Texture* tex = createTexture(getTexturePath);
-						tex->SetTexType(TexT::Specular);
+						Texture* tex = createTexture(getTexturePath, TexT::Specular);
 						objMat.map_Ks = tex;
 
 						size_t nextLineTexPos = data.find_first_not_of("\r\n", materialeol);
 						mtldataTypePos = data.find(materialSource, nextLineTexPos);
+
+						objMat.HasMaterials = true;
+					}
+
+					if (!objMat.HasMaterials)
+					{
+						uint32_t whiteTextureData = 0xffffffff;
+						Texture* tex = Chonps::createTexture(1, 1, &whiteTextureData, sizeof(uint32_t));
+						objMat.map_Kd = tex;
+						objMat.HasMaterials = true;
 					}
 
 					materials[materialName] = objMat;

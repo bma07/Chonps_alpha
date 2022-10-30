@@ -17,6 +17,7 @@ namespace Chonps
 			return(contents);
 		}
 		CHONPS_CORE_ERROR("ERROR: FILE: Cannot open file: {0}", filename);
+		return std::string();
 	}
 
 	bool get_file_contents(const char* filename, std::string* source)

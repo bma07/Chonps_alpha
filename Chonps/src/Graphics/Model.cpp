@@ -19,11 +19,11 @@ namespace Chonps
 		GetModelData(filepath, modelType);
 	}
 
-	void Model::Draw(Shader* shader)
+	void Model::Draw(Shader* shader, mat4 Matrix /*= mat4(1.0f)*/)
 	{
 		for (auto Mesh : m_Meshes)
 		{
-			Mesh.Draw(shader, m_ModelMatrix * m_TranslationMatrix * m_RotationMatrix * m_ScaleMatrix);
+			Mesh.Draw(shader, Matrix * m_ModelMatrix * m_TranslationMatrix * m_RotationMatrix * m_ScaleMatrix);
 		}
 	}
 

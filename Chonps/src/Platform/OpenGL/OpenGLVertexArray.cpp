@@ -1,0 +1,74 @@
+#include "cepch.h"
+#include "OpenGLVertexArray.h"
+
+#include <glad/glad.h>
+
+namespace Chonps
+{
+	GLenum getShaderDataTypeConvertOpenGL(ShaderDataType type)
+	{
+		switch (type)
+		{
+			case ShaderDataType::None: return GL_FLOAT;
+			case ShaderDataType::Float: return GL_FLOAT;
+			case ShaderDataType::Float1: return GL_FLOAT;
+			case ShaderDataType::Float2: return GL_FLOAT;
+			case ShaderDataType::Float3: return GL_FLOAT;
+			case ShaderDataType::Float4: return GL_FLOAT;
+			case ShaderDataType::Mat3: return GL_FLOAT;
+			case ShaderDataType::Mat4: return GL_FLOAT;
+			case ShaderDataType::Int: return GL_INT;
+			case ShaderDataType::Int1: return GL_INT;
+			case ShaderDataType::Int2: return GL_INT;
+			case ShaderDataType::Int3: return GL_INT;
+			case ShaderDataType::Int4: return GL_INT;
+			case ShaderDataType::Bool: return GL_BOOL;
+		}
+
+		CHONPS_CORE_ASSERT(false, "Convert OpenGL - Unkown shader data type!");
+		return 0;
+	}
+
+	OpenGLVertexArray::OpenGLVertexArray()
+	{
+		glGenVertexArrays(1, &m_ID);
+	}
+
+	void OpenGLVertexArray::LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, uint32_t numComponents, ShaderDataType type, size_t stride, void* offset)
+	{
+		VBO->Bind();
+		glEnableVertexAttribArray(layout);
+		glVertexAttribPointer(layout, numComponents, getShaderDataTypeConvertOpenGL(type), GL_FALSE, (GLsizei)stride, offset);
+		VBO->Unbind();
+
+
+	}
+
+	void OpenGLVertexArray::LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, ShaderDataType numComponents, ShaderDataType type, size_t stride, void* offset)
+	{
+		VBO->Bind();
+		glEnableVertexAttribArray(layout);
+		glVertexAttribPointer(layout, getShaderDataTypeComponent(numComponents), getShaderDataTypeConvertOpenGL(type), GL_FALSE, (GLsizei)stride, offset);
+		VBO->Unbind();
+	}
+
+	void OpenGLVertexArray::LinkIndexBuffer(IndexBuffer* EBO)
+	{
+		m_Count = EBO->GetCount();
+	}
+
+	void OpenGLVertexArray::Bind() const
+	{
+		glBindVertexArray(m_ID);
+	}
+
+	void OpenGLVertexArray::Unbind() const
+	{
+		glBindVertexArray(0);
+	}
+
+	void OpenGLVertexArray::Delete()
+	{
+		glDeleteVertexArrays(1, &m_ID);
+	}
+}

@@ -1,9 +1,10 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#ifndef CHONPS_RENDERER_H
+#define CHONPS_RENDERER_H
 
 #include "RendererAPI.h"
-#include "VAO.h"
+#include "VertexArray.h"
 #include "Camera.h"
+#include "Lighting.h"
 
 namespace Chonps
 {
@@ -13,13 +14,17 @@ namespace Chonps
 		static void RenderInit();
 
 		static void Draw(const size_t& count);
-		static void Draw(VAO* VAO);
+		static void Draw(VertexArray* VertexArray);
 
 		static void BeginScene(Camera camera, Shader* shader, const char* uniform = "camMatrix");
 		static void EndScene();
 
 		static void Clear();
 		static void ClearColor(const float r, const float g, const float b, const float w = 0.0f);
+
+		static void FrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height);
+
+		static void GammaCorrection(bool correct);
 
 		static RendererAPI* GetRendererAPI();
 		static void SetRendererAPI();
@@ -28,13 +33,17 @@ namespace Chonps
 	void renderInit();
 
 	void renderDraw(const size_t& count);
-	void renderDraw(VAO* VAO);
+	void renderDraw(VertexArray* VertexArray);
 
 	void renderBeginScene(Camera camera, Shader* shader, const char* uniform = "camMatrix");
 	void renderEndScene();
 
 	void renderClear();
 	void renderClearColor(const float r, const float g, const float b, const float w = 0.0f);
+
+	void renderFrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height);
+
+	void renderGammaCorrection(bool correct);
 
 	void setRendererAPI();
 	RendererAPI* getRendererAPI();

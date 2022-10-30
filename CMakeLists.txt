@@ -50,20 +50,18 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/Chonps/Dependencies/imgui)
 
 # ------------------------------------------------------- /
 
-set(INCLUDE_HEADERS
-    Chonps/include/Chonps/Chonps.h    
-)
-
 set(GRAPHICS_SOURCES
     Chonps/src/Graphics/Camera.cpp
     Chonps/src/Graphics/Camera.h
-    Chonps/src/Graphics/EBO.cpp
-    Chonps/src/Graphics/EBO.h
-    Chonps/src/Graphics/FBO.cpp
-    Chonps/src/Graphics/FBO.h
+    Chonps/src/Graphics/Cubemap.cpp
+    Chonps/src/Graphics/Cubemap.h
     Chonps/src/Graphics/File.cpp
     Chonps/src/Graphics/File.h
+    Chonps/src/Graphics/FrameBuffer.cpp
+    Chonps/src/Graphics/FrameBuffer.h
     Chonps/src/Graphics/Graphics.h
+    Chonps/src/Graphics/IndexBuffer.cpp
+    Chonps/src/Graphics/IndexBuffer.h
     Chonps/src/Graphics/Lighting.cpp
     Chonps/src/Graphics/Lighting.h
     Chonps/src/Graphics/Mesh.cpp
@@ -80,10 +78,10 @@ set(GRAPHICS_SOURCES
     Chonps/src/Graphics/Shader.h
     Chonps/src/Graphics/Texture.cpp
     Chonps/src/Graphics/Texture.h
-    Chonps/src/Graphics/VAO.cpp
-    Chonps/src/Graphics/VAO.h
-    Chonps/src/Graphics/VBO.cpp
-    Chonps/src/Graphics/VBO.h
+    Chonps/src/Graphics/VertexArray.cpp
+    Chonps/src/Graphics/VertexArray.h
+    Chonps/src/Graphics/VertexBuffer.cpp
+    Chonps/src/Graphics/VertexBuffer.h
 )
 
 set(MODEL_LOADER_SOURCES
@@ -96,20 +94,22 @@ set(PLATFORM_SOURCES
     # OpenGL
     Chonps/src/Platform/OpenGL/OpenGLContext.cpp
     Chonps/src/Platform/OpenGL/OpenGLContext.h
-    Chonps/src/Platform/OpenGL/OpenGLEBO.cpp
-    Chonps/src/Platform/OpenGL/OpenGLEBO.h
-    Chonps/src/Platform/OpenGL/OpenGLFBO.cpp
-    Chonps/src/Platform/OpenGL/OpenGLFBO.h
+    Chonps/src/Platform/OpenGL/OpenGLCubemap.cpp
+    Chonps/src/Platform/OpenGL/OpenGLCubemap.h
+    Chonps/src/Platform/OpenGL/OpenGLIndexBuffer.cpp
+    Chonps/src/Platform/OpenGL/OpenGLIndexBuffer.h
+    Chonps/src/Platform/OpenGL/OpenGLFrameBuffer.cpp
+    Chonps/src/Platform/OpenGL/OpenGLFrameBuffer.h
     Chonps/src/Platform/OpenGL/OpenGLRendererAPI.cpp
     Chonps/src/Platform/OpenGL/OpenGLRendererAPI.h
     Chonps/src/Platform/OpenGL/OpenGLShader.cpp
     Chonps/src/Platform/OpenGL/OpenGLShader.h
     Chonps/src/Platform/OpenGL/OpenGLTexture.cpp
     Chonps/src/Platform/OpenGL/OpenGLTexture.h
-    Chonps/src/Platform/OpenGL/OpenGLVAO.cpp
-    Chonps/src/Platform/OpenGL/OpenGLVAO.h
-    Chonps/src/Platform/OpenGL/OpenGLVBO.cpp
-    Chonps/src/Platform/OpenGL/OpenGLVBO.h
+    Chonps/src/Platform/OpenGL/OpenGLVertexArray.cpp
+    Chonps/src/Platform/OpenGL/OpenGLVertexArray.h
+    Chonps/src/Platform/OpenGL/OpenGLVertexBuffer.cpp
+    Chonps/src/Platform/OpenGL/OpenGLVertexBuffer.h
 
     # GLFW
     Chonps/src/Platform/WindowAPI/glfwAPI/glfwInput.cpp
@@ -119,7 +119,6 @@ set(PLATFORM_SOURCES
 )
 
 set(SOURCES
-    ${INCLUDE_HEADERS}
     # stb_image
     Chonps/Dependencies/stb_image/stb_image.cpp
     Chonps/Dependencies/stb_image/stb_image.h
@@ -143,7 +142,7 @@ set(SOURCES
     Chonps/src/Application.h
     Chonps/src/cepch.cpp
     Chonps/src/cepch.h
-    Chonps/src/Chonpslib.h
+    Chonps/src/Chonps.h
     Chonps/src/Core.h
     Chonps/src/DataTypes.h
     Chonps/src/Input.cpp
@@ -155,6 +154,7 @@ set(SOURCES
     Chonps/src/Log.cpp
     Chonps/src/Log.h
     Chonps/src/MouseButtonCodes.h
+    Chonps/src/Timer.h
     Chonps/src/Window.cpp
     Chonps/src/Window.h
     ${PLATFORM_SOURCES}

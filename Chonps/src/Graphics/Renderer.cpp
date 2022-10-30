@@ -1,6 +1,8 @@
 #include "cepch.h"
 #include "Renderer.h"
 
+#include <glm/gtc/type_ptr.hpp>
+#include <cmath>
 
 namespace Chonps
 {
@@ -20,10 +22,10 @@ namespace Chonps
 		s_RendererAPI->Draw(count);
 	}
 
-	// Draw vertices through the VAO
-	void Renderer::Draw(VAO* VAO)
+	// Draw vertices through the VertexArray
+	void Renderer::Draw(VertexArray* VertexArray)
 	{
-		s_RendererAPI->Draw(VAO->GetIndexCount());
+		s_RendererAPI->Draw(VertexArray->GetIndexCount());
 	}
 
 	// Call before renderering or drawing
@@ -53,6 +55,16 @@ namespace Chonps
 		s_RendererAPI->SetClearColor(r, g, b, w);
 	}
 
+	void Renderer::FrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height)
+	{
+		s_RendererAPI->FrameBufferBlit(readFBO, drawFBO, width, height);
+	}
+
+	void Renderer::GammaCorrection(bool correct)
+	{
+		s_RendererAPI->GammaCorrection(correct);
+	}
+
 	RendererAPI* Renderer::GetRendererAPI()
 	{
 		return s_RendererAPI;
@@ -80,10 +92,10 @@ namespace Chonps
 		s_RendererAPI->Draw(count);
 	}
 
-	// Draw vertices through the VAO
-	void renderDraw(VAO* VAO)
+	// Draw vertices through the VertexArray
+	void renderDraw(VertexArray* VertexArray)
 	{
-		s_RendererAPI->Draw(VAO->GetIndexCount());
+		s_RendererAPI->Draw(VertexArray->GetIndexCount());
 	}
 
 	// Call before renderering or drawing
@@ -110,7 +122,19 @@ namespace Chonps
 	// Clears the window and set the color of the viewport/background
 	void renderClearColor(const float r, const float g, const float b, const float w /*= 0.0f*/)
 	{
-		s_RendererAPI->SetClearColor(r, g, b, w);
+		s_RendererAPI->GetGammaCorrection() // Check Gamma
+		? s_RendererAPI->SetClearColor(pow(r, s_RendererAPI->GetGamma()), pow(g, s_RendererAPI->GetGamma()), pow(b, s_RendererAPI->GetGamma()), w) // if Gamma Corrected
+		: s_RendererAPI->SetClearColor(r, g, b, w); // if Gamma not corrected
+	}
+
+	void renderFrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height)
+	{
+		s_RendererAPI->FrameBufferBlit(readFBO, drawFBO, width, height);
+	}
+
+	void renderGammaCorrection(bool correct)
+	{
+		s_RendererAPI->GammaCorrection(correct);
 	}
 
 	void setRendererAPI()

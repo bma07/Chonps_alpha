@@ -1,5 +1,5 @@
 #include <iostream>
-#include <Chonpslib.h>
+#include <Chonps.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,65 +20,106 @@ public:
 	{
 
 		float lightVertices[] =
-		{ //     COORDINATES     //
-			-0.1f, -0.1f,  0.1f,
-			-0.1f, -0.1f, -0.1f,
-			 0.1f, -0.1f, -0.1f,
-			 0.1f, -0.1f,  0.1f,
-			-0.1f,  0.1f,  0.1f,
-			-0.1f,  0.1f, -0.1f,
-			 0.1f,  0.1f, -0.1f,
-			 0.1f,  0.1f,  0.1f
+		{ //     COORDINATES   //  TEX UV
+			-0.1f, -0.1f, 0.0f,	 0.0f, 0.0f,
+			-0.1f,  0.1f, 0.0f,  0.0f, 1.0f,
+			 0.1f,  0.1f, 0.0f,  1.0f, 1.0f,
+			 0.1f, -0.1f, 0.0f,	 1.0f, 0.0f,
 		};
 
 		uint32_t lightIndices[] =
 		{
 			0, 1, 2,
 			0, 2, 3,
-			0, 4, 7,
-			0, 7, 3,
-			3, 7, 6,
-			3, 6, 2,
-			2, 6, 5,
-			2, 5, 1,
-			1, 5, 4,
-			1, 4, 0,
-			4, 5, 6,
-			4, 6, 7
+		};
+
+		float screen[] =
+		{
+			// Coords    // texCoords
+			 1.0f, -1.0f,  1.0f, 0.0f,
+			-1.0f, -1.0f,  0.0f, 0.0f,
+			-1.0f,  1.0f,  0.0f, 1.0f,
+
+			 1.0f,  1.0f,  1.0f, 1.0f,
+			 1.0f, -1.0f,  1.0f, 0.0f,
+			-1.0f,  1.0f,  0.0f, 1.0f
 		};
 
 		const std::string resPathDir = "D:/Dev/Chonps/Sandbox/res/"; // TEMPORARY: will remove later
 
-		m_Model = Chonps::Model("res/models/sphere/sphere.obj");
+		m_Model = Chonps::Model("res/models/checkerCube/checkerCube.obj");
 		m_Model.SpaceOrientationMode(CHONPS_LOCAL);
 		
 
 		m_Shader = std::unique_ptr<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/shader.glsl"));
 		m_LightShader = std::unique_ptr<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/lightShader.glsl"));
 		m_FrameBufferShader = std::unique_ptr<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/FBOshader.glsl"));
+		m_CubemapShader = std::unique_ptr<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/cubemapShader.glsl"));
+
+		m_FrameBufferVAO = std::unique_ptr<Chonps::VAO>(Chonps::createVertexArray());
 		
-		Chonps::uploadUniform1i(m_FrameBufferShader->GetID(), "screenTexture", 0);
+		m_FrameBufferVAO->Bind();
+		Chonps::VBO* FrambeBufferVBO = Chonps::createVertexBuffer(screen, sizeof(screen));
 
-		m_FBO = std::unique_ptr<Chonps::FBO>(Chonps::createFBO(m_Window->GetWidth(), m_Window->GetHeight()));
+		m_FrameBufferVAO->LinkVertexBuffer(FrambeBufferVBO, 0, 2, Chonps::SDT::Float, 4 * sizeof(float), (void*)0);
+		m_FrameBufferVAO->LinkVertexBuffer(FrambeBufferVBO, 1, 2, Chonps::SDT::Float, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+		m_FrameBufferVAO->Unbind();
+		FrambeBufferVBO->Unbind();
 
-		m_Camera.SetUp(glm::vec3(0.0f, 0.0f, 5.0f), 45.0f, 0.01f, 1000.0f);
+
+		Chonps::FrameBufferSpecification fbSpec;
+		fbSpec.Width = 800;
+		fbSpec.Height = 600;
+		fbSpec.Attachments = { Chonps::FBTexFormat::RGBA32F, Chonps::FBTexFormat::DEPTH24STENCIL8 };
+
+		m_FBO = std::unique_ptr<Chonps::FBO>(Chonps::createFrameBuffer(fbSpec));
+		
+		Chonps::FrameBufferSpecification MsaafbSpec;
+		MsaafbSpec.Width = 800;
+		MsaafbSpec.Height = 600;
+		MsaafbSpec.Attachments = { Chonps::FBTexFormat::RGBA32F, Chonps::FBTexFormat::DEPTH24STENCIL8 };
+		MsaafbSpec.Samples = 8;
+
+		m_MsaaFBO = std::unique_ptr<Chonps::FBO>(Chonps::createFrameBuffer(MsaafbSpec));
+		
+		Chonps::FrameBufferSpecification ImguifbSpec;
+		ImguifbSpec.Width = 800;
+		ImguifbSpec.Height = 600;
+		ImguifbSpec.Attachments = { Chonps::FBTexFormat::RGBA32F, Chonps::FBTexFormat::DEPTH24STENCIL8 };
+		
+		m_ImguiFBO = std::unique_ptr<Chonps::FBO>(Chonps::createFrameBuffer(ImguifbSpec));
+
+		std::string cubeMapFaces[6] =
+		{
+			resPathDir + "cubemaps/forest2/px.png",
+			resPathDir + "cubemaps/forest2/nx.png",
+			resPathDir + "cubemaps/forest2/py.png",
+			resPathDir + "cubemaps/forest2/ny.png",
+			resPathDir + "cubemaps/forest2/pz.png",
+			resPathDir + "cubemaps/forest2/nz.png",
+		};
+
+		m_Cubemap = std::unique_ptr<Chonps::Cubemap>(Chonps::createCubemap(cubeMapFaces));
+
+
+		m_Camera.SetUp(glm::vec3(0.0f, 0.0f, 5.0f), 90.0f, 0.01f, 500.0f);
 
 		glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		glm::vec3 lightPos = glm::vec3(0.5f, 1.5f, 1.5f);
 		glm::mat4 lightModel = glm::mat4(1.0f);
-		lightModel = glm::translate(lightModel, lightPos);
+		lightModel = glm::translate(lightModel, m_lightPos);
 
-		m_LightVAO = std::unique_ptr<Chonps::VAO>(Chonps::createVAO());
+		m_LightVAO = std::unique_ptr<Chonps::VAO>(Chonps::createVertexArray());
 
 		m_LightVAO->Bind();
-		Chonps::VBO* lightVBO = Chonps::createVBO(lightVertices, sizeof(lightVertices));
-		Chonps::EBO* lightEBO = Chonps::createEBO(lightIndices, sizeof(lightIndices));
+		Chonps::VBO* lightVBO = Chonps::createVertexBuffer(lightVertices, sizeof(lightVertices));
+		Chonps::IBO* lightIBO = Chonps::createIndexBuffer(lightIndices, sizeof(lightIndices));
 		
-		m_LightVAO->LinkEBO(lightEBO);
-		m_LightVAO->LinkVBO(lightVBO, 0, 3, Chonps::SDT::Float3, 3 * sizeof(float), (void*)0);
+		m_LightVAO->LinkIndexBuffer(lightIBO);
+		m_LightVAO->LinkVertexBuffer(lightVBO, 0, 3, Chonps::SDT::Float, 5 * sizeof(float), (void*)0);
+		m_LightVAO->LinkVertexBuffer(lightVBO, 1, 2, Chonps::SDT::Float, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 		m_LightVAO->Unbind();
 		lightVBO->Unbind();
-		lightEBO->Unbind();
+		lightIBO->Unbind();
 
 		m_LightShader->Bind();
 		Chonps::uploadUniform4mfv(m_LightShader->GetID(), "model", 1, false, glm::value_ptr(lightModel));
@@ -86,9 +127,19 @@ public:
 
 		m_Shader->Bind();
 		Chonps::uploadUniform4f(m_Shader->GetID(), "lightColor", lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-		Chonps::uploadUniform3f(m_Shader->GetID(), "lightPos", lightPos.x, lightPos.y, lightPos.z);
+		Chonps::uploadUniform3f(m_Shader->GetID(), "lightPos", m_lightPos.x, m_lightPos.y, m_lightPos.z);
+		Chonps::uploadUniform1i(m_Shader->GetID(), "skybox", 0);
 
-		m_Texture1 = std::unique_ptr<Chonps::Texture>(Chonps::createTexture(resPathDir + "textures/lava5.png"));
+		m_FrameBufferShader->Bind();
+		Chonps::uploadUniform1i(m_FrameBufferShader->GetID(), "screenTexture", 0);
+
+		m_CubemapShader->Bind();
+		Chonps::uploadUniform1i(m_CubemapShader->GetID(), "skybox", 0);
+
+		m_SunTexture = std::unique_ptr<Chonps::Texture>(Chonps::createTexture(resPathDir + "textures/sun.png", Chonps::TexT::Diffuse, Chonps::TexF::Linear));
+		m_SunTexture->TexUnit(&(*m_LightShader), "texID", 0);
+
+
 
 		Chonps::renderInit();
 	}
@@ -100,135 +151,181 @@ public:
 
 	virtual void OnAttach() override
 	{
-		Chonps::Application::GetApp().UpdateWindowRender(false);
+
 	}
 
 	virtual void OnDetach() override
 	{
-		Chonps::Application::GetApp().UpdateWindowRender(true);
+		
 	}
 
-	virtual void OnUpdate() override
+	void CameraInputs(float ts)
 	{
-		float ts = Chonps::Application::GetApp().GetTimestep();
+		if (Chonps::mouseButtonPressed(m_Window, CHONPS_MOUSE_BUTTON_3))
+		{
+			// Handles key inputs
+			if (Chonps::keyPressed(m_Window, CHONPS_KEY_W))
+			{
+				m_CameraPosition += (m_CameraSpeed * m_CameraOrientation) * ts;
+			}
+			if (Chonps::keyPressed(m_Window, CHONPS_KEY_A))
+			{
+				m_CameraPosition += (m_CameraSpeed * -glm::normalize(glm::cross(m_CameraOrientation, m_Camera.GetUpVector()))) * ts;
+			}
+			if (Chonps::keyPressed(m_Window, CHONPS_KEY_S))
+			{
+				m_CameraPosition += (m_CameraSpeed * -m_CameraOrientation) * ts;
+			}
+			if (Chonps::keyPressed(m_Window, CHONPS_KEY_D))
+			{
+				m_CameraPosition += (m_CameraSpeed * glm::normalize(glm::cross(m_CameraOrientation, m_Camera.GetUpVector()))) * ts;
+			}
+			if (Chonps::keyPressed(m_Window, CHONPS_KEY_SPACE))
+			{
+				m_CameraPosition += (m_CameraSpeed * m_Camera.GetUpVector()) * ts;
+			}
+			if (Chonps::keyPressed(m_Window, CHONPS_KEY_LEFT_CONTROL))
+			{
+				m_CameraPosition += (m_CameraSpeed * -m_Camera.GetUpVector()) * ts;
+			}
+			if (Chonps::keyPressed(m_Window, CHONPS_KEY_LEFT_SHIFT))
+			{
+				m_CameraSpeed = 8.0f;
+			}
+			else if (Chonps::keyReleased(m_Window, CHONPS_KEY_LEFT_CONTROL))
+			{
+				m_CameraSpeed = 4.0f;
+			}
 
-		// Handles key inputs
-		if (Chonps::keyPressed(m_Window, CHONPS_KEY_W))
-		{
-			m_CameraPosition += (m_CameraSpeed * m_CameraOrientation) * ts;
-		}
-		if (Chonps::keyPressed(m_Window, CHONPS_KEY_A))
-		{
-			m_CameraPosition += (m_CameraSpeed * -glm::normalize(glm::cross(m_CameraOrientation, m_Camera.GetUpVector()))) * ts;
-		}
-		if (Chonps::keyPressed(m_Window, CHONPS_KEY_S))
-		{
-			m_CameraPosition += (m_CameraSpeed * -m_CameraOrientation) * ts;
-		}
-		if (Chonps::keyPressed(m_Window, CHONPS_KEY_D))
-		{
-			m_CameraPosition += (m_CameraSpeed * glm::normalize(glm::cross(m_CameraOrientation, m_Camera.GetUpVector()))) * ts;
-		}
-		if (Chonps::keyPressed(m_Window, CHONPS_KEY_SPACE))
-		{
-			m_CameraPosition += (m_CameraSpeed * m_Camera.GetUpVector()) * ts;
-		}
-		if (Chonps::keyPressed(m_Window, CHONPS_KEY_LEFT_CONTROL))
-		{
-			m_CameraPosition += (m_CameraSpeed * -m_Camera.GetUpVector()) * ts;
-		}
-		if (Chonps::keyPressed(m_Window, CHONPS_KEY_LEFT_SHIFT))
-		{
-			m_CameraSpeed = 8.0f;
-		}
-		else if (Chonps::keyReleased(m_Window, CHONPS_KEY_LEFT_CONTROL))
-		{
-			m_CameraSpeed = 4.0f;
-		}
+			m_Camera.SetPosition(m_CameraPosition);
 
-		m_Camera.SetPosition(m_CameraPosition);
+			float xpos, ypos;
+			Chonps::getMousePos(m_Window, &xpos, &ypos);
 
-		if (Chonps::mouseButtonPressed(m_Window, CHONPS_MOUSE_BUTTON_1))
-		{
-			// Hides mouse cursor
-			Chonps::setMouseModeHide(m_Window, true);
-
-			// Prevents camera from jumping on the first click
 			if (m_CameraFirstClick)
 			{
-				Chonps::setMousePos(m_Window, ((float)m_Window->GetWidth() / 2), (float)(m_Window->GetHeight() / 2));
+				m_LastX = xpos;
+				m_LastY = ypos;
 				m_CameraFirstClick = false;
 			}
 
-			// Stores the coordinates of the cursor
-			float mouseX;
-			float mouseY;
-			// Fetches the coordinates of the cursor
-			Chonps::getMousePos(m_Window, &mouseX, &mouseY);
+			float xoffset = xpos - m_LastX;
+			float yoffset = m_LastY - ypos; // reversed since y-coordinates range from bottom to top
+			m_LastX = xpos;
+			m_LastY = ypos;
 
-			// Normalizes and shifts the coordinates of the cursor such that they begin in the middle of the screen
-			// and then "transforms" them into degrees 
-			float rotX = m_CameraSensitivity * (float)(mouseY - (m_Window->GetHeight() / 2)) / m_Window->GetHeight();
-			float rotY = m_CameraSensitivity * (float)(mouseX - (m_Window->GetWidth() / 2)) / m_Window->GetWidth();
+			xoffset *= m_CameraSensitivity;
+			yoffset *= m_CameraSensitivity;
 
-			// Calculates upcoming vertical change in the m_CameraOrientation
-			glm::vec3 newOrientation = glm::rotate(m_CameraOrientation, glm::radians(-rotX), glm::normalize(glm::cross(m_CameraOrientation, m_Camera.GetUpVector())));
-
-			// Decides whether or not the next vertical m_CameraOrientation is legal or not
+			glm::vec3 newOrientation = glm::rotate(m_CameraOrientation, glm::radians(yoffset), glm::normalize(glm::cross(m_CameraOrientation, m_Camera.GetUpVector())));
 			if (abs(glm::angle(newOrientation, m_Camera.GetUpVector()) - glm::radians(90.0f)) <= glm::radians(85.0f))
 			{
 				m_CameraOrientation = newOrientation;
 			}
 
 			// Rotates the m_CameraOrientation left and right
-			m_CameraOrientation = glm::rotate(m_CameraOrientation, glm::radians(-rotY), m_Camera.GetUpVector());
+			m_CameraOrientation = glm::rotate(m_CameraOrientation, glm::radians(-xoffset), m_Camera.GetUpVector());
 			m_Camera.SetOrientation(m_CameraOrientation);
 
-			// Sets mouse cursor to the middle of the screen so that it doesn't end up roaming around
-			Chonps::setMousePos(m_Window, ((float)m_Window->GetWidth() / 2), (float)(m_Window->GetHeight() / 2));
+			if (xpos > m_Window->GetWidth() - 2)
+			{
+				Chonps::setMousePos(m_Window, 2.0f, ypos);
+				m_LastX = 2.0f;
+			}
+			else if (xpos < 2.0f)
+			{
+				Chonps::setMousePos(m_Window, m_Window->GetWidth() - 2.0f, ypos);
+				m_LastX = m_Window->GetWidth() - 2.0f;
+			}
+			if (ypos > m_Window->GetHeight() - 2)
+			{
+				Chonps::setMousePos(m_Window, xpos, 2.0f);
+				m_LastY = 2.0f;
+			}
+			else if (ypos < 2.0f)
+			{
+				Chonps::setMousePos(m_Window, xpos, m_Window->GetHeight() - 2.0f);
+				m_LastY = m_Window->GetHeight() - 2.0f;
+			}
 		}
-		else if (Chonps::mouseButtonReleased(m_Window, CHONPS_MOUSE_BUTTON_1))
+		else if (Chonps::mouseButtonReleased(m_Window, CHONPS_MOUSE_BUTTON_3))
 		{
-			// Unhides cursor since camera is not looking around anymore
-			Chonps::setMouseModeHide(m_Window, false);
-			// Makes sure the next time the camera looks around it doesn't jump
 			m_CameraFirstClick = true;
 		}
+	}
 
-		m_FBO->Bind();
-		
-		Chonps::renderClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	virtual void OnUpdate() override
+	{
+		float ts = Chonps::Application::GetApp().GetTimestep();
+
+		if (m_LastViewportSize != m_ViewportSize)
+		{
+			m_FBO->Resize(m_ViewportSize.x, m_ViewportSize.y);
+			m_MsaaFBO->Resize(m_ViewportSize.x, m_ViewportSize.y);
+			m_ImguiFBO->Resize(m_ViewportSize.x, m_ViewportSize.y);
+			m_Camera.SetDimensions(m_ViewportSize.x, m_ViewportSize.y);
+		}
+		m_LastViewportSize = m_ViewportSize;
+
+		if (m_ViewportFocused)
+		{
+			CameraInputs(ts);
+		}
+
+		m_MsaaFBO->Begin();
+
+		Chonps::renderClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 		Chonps::renderClear();
 
-		m_Camera.UpdateMatrix(m_Window->GetWidth(), m_Window->GetHeight());
+		m_Camera.UpdateMatrix();
+
+		m_Cubemap->Use(&(*m_CubemapShader), m_Camera);
 
 		Chonps::renderBeginScene(m_Camera, &(*m_Shader));
+
+		
 		m_Model.Draw(&(*m_Shader));
 
 		m_Model.SetPosition(m_ModelPos);
 		m_Model.SetOrientation(m_ModelRot);
 		m_Model.SetScale(m_ModelScale);
 
+		Chonps::mat4 rot = Chonps::mat4(1.0f);
+		rot = glm::inverse(glm::lookAt(m_lightPos, m_CameraPosition, glm::vec3(0.0f, 1.0f, 0.0f)));
+
+
 		Chonps::renderBeginScene(m_Camera, &(*m_LightShader));
+		Chonps::uploadUniform4mfv(m_LightShader->GetID(), "model", 1, false, glm::value_ptr(rot));
 		m_LightVAO->Bind();
+		m_SunTexture->Bind();
 		Chonps::renderDraw(&(*m_LightVAO));
 
-		m_FBO->Unbind();
-		m_FrameBufferShader->Bind();
-		m_FBO->Submit();
+		
+		Chonps::renderFrameBufferBlit(m_MsaaFBO->GetID(), m_FBO->GetID(), m_MsaaFBO->GetWidth(), m_MsaaFBO->GetHeight());
+		m_MsaaFBO->End();
 
-		m_Window->OnUpdate();
+		m_FBO->Begin();
+		m_FrameBufferShader->Bind();
+		m_FrameBufferVAO->Bind();
+		m_FBO->Draw();
+		Chonps::renderFrameBufferBlit(m_FBO->GetID(), m_ImguiFBO->GetID(), m_FBO->GetWidth(), m_FBO->GetHeight());
+		m_FBO->End();
 	}
 
 	virtual void OnEvent(Chonps::Event& e) override
 	{
 		if (e.GetEventType() == Chonps::EventType::WindowResize)
-			m_FBO->UpdateFrameBuffer(m_Window->GetWidth(), m_Window->GetHeight());
+		{
+			m_FBO->Resize(m_ViewportSize.x, m_ViewportSize.y);
+			m_MsaaFBO->Resize(m_ViewportSize.x, m_ViewportSize.y);
+			m_ImguiFBO->Resize(m_ViewportSize.x, m_ViewportSize.y);
+			m_Camera.SetDimensions(m_ViewportSize.x, m_ViewportSize.y);
+		}
 	}
 
 	virtual void OnImGuiRender() override
 	{
-		float ts = Chonps::Application::GetApp().GetTimestep();
+		float ts = Chonps::Application::GetApp().GetTimestep() * 1000;
 
 		float currentFrame = Chonps::getTimeSeconds();
 		m_FrameCount++;
@@ -239,15 +336,101 @@ public:
 			m_FrameCount = 0;
 		}
 
+		static bool dockSpaceOpen = true;
+		static bool opt_fullscreen = true;
+		static bool opt_padding = false;
+		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+		// because it would be confusing to have two docking targets within each others.
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus; 
+		
+		// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
+		// and handle the pass-thru hole, so we ask Begin() to not render a background.
+		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+			window_flags |= ImGuiWindowFlags_NoBackground;
+
+		// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+		// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
+		// all active windows docked into it will lose their parent and become undocked.
+		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
+		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+		if (!opt_padding)
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("ChonpsEditor", &dockSpaceOpen, window_flags);
+		if (!opt_padding)
+			ImGui::PopStyleVar();
+
+		if (opt_fullscreen)
+			ImGui::PopStyleVar(2);
+
+		// Submit the DockSpace
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			ImGuiID dockspace_id = ImGui::GetID("ChonpsEditor");
+			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+		}
+
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				// Disabling fullscreen would allow the window to be moved to the front of other windows,
+				// which we can't undo at the moment without finer window depth/z control.
+				ImGui::MenuItem("Padding", NULL, &opt_padding);
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_NoSplit; }
+				if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_NoResize; }
+				if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode; }
+				if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar; }
+				if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0, opt_fullscreen)) { dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode; }
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Exit", 0))
+					Chonps::Application::GetApp().SetRun(false);
+					
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMenuBar();
+		}
+
 		ImGui::Begin("console");
 		ImGui::Text(("FPS: " + std::to_string(m_FPS) + " | Miliseconds: " + std::to_string(ts)).c_str());
+		ImGui::Checkbox("Play", &m_ViewportPlay);
 		float* pos[3] = { &m_ModelPos.x, &m_ModelPos.y, &m_ModelPos.z };
 		ImGui::SliderFloat3("Position", *pos, -10.0f, 10.0f);
 		float* rotate[3] = { &m_ModelRot.x, &m_ModelRot.y, &m_ModelRot.z };
 		ImGui::SliderFloat3("Rotation", *rotate, -360.0f, 360.0f);
 		float* scale[3] = { &m_ModelScale.x, &m_ModelScale.y, &m_ModelScale.z };
 		ImGui::SliderFloat3("Scale", *scale, -10.0f, 10.0f);
-		ImGui::Image((void*)m_FBO->GetTexID(), ImVec2(m_Window->GetWidth(), m_Window->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::End();
+
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+		ImGui::Begin("Viewport");
+		ImGui::IsWindowFocused() || ImGui::IsWindowHovered() ? m_ViewportFocused = true : m_ViewportFocused = false;
+		if (Chonps::mouseButtonPressed(m_Window, CHONPS_MOUSE_BUTTON_3) && m_ViewportFocused) ImGui::SetWindowFocus();
+		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+		m_ViewportSize = Chonps::vec2(viewportSize.x, viewportSize.y);
+		
+		ImVec2 viewportMousePos = ImGui::GetMousePos();
+		m_ViewportMousePos = Chonps::vec2(viewportMousePos.x, viewportMousePos.y);
+		ImGui::Image((ImTextureID)(m_ImguiFBO->GetTexID()), viewportSize, ImVec2(0, 1), ImVec2(1, 0));
+
+		ImGui::End();
+		ImGui::PopStyleVar();
+
 		ImGui::End();
 	}
 
@@ -264,27 +447,43 @@ private:
 	std::unique_ptr<Chonps::Shader> m_Shader;
 	std::unique_ptr<Chonps::Shader> m_LightShader;
 	std::unique_ptr<Chonps::Shader> m_FrameBufferShader;
+	std::unique_ptr<Chonps::Shader> m_CubemapShader;
+
+	std::unique_ptr<Chonps::Cubemap> m_Cubemap;
 
 	std::unique_ptr<Chonps::FBO> m_FBO;
+	std::unique_ptr<Chonps::FBO> m_MsaaFBO;
+	std::unique_ptr<Chonps::FBO> m_ImguiFBO;
+
+
+	Chonps::vec2 m_ViewportSize = Chonps::vec2(1.0f);
+	Chonps::vec2 m_LastViewportSize = Chonps::vec2(1.0f);
+	Chonps::vec2 m_ViewportMousePos = Chonps::vec2(0.0f);
+	bool m_ViewportFocused = false;
+	bool m_ViewportPlay = false;
 
 	std::unique_ptr<Chonps::VAO> m_VAO;
 	std::unique_ptr<Chonps::VAO> m_LightVAO;
+	std::unique_ptr<Chonps::VAO> m_FrameBufferVAO;
 
 	Chonps::Window* m_Window = &Chonps::Application::GetApp().GetWindow();
 
-	std::unique_ptr<Chonps::Texture> m_Texture1;
+	std::unique_ptr<Chonps::Texture> m_SunTexture;
 
 	glm::vec3 m_CameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);
 	glm::vec3 m_CameraOrientation = glm::vec3(0.0f, 0.0f, -1.0f);
 	
 	float m_CameraSpeed = 4.0f;
 	bool m_CameraFirstClick = true;
-	float m_CameraSensitivity = 100.0f;
+	float m_CameraSensitivity = 0.1f;
+	float m_LastX = 0.0f, m_LastY = 0.0f;
 
 	Chonps::Model m_Model;
 	Chonps::vec3 m_ModelPos = Chonps::vec3(0.0f, 0.0f, 0.0f);
 	Chonps::vec3 m_ModelRot = Chonps::vec3(0.0f, 0.0f, 0.0f);
 	Chonps::vec3 m_ModelScale = Chonps::vec3(1.0f, 1.0f, 1.0f);
+
+	Chonps::vec3 m_lightPos = Chonps::vec3(0.5f, 1.5f, 1.5f);
 
 	float m_PreviousFrame = 0.0f;
 	int m_FrameCount = 0;
@@ -316,19 +515,19 @@ public:
 
 		m_Shader = std::unique_ptr<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/shader.glsl"));
 
-		m_VAO = std::unique_ptr<Chonps::VAO>(Chonps::createVAO());
+		m_VAO = std::unique_ptr<Chonps::VAO>(Chonps::createVertexArray());
 
 		m_VAO->Bind();
-		Chonps::VBO* vbo = Chonps::createVBO(vertices, sizeof(vertices));
-		Chonps::EBO* ebo = Chonps::createEBO(indices, sizeof(indices));
+		Chonps::VBO* vbo = Chonps::createVertexBuffer(vertices, sizeof(vertices));
+		Chonps::IBO* ibo = Chonps::createIndexBuffer(indices, sizeof(indices));
 
-		m_VAO->LinkEBO(ebo);
-		m_VAO->LinkVBO(vbo, 0, Chonps::SDT::Float3, Chonps::SDT::Float3, 8 * sizeof(float), (void*)0);
-		m_VAO->LinkVBO(vbo, 1, Chonps::SDT::Float3, Chonps::SDT::Float3, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-		m_VAO->LinkVBO(vbo, 2, Chonps::SDT::Float2, Chonps::SDT::Float2, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		m_VAO->LinkIndexBuffer(ibo);
+		m_VAO->LinkVertexBuffer(vbo, 0, Chonps::SDT::Float3, Chonps::SDT::Float3, 8 * sizeof(float), (void*)0);
+		m_VAO->LinkVertexBuffer(vbo, 1, Chonps::SDT::Float3, Chonps::SDT::Float3, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(vbo, 2, Chonps::SDT::Float2, Chonps::SDT::Float2, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 		m_VAO->Unbind();
 		vbo->Unbind();
-		ebo->Unbind();
+		ibo->Unbind();
 
 		m_Texture1 = std::unique_ptr<Chonps::Texture>(Chonps::createTexture(resPathDir + "textures/Checkerboard.png"));
 		m_Texture2 = std::unique_ptr<Chonps::Texture>(Chonps::createTexture(resPathDir + "textures/cppLogo.png"));
@@ -518,8 +717,9 @@ int main()
 	Chonps::setWindowAPI(Chonps::WindowAPI::Glfw);
 	Chonps::setRenderAPI(Chonps::API::OpenGL);
 
+	Chonps::renderGammaCorrection(true);
 
-	Chonps::Application app("Chonps", 800, 600);
+	Chonps::Application app("Chonps", 1280, 800);
 	
 	Layer1 l1("l1");
 	//OrthoLayer ortho("ortho");

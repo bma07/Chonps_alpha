@@ -1,5 +1,5 @@
-#ifndef MODEL_H
-#define MODEL_H
+#ifndef CHONPS_MODEL_H
+#define CHONPS_MODEL_H
 
 #include "Mesh.h"
 
@@ -32,7 +32,7 @@ namespace Chonps
 		Model() {}
 		Model(const std::string& filepath, mt3d modelType = mt3d::NA);
 
-		void Draw(Shader* shader);
+		void Draw(Shader* shader, mat4 Matrix = mat4(1.0f));
 		void SpaceOrientationMode(MTO mode) { m_SpaceOrientationMode = mode; }
 
 		void Translate(float x, float y, float z);

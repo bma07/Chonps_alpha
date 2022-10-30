@@ -1,5 +1,5 @@
-#ifndef RENDERER_API_H
-#define RENDERER_API_H
+#ifndef CHONPS_RENDERER_API_H
+#define CHONPS_RENDERER_API_H
 
 namespace Chonps
 {
@@ -20,12 +20,17 @@ namespace Chonps
 	class RendererAPI
 	{
 	public:
-
 		virtual void Init() = 0;
 		virtual void SetClearColor(const float r, const float g, const float b, const float w) = 0;
 		virtual void Clear() = 0;
+		
+		void GammaCorrection(bool correct) { m_GammaCorrection = correct; }
+		bool GetGammaCorrection() { return m_GammaCorrection; }
+		void SetGamma(float gamma) { m_Gamma = gamma; }
+		float GetGamma() { return m_Gamma; }
 
 		virtual void Draw(const size_t& count) = 0;
+		virtual void FrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height) = 0;
 
 		virtual void UploadUniform1f(uint32_t shader, const char* uniform, float x) = 0;
 		virtual void UploadUniform2f(uint32_t shader, const char* uniform, float x, float y) = 0;
@@ -68,6 +73,10 @@ namespace Chonps
 		virtual void UploadUniform4x2mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v) = 0;
 		virtual void UploadUniform3x4mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v) = 0;
 		virtual void UploadUniform4x3mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v) = 0;
+
+	protected:
+		static bool m_GammaCorrection;
+		static float m_Gamma;
 	};
 
 	RendererAPI* createRendererAPI();

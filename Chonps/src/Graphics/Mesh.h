@@ -1,11 +1,11 @@
-#ifndef MESH_H
-#define MESH_H
+#ifndef CHONPS_MESH_H
+#define CHONPS_MESH_H
 
 #include "Shader.h"
 #include "Camera.h"
-#include "VAO.h"
-#include "VBO.h"
-#include "EBO.h"
+#include "VertexArray.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 #include "Texture.h"
 #include "DataTypes.h"
 #include "Renderer.h"
@@ -31,7 +31,7 @@ namespace Chonps
 		static const char* s_MatrixUniform;
 		static const char* s_TexUnitName;
 
-		VAO* m_VAO;
+		VertexArray* m_VAO;
 	};
 }
 

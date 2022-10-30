@@ -10,6 +10,9 @@ namespace Chonps
 {
 	static API s_API = API::None;
 
+	bool RendererAPI::m_GammaCorrection = false;
+	float RendererAPI::m_Gamma = 2.2f;
+
 	bool setRenderAPI(API api /*= API::OpenGL*/)
 	{
 		s_API = api;

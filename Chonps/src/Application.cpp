@@ -4,9 +4,7 @@
 #include "Graphics/Graphics.h"
 #include "Imgui/ImguiWindow.h"
 
-#ifdef CHONPS_BUILD_LIBS
-	#include "Chonps/Chonps.h"
-#endif
+#include "Timer.h"
 
 namespace Chonps
 {

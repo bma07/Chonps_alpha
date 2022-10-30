@@ -3,6 +3,7 @@
 
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/rotate_vector.hpp>
@@ -19,11 +20,8 @@ namespace Chonps
 	}
 
 	// Updates Camera Matrix, call in loop
-	void Camera::UpdateMatrix(unsigned int width, unsigned int height)
+	void Camera::UpdateMatrix()
 	{
-		m_Width = width;
-		m_Height = height;
-
 		m_ViewMatrix = glm::lookAt(m_Position, m_Position + m_Orientation, m_Up);
 		m_ProjectionMatrix = glm::perspective(glm::radians(m_FOVdeg), (float)m_Width / (float)m_Height, m_NearPlane, m_FarPlane);
 

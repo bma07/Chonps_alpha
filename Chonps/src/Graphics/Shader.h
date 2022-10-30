@@ -1,5 +1,5 @@
-#ifndef SHADER_H
-#define SHADER_H
+#ifndef CHONPS_SHADER_H
+#define CHONPS_SHADER_H
 
 namespace Chonps
 {

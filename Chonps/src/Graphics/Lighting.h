@@ -1,5 +1,5 @@
-#ifndef LIGHTING_H
-#define LIGHTING_H
+#ifndef CHONPS_LIGHTING_H
+#define CHONPS_LIGHTING_H
 
 #include "DataTypes.h"
 
@@ -7,45 +7,26 @@ namespace Chonps
 {
 	struct Light
 	{
-		Light(vec3 pos, vec4 color)
-			: position(pos), color(color) {}
-
 		vec3 position;
 		vec4 color;
-		vec3  direction;
-		float cutOff;
-	};
 
-	struct DirectLight : public Light
-	{
-		vec3 position;
-		vec4 color;
-		vec3 direction;
-
-		vec3 ambient;
 		vec3 diffuse;
 		vec3 specular;
 	};
 
 	struct PointLight : public Light
 	{
-		vec3 position;
-		vec4 color;
+		float intensity;
+	};
 
-		float constant;
-		float linear;
-		float quadratic;
-
-		vec3 ambient;
-		vec3 diffuse;
-		vec3 specular;
+	struct DirectLight : public Light
+	{
+		vec3 direction;
 	};
 
 	struct SpotLight : public Light
 	{
-		vec3 position;
-		vec4 color;
-		vec3  direction;
+		vec3 direction;
 		
 		float innerCone;
 		float outerCone;

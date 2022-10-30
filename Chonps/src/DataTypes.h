@@ -7,8 +7,6 @@
 
 namespace Chonps
 {
-	// We steal the data types from glm
-
 	// Vector Data Types
 	typedef glm::vec1 vec1;
 	typedef glm::vec2 vec2;

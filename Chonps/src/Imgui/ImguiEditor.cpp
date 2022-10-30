@@ -78,7 +78,6 @@ namespace Chonps
 
 	void ImguiEditor::OnImGuiRender()
 	{
-		static bool show = true;
-		ImGui::ShowDemoWindow(&show);
+		
 	}
 }

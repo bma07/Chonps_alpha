@@ -7,6 +7,7 @@ namespace Chonps
 {
 	void OpenGLRendererAPI::Init()
 	{
+		glEnable(GL_MULTISAMPLE);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -24,13 +25,23 @@ namespace Chonps
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
+
+	bool OpenGLRendererAPI::GetGammaCorrectiom()
+	{
+		return m_GammaCorrection;
+	}
 	
 	void OpenGLRendererAPI::Draw(const size_t& count)
 	{
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0);
 	}
 
-
+	void OpenGLRendererAPI::FrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height)
+	{
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, readFBO);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFBO);
+		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	}
 
 	void OpenGLRendererAPI::UploadUniform1f(uint32_t shader, const char* uniform, float x)
 	{

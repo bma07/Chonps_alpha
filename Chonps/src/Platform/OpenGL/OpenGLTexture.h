@@ -8,10 +8,10 @@ namespace Chonps
 	class OpenGLTexture : public Texture
 	{
 	public:
-		OpenGLTexture(const std::string& filepath, TexF texFilter = TexF::Linear, TexW texWrap = TexW::Repeat);
+		OpenGLTexture(const std::string& filepath, TexT texType = TexT::Diffuse, TexF texFilter = TexF::Default, TexW texWrap = TexW::Repeat);
+		OpenGLTexture(uint32_t width, uint32_t height, void* data, uint32_t size);
 
 		virtual void TexUnit(Shader* shader, const char* uniform, uint32_t unit) override;
-		virtual void SetTexType(TexT textureType) override;
 
 		virtual void Bind(uint32_t unit) const override;
 		virtual void Bind() const override;
