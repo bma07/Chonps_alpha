@@ -9,7 +9,7 @@ namespace Chonps
 	{
 	public:
 		// EBO constructor for static arrays
-		OpenGLIndexBuffer(uint32_t* indices, size_t size);
+		OpenGLIndexBuffer(uint32_t* indices, uint32_t size);
 		// EBO constructor for dynamic arrays
 		OpenGLIndexBuffer(std::vector<uint32_t>& indices);
 

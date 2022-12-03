@@ -1,7 +1,7 @@
-#ifndef GLFW_INPUT_H
-#define GLFW_INPUT_H
+#ifndef CHONPS_GLFW_INPUT_H
+#define CHONPS_GLFW_INPUT_H
 
-#include "Input.h"
+#include "Core/Input.h"
 
 namespace Chonps
 {

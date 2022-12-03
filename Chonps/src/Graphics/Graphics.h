@@ -3,6 +3,7 @@
 
 #include "File.h"
 #include "RendererAPI.h"
+#include "RendererCommand.h"
 #include "Renderer.h"
 #include "Shader.h"
 #include "VertexBuffer.h"

@@ -12,24 +12,24 @@ namespace Chonps
 	{
 		switch (getGraphicsContext())
 		{
-			case API::None:
+			case RenderAPI::None:
 			{
 				CHONPS_CORE_WARN("WANRING: SHADER: createShader(vertex, fragment, name) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case API::OpenGL:
+			case RenderAPI::OpenGL:
 			{
 				return new OpenGLShader(name, vertex, fragment);
 				break;
 			}
 
-			case API::Vulkan:
+			case RenderAPI::Vulkan:
 			{
 				break;
 			}
 
-			case API::DirectX:
+			case RenderAPI::DirectX:
 			{
 				break;
 			}
@@ -42,27 +42,27 @@ namespace Chonps
 	{
 		switch (getGraphicsContext())
 		{
-			case API::None:
+			case RenderAPI::None:
 			{
 				CHONPS_CORE_WARN("WANRING: SHADER: createShader(filepath) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case API::OpenGL:
+			case RenderAPI::OpenGL:
 			{
 				return new OpenGLShader(filepath);
 			}
 
-			case API::Vulkan:
+			case RenderAPI::Vulkan:
 			{
 				break;
 			}
 
-			case API::DirectX:
-			{
-				break;
+			case RenderAPI::DirectX:
+				{
+					break;
+				}
 			}
-		}
 		CHONPS_CORE_ERROR("ERROR: SHADER: Could not create Shader!");
 		return nullptr;
 	}

@@ -14,24 +14,24 @@ namespace Chonps
 	{
 		switch (getGraphicsContext())
 		{
-			case API::None:
+			case RenderAPI::None:
 			{
 				CHONPS_CORE_WARN("WANRING: TEXTURE: createCubemap(cubeMapFaces) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case API::OpenGL:
+			case RenderAPI::OpenGL:
 			{
 				return new OpenGLCubemap(cubeMapFaces);
 				break;
 			}
 
-			case API::Vulkan:
+			case RenderAPI::Vulkan:
 			{
 				break;
 			}
 
-			case API::DirectX:
+			case RenderAPI::DirectX:
 			{
 				break;
 			}
@@ -44,24 +44,24 @@ namespace Chonps
 	{
 		switch (getGraphicsContext())
 		{
-			case API::None:
-			{
-				CHONPS_CORE_WARN("WANRING: TEXTURE: createCubemap(cubeMapFaces) - No graphics API selected beforehand!");
-				break;
-			}
+		case RenderAPI::None:
+		{
+			CHONPS_CORE_WARN("WANRING: TEXTURE: createCubemap(cubeMapFaces) - No graphics API selected beforehand!");
+			break;
+		}
 
-			case API::OpenGL:
-			{
-				return new OpenGLCubemap(posx, negx, posy, negy, posz, negz);
-				break;
-			}
+		case RenderAPI::OpenGL:
+		{
+			return new OpenGLCubemap(posx, negx, posy, negy, posz, negz);
+			break;
+		}
 
-			case API::Vulkan:
-			{
-				break;
-			}
+		case RenderAPI::Vulkan:
+		{
+			break;
+		}
 
-			case API::DirectX:
+		case RenderAPI::DirectX:
 			{
 				break;
 			}

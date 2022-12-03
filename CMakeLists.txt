@@ -40,6 +40,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${PLATFORM_TYPE}-${AR
 # Subdirectories ---------------------------------------- /
 
 # GLFW
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/Chonps/Dependencies/GLFW)
 
 # glad
@@ -74,6 +77,8 @@ set(GRAPHICS_SOURCES
     Chonps/src/Graphics/Renderer.h
     Chonps/src/Graphics/RendererAPI.cpp
     Chonps/src/Graphics/RendererAPI.h
+    Chonps/src/Graphics/RendererCommand.cpp
+    Chonps/src/Graphics/RendererCommand.h
     Chonps/src/Graphics/Shader.cpp
     Chonps/src/Graphics/Shader.h
     Chonps/src/Graphics/Texture.cpp
@@ -88,6 +93,9 @@ set(MODEL_LOADER_SOURCES
     # OBJ
     Chonps/src/ModelLoaders/OBJ/OBJModelLoader.cpp
     Chonps/src/ModelLoaders/OBJ/OBJModelLoader.h
+    # gltf
+    Chonps/src/ModelLoaders/gltf/gltfModelLoader.cpp
+    Chonps/src/ModelLoaders/gltf/gltfModelLoader.h
 )
 
 set(PLATFORM_SOURCES
@@ -124,12 +132,19 @@ set(SOURCES
     Chonps/Dependencies/stb_image/stb_image.h
 
     # Events
-    Chonps/src/Events/ApplicationEvents.h
-    Chonps/src/Events/Event.h
-    Chonps/src/Events/KeyEvents.h
-    Chonps/src/Events/MouseEvents.h
-    Chonps/src/Events/WindowEvents.h
+    Chonps/src/Core/Events/ApplicationEvents.h
+    Chonps/src/Core/Events/Event.h
+    Chonps/src/Core/Events/KeyEvents.h
+    Chonps/src/Core/Events/MouseEvents.h
+    Chonps/src/Core/Events/WindowEvents.h
     
+    # ECS
+    Chonps/src/Core/ECS/ComponentManager.h
+    Chonps/src/Core/ECS/Components.h
+    Chonps/src/Core/ECS/Entity.h
+    Chonps/src/Core/ECS/Registry.h
+    Chonps/src/Core/ECS/SystemManager.h
+
     # Imgui
     Chonps/src/Imgui/ImguiBuild.cpp
     Chonps/src/Imgui/ImguiEditor.h
@@ -138,25 +153,26 @@ set(SOURCES
     Chonps/src/Imgui/ImguiWindow.cpp
     
     # Core
-    Chonps/src/Application.cpp
-    Chonps/src/Application.h
+    Chonps/src/Core/Application.cpp
+    Chonps/src/Core/Application.h
+    Chonps/src/Core/Core.h
+    Chonps/src/Core/DataTypes.h
+    Chonps/src/Core/Input.cpp
+    Chonps/src/Core/Input.h
+    Chonps/src/Core/KeyCodes.h
+    Chonps/src/Core/Layer.h
+    Chonps/src/Core/LayerStack.h
+    Chonps/src/Core/LayerStack.cpp
+    Chonps/src/Core/Log.cpp
+    Chonps/src/Core/Log.h
+    Chonps/src/Core/MouseButtonCodes.h
+    Chonps/src/Core/Timer.h
+    Chonps/src/Core/Window.cpp
+    Chonps/src/Core/Window.h
+
     Chonps/src/cepch.cpp
     Chonps/src/cepch.h
     Chonps/src/Chonps.h
-    Chonps/src/Core.h
-    Chonps/src/DataTypes.h
-    Chonps/src/Input.cpp
-    Chonps/src/Input.h
-    Chonps/src/KeyCodes.h
-    Chonps/src/Layer.h
-    Chonps/src/LayerStack.h
-    Chonps/src/LayerStack.cpp
-    Chonps/src/Log.cpp
-    Chonps/src/Log.h
-    Chonps/src/MouseButtonCodes.h
-    Chonps/src/Timer.h
-    Chonps/src/Window.cpp
-    Chonps/src/Window.h
     ${PLATFORM_SOURCES}
     ${GRAPHICS_SOURCES}
     ${MODEL_LOADER_SOURCES}
@@ -173,6 +189,7 @@ target_include_directories(Chonps
         ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/imgui/include
         ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/glm/include
         ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/stb_image
+        ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/json/include
 )
 
 
@@ -187,28 +204,40 @@ target_precompile_headers(Chonps PRIVATE Chonps/src/cepch.h)
 # GLFW
 target_link_libraries(Chonps 
     PRIVATE 
-        GLFW
+        glfw
         glad
         opengl32
     PUBLIC
         Imgui
 )
 
-# Sandbox
+# ChonpsEditor
 set(SOURCES
-    Sandbox/src/Sandbox.cpp
+    ChonpsEditor/src/Main.cpp
+    ChonpsEditor/src/ChonpsEditor.cpp
+    ChonpsEditor/src/ChonpsEditor.h
+    
+    # Panels 
+    ChonpsEditor/src/panels/Properties.cpp
+    ChonpsEditor/src/panels/Properties.h
+    ChonpsEditor/src/panels/Scene.cpp
+    ChonpsEditor/src/panels/Scene.h
+    ChonpsEditor/src/panels/SceneHierarchy.cpp
+    ChonpsEditor/src/panels/SceneHierarchy.h
 )
 
-add_executable(Sandbox ${SOURCES})
+add_executable(ChonpsEditor ${SOURCES})
 
-target_include_directories(Sandbox 
+target_include_directories(ChonpsEditor 
         PUBLIC
             ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/spdlog/include
             ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/imgui/include
             ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/glm/include
+            ${PROJECT_SOURCE_DIR}/Chonps/src
+            ${PROJECT_SOURCE_DIR}/ChonpsEditor/src
 )
 
-target_link_libraries(Sandbox
+target_link_libraries(ChonpsEditor
     PRIVATE
         Chonps
     PUBLIC
@@ -216,5 +245,5 @@ target_link_libraries(Sandbox
 )
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Sandbox)    
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ChonpsEditor)    
 endif()

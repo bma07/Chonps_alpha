@@ -7,7 +7,7 @@ namespace Chonps
 	{
 	public:
 		// IndexBuffer constructor for static arrays
-		IndexBuffer(uint32_t* indices, size_t size) {}
+		IndexBuffer(uint32_t* indices, uint32_t size) {}
 		// IndexBuffer constructor for dynamic arrays
 		IndexBuffer(std::vector<uint32_t>& indices) {}
 
@@ -20,7 +20,7 @@ namespace Chonps
 	};
 	typedef IndexBuffer IBO;
 
-	IndexBuffer* createIndexBuffer(uint32_t* indices, size_t size);
+	IndexBuffer* createIndexBuffer(uint32_t* indices, uint32_t size);
 	IndexBuffer* createIndexBuffer(std::vector<uint32_t>& indices);
 }
 

@@ -8,12 +8,15 @@ namespace Chonps
 	enum class TexType
 	{
 		NA = 0, 
-		Diffuse, Specular, Metallic, Roughness, Normal, Emissive, Occlusion
+		Diffuse, Specular, Metallic, Roughness, Normal, Emissive, Occlusion,
+		MetallicRoughness
 	};
 
 	enum class TexFilter
 	{
-		Default = 0, Linear, Nearest
+		Linear, Nearest,
+		Nearest_Mipmap_Nearest, Nearest_Mipmap_Linear, 
+		Linear_Mipmap_Linear, Linear_Mipmap_Nearest
 	};
 
 	enum class TexWrap
@@ -25,10 +28,18 @@ namespace Chonps
 	typedef TexFilter TexF;
 	typedef TexWrap TexW;
 
+	struct TexFilterPair
+	{
+		TexFilter min;
+		TexFilter mag;
+	};
+
+	typedef TexFilterPair TexFP;
+
 	class Texture
 	{
 	public:
-		Texture(const std::string& filepath, TexT texType = TexT::Diffuse, TexF texFilter = TexF::Default, TexW texWrap = TexW::Repeat) {}
+		Texture(const std::string& filepath, TexType texType = TexType::Diffuse, TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, TexWrap texWrap = TexWrap::Repeat) {}
 		Texture(uint32_t width, uint32_t height, void* data, uint32_t size) {}
 
 		virtual void TexUnit(Shader* shader, const char* uniform, uint32_t unit) = 0;
@@ -47,7 +58,7 @@ namespace Chonps
 
 	};
 
-	Texture* createTexture(const std::string& filepath, TexT texType = TexT::Diffuse, TexF texFilter = TexF::Default, TexW texWrap = TexW::Repeat);
+	Texture* createTexture(const std::string& filepath, TexType texType = TexType::Diffuse, TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, TexWrap texWrap = TexWrap::Repeat);
 	Texture* createTexture(uint32_t width, uint32_t height, void* data, uint32_t size);
 }
 

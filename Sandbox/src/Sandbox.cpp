@@ -8,6 +8,7 @@
 #include <glm/gtx/vector_angle.hpp>
 
 #include <Imgui/imgui.h>
+#include <glad/glad.h>
 
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -45,9 +46,23 @@ public:
 			-1.0f,  1.0f,  0.0f, 1.0f
 		};
 
+		float planeVertices[] =
+		{
+			-1.0f, -1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 
+			 1.0f, -1.0f, 0.0f,
+		};
+
+		uint32_t planeIndices[] =
+		{
+			0, 1, 2,
+			0, 2, 3,
+		};
+
 		const std::string resPathDir = "D:/Dev/Chonps/Sandbox/res/"; // TEMPORARY: will remove later
 
-		m_Model = Chonps::Model("res/models/checkerCube/checkerCube.obj");
+		m_Model = Chonps::Model("res/models/sphere/sphere.obj");
 		m_Model.SpaceOrientationMode(CHONPS_LOCAL);
 		
 
@@ -55,6 +70,7 @@ public:
 		m_LightShader = std::unique_ptr<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/lightShader.glsl"));
 		m_FrameBufferShader = std::unique_ptr<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/FBOshader.glsl"));
 		m_CubemapShader = std::unique_ptr<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/cubemapShader.glsl"));
+		m_PlaneShader = std::unique_ptr<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/infiniteGrid.glsl"));
 
 		m_FrameBufferVAO = std::unique_ptr<Chonps::VAO>(Chonps::createVertexArray());
 		
@@ -65,7 +81,6 @@ public:
 		m_FrameBufferVAO->LinkVertexBuffer(FrambeBufferVBO, 1, 2, Chonps::SDT::Float, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 		m_FrameBufferVAO->Unbind();
 		FrambeBufferVBO->Unbind();
-
 
 		Chonps::FrameBufferSpecification fbSpec;
 		fbSpec.Width = 800;
@@ -91,18 +106,18 @@ public:
 
 		std::string cubeMapFaces[6] =
 		{
-			resPathDir + "cubemaps/forest2/px.png",
-			resPathDir + "cubemaps/forest2/nx.png",
-			resPathDir + "cubemaps/forest2/py.png",
-			resPathDir + "cubemaps/forest2/ny.png",
-			resPathDir + "cubemaps/forest2/pz.png",
-			resPathDir + "cubemaps/forest2/nz.png",
+			resPathDir + "cubemaps/Chapel/posx.jpg",
+			resPathDir + "cubemaps/Chapel/negx.jpg",
+			resPathDir + "cubemaps/Chapel/posy.jpg",
+			resPathDir + "cubemaps/Chapel/negy.jpg",
+			resPathDir + "cubemaps/Chapel/posz.jpg",
+			resPathDir + "cubemaps/Chapel/negz.jpg",
 		};
 
 		m_Cubemap = std::unique_ptr<Chonps::Cubemap>(Chonps::createCubemap(cubeMapFaces));
 
 
-		m_Camera.SetUp(glm::vec3(0.0f, 0.0f, 5.0f), 90.0f, 0.01f, 500.0f);
+		m_Camera.SetUp(glm::vec3(0.0f, 0.0f, 5.0f), 65.0f, 0.01f, 500.0f);
 
 		glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		glm::mat4 lightModel = glm::mat4(1.0f);
@@ -120,6 +135,17 @@ public:
 		m_LightVAO->Unbind();
 		lightVBO->Unbind();
 		lightIBO->Unbind();
+
+		m_PlaneVAO = std::unique_ptr<Chonps::VAO>(Chonps::createVertexArray());
+		m_PlaneVAO->Bind();
+		Chonps::VBO* planeVBO = Chonps::createVertexBuffer(planeVertices, sizeof(planeVertices));
+		Chonps::IBO* planeIBO = Chonps::createIndexBuffer(planeIndices, sizeof(planeIndices));
+
+		m_PlaneVAO->LinkIndexBuffer(planeIBO);
+		m_PlaneVAO->LinkVertexBuffer(planeVBO, 0, 3, Chonps::SDT::Float, 3 * sizeof(float), (void*)0);
+		m_PlaneVAO->Unbind();
+		planeVBO->Unbind();
+		planeIBO->Unbind();
 
 		m_LightShader->Bind();
 		Chonps::uploadUniform4mfv(m_LightShader->GetID(), "model", 1, false, glm::value_ptr(lightModel));
@@ -283,8 +309,12 @@ public:
 
 		Chonps::renderBeginScene(m_Camera, &(*m_Shader));
 
-		
-		m_Model.Draw(&(*m_Shader));
+		for (int i = 0; i < 10; i++)
+		{
+			Chonps::mat4 translate = Chonps::mat4(1.0f);
+			translate = glm::translate(translate, glm::vec3(3.0f * (float)i, 0.0f, 0.0f));
+			m_Model.Draw(&(*m_Shader), translate);
+		}
 
 		m_Model.SetPosition(m_ModelPos);
 		m_Model.SetOrientation(m_ModelRot);
@@ -293,13 +323,15 @@ public:
 		Chonps::mat4 rot = Chonps::mat4(1.0f);
 		rot = glm::inverse(glm::lookAt(m_lightPos, m_CameraPosition, glm::vec3(0.0f, 1.0f, 0.0f)));
 
-
 		Chonps::renderBeginScene(m_Camera, &(*m_LightShader));
 		Chonps::uploadUniform4mfv(m_LightShader->GetID(), "model", 1, false, glm::value_ptr(rot));
-		m_LightVAO->Bind();
 		m_SunTexture->Bind();
 		Chonps::renderDraw(&(*m_LightVAO));
 
+		/*Chonps::renderDisableCullFace();
+		Chonps::renderBeginScene(m_Camera, &(*m_PlaneShader));
+		Chonps::renderDraw(&(*m_PlaneVAO));
+		Chonps::renderEnableCullFace();*/
 		
 		Chonps::renderFrameBufferBlit(m_MsaaFBO->GetID(), m_FBO->GetID(), m_MsaaFBO->GetWidth(), m_MsaaFBO->GetHeight());
 		m_MsaaFBO->End();
@@ -426,7 +458,7 @@ public:
 		
 		ImVec2 viewportMousePos = ImGui::GetMousePos();
 		m_ViewportMousePos = Chonps::vec2(viewportMousePos.x, viewportMousePos.y);
-		ImGui::Image((ImTextureID)(m_ImguiFBO->GetTexID()), viewportSize, ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image(reinterpret_cast<ImTextureID>(m_ImguiFBO->GetTexID()), viewportSize, ImVec2(0, 1), ImVec2(1, 0));
 
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -448,6 +480,7 @@ private:
 	std::unique_ptr<Chonps::Shader> m_LightShader;
 	std::unique_ptr<Chonps::Shader> m_FrameBufferShader;
 	std::unique_ptr<Chonps::Shader> m_CubemapShader;
+	std::unique_ptr<Chonps::Shader> m_PlaneShader;
 
 	std::unique_ptr<Chonps::Cubemap> m_Cubemap;
 
@@ -465,6 +498,7 @@ private:
 	std::unique_ptr<Chonps::VAO> m_VAO;
 	std::unique_ptr<Chonps::VAO> m_LightVAO;
 	std::unique_ptr<Chonps::VAO> m_FrameBufferVAO;
+	std::unique_ptr<Chonps::VAO> m_PlaneVAO;
 
 	Chonps::Window* m_Window = &Chonps::Application::GetApp().GetWindow();
 
@@ -708,27 +742,3 @@ private:
 
 };
 
-int main()
-{
-	Chonps::Log::Init();
-
-	CHONPS_INFO("Initialized Log");
-	
-	Chonps::setWindowAPI(Chonps::WindowAPI::Glfw);
-	Chonps::setRenderAPI(Chonps::API::OpenGL);
-
-	Chonps::renderGammaCorrection(true);
-
-	Chonps::Application app("Chonps", 1280, 800);
-	
-	Layer1 l1("l1");
-	//OrthoLayer ortho("ortho");
-	
-	app.add_layer(&l1);
-	
-	app.Run();
-
-	Chonps::windowTerminateAPI();
-
-	return 0;
-}

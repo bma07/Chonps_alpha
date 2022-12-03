@@ -185,9 +185,9 @@ namespace Chonps
 		glDepthFunc(GL_LEQUAL);
 		glDisable(GL_CULL_FACE);
 		shader->Bind();
-		mat4 view = mat4(1.0f);
-		mat4 projection = mat4(1.0f);
-		view = mat4(mat3(glm::lookAt(camera.GetPosition(), camera.GetPosition() + camera.GetOrientation(), camera.GetUpVector())));
+		glm::mat4 view = glm::mat4(1.0f);
+		glm::mat4 projection = glm::mat4(1.0f);
+		view = glm::mat4(mat3(glm::lookAt(camera.GetPosition(), camera.GetPosition() + camera.GetOrientation(), camera.GetUpVector())));
 		projection = glm::perspective(camera.GetFOVrad(), (float)camera.GetWidth() / (float)camera.GetHeight(), camera.GetNearPlane(), camera.GetFarPlane());
 		glUniformMatrix4fv(glGetUniformLocation(shader->GetID(), m_CubemapViewUniformName), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(shader->GetID(), m_CubemapProjectionUniformName), 1, GL_FALSE, glm::value_ptr(projection));

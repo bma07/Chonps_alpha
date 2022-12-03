@@ -6,30 +6,30 @@
 
 namespace Chonps
 {
-	// Static Renderer API - Determines the graphics platform API for draw functions and uniforms
-	static RendererAPI* s_RendererAPI;
+
+	RendererData Renderer::s_Data;
 
 	// Sets and init specific render function calls before drawing vertices
-	void Renderer::RenderInit()
+	void Renderer::Init()
 	{
-		s_RendererAPI->Init();
+		
 	}
 
-	// Draw vertices with the count number
-	// Number of vertices will be drawn with the size of count
-	void Renderer::Draw(const size_t& count)
-	{
-		s_RendererAPI->Draw(count);
-	}
-
-	// Draw vertices through the VertexArray
+	// Draw vertices through the VertexArray. Draw type is in Triangles
 	void Renderer::Draw(VertexArray* VertexArray)
 	{
-		s_RendererAPI->Draw(VertexArray->GetIndexCount());
+		VertexArray->Bind();
+		getRendererAPI()->Draw(VertexArray->GetIndexCount());
+		VertexArray->Unbind();
+
+		s_Data.Stats.vertices += VertexArray->GetVertexCount();
+		s_Data.Stats.triangles += VertexArray->GetIndexCount() / 3;
+		s_Data.Stats.indices += VertexArray->GetIndexCount();
+		s_Data.Stats.drawCalls += 1;
 	}
 
 	// Call before renderering or drawing
-	void Renderer::BeginScene(Camera camera, Shader* shader, const char* uniform /*= "camMatrix"*/)
+	void Renderer::BeginScene(Camera& camera, Shader* shader, const char* uniform /*= "camMatrix"*/)
 	{
 		shader->Bind();
 		glm::vec3 camPos = camera.GetPosition();
@@ -43,63 +43,34 @@ namespace Chonps
 
 	}
 
-	// Clear function clears the window viewport with all of the vertices drawn on it
-	void Renderer::Clear()
+	RendererStatistics& Renderer::GetStats()
 	{
-		s_RendererAPI->Clear();
+		return s_Data.Stats;
 	}
 
-	// Clears the window and set the color of the viewport/background
-	void Renderer::ClearColor(const float r, const float g, const float b, const float w /*= 0.0f*/)
+	void Renderer::ResetStats()
 	{
-		s_RendererAPI->SetClearColor(r, g, b, w);
-	}
-
-	void Renderer::FrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height)
-	{
-		s_RendererAPI->FrameBufferBlit(readFBO, drawFBO, width, height);
-	}
-
-	void Renderer::GammaCorrection(bool correct)
-	{
-		s_RendererAPI->GammaCorrection(correct);
-	}
-
-	RendererAPI* Renderer::GetRendererAPI()
-	{
-		return s_RendererAPI;
-	}
-
-	// Sets and updates the RenderingAPI to the graphics API currently selected
-	void Renderer::SetRendererAPI()
-	{
-		s_RendererAPI = createRendererAPI();
+		std::memset(&s_Data.Stats, 0, sizeof(RendererStatistics));
 	}
 
 
 	// Render Functions
 
-	// Sets and init specific render function calls before drawing vertices
-	void renderInit()
-	{
-		s_RendererAPI->Init();
-	}
-
-	// Draw vertices with the count number
-	// Number of vertices will be drawn with the size of count
-	void renderDraw(const size_t& count)
-	{
-		s_RendererAPI->Draw(count);
-	}
-
-	// Draw vertices through the VertexArray
+	// Draw vertices through the VertexArray. Draw type is in Triangles
 	void renderDraw(VertexArray* VertexArray)
 	{
-		s_RendererAPI->Draw(VertexArray->GetIndexCount());
+		VertexArray->Bind();
+		getRendererAPI()->Draw(VertexArray->GetIndexCount());
+		VertexArray->Unbind();
+
+		Renderer::GetStats().vertices += VertexArray->GetVertexCount();
+		Renderer::GetStats().triangles += VertexArray->GetIndexCount() / 3;
+		Renderer::GetStats().indices += VertexArray->GetIndexCount();
+		Renderer::GetStats().drawCalls += 1;
 	}
 
 	// Call before renderering or drawing
-	void renderBeginScene(Camera camera, Shader* shader, const char* uniform /*= "camMatrix"*/)
+	void renderBeginScene(Camera& camera, Shader* shader, const char* uniform /*= "camMatrix"*/)
 	{
 		shader->Bind();
 		glm::vec3 camPos = camera.GetPosition();
@@ -111,40 +82,5 @@ namespace Chonps
 	void renderEndScene()
 	{
 
-	}
-
-	// Clear function clears the window viewport with all of the vertices drawn on it
-	void renderClear()
-	{
-		s_RendererAPI->Clear();
-	}
-
-	// Clears the window and set the color of the viewport/background
-	void renderClearColor(const float r, const float g, const float b, const float w /*= 0.0f*/)
-	{
-		s_RendererAPI->GetGammaCorrection() // Check Gamma
-		? s_RendererAPI->SetClearColor(pow(r, s_RendererAPI->GetGamma()), pow(g, s_RendererAPI->GetGamma()), pow(b, s_RendererAPI->GetGamma()), w) // if Gamma Corrected
-		: s_RendererAPI->SetClearColor(r, g, b, w); // if Gamma not corrected
-	}
-
-	void renderFrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height)
-	{
-		s_RendererAPI->FrameBufferBlit(readFBO, drawFBO, width, height);
-	}
-
-	void renderGammaCorrection(bool correct)
-	{
-		s_RendererAPI->GammaCorrection(correct);
-	}
-
-	void setRendererAPI()
-	{
-		s_RendererAPI = createRendererAPI();
-	}
-
-	// Sets and updates the RenderingAPI to the graphics API currently selected
-	RendererAPI* getRendererAPI()
-	{
-		return s_RendererAPI;
 	}
 }

@@ -1,4 +1,6 @@
-set(GLFW_VERSION 3.3.4)
+cmake_minimum_required(VERSION 3.0)
+
+project(GLFW VERSION 3.3.4 LANGUAGES C)
 
 set(CMAKE_LEGACY_CYGWIN_WIN32 OFF)
 
@@ -17,6 +19,9 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" ON)
+option(GLFW_BUILD_TESTS "Build the GLFW test programs" ON)
+option(GLFW_BUILD_DOCS "Build the GLFW documentation" ON)
 option(GLFW_INSTALL "Generate installation target" ON)
 option(GLFW_VULKAN_STATIC "Assume the Vulkan loader is linked with the application" OFF)
 
@@ -327,14 +332,22 @@ configure_file(src/glfw_config.h.in src/glfw_config.h @ONLY)
 
 configure_file(src/glfw3.pc.in src/glfw3.pc @ONLY)
 
-set(HEADERS 
-    "${PROJECT_SOURCE_DIR}/Chonps/Dependencies/GLFW/include/GLFW/glfw3.h"
-    "${PROJECT_SOURCE_DIR}/Chonps/Dependencies/GLFW/include/GLFW/glfw3native.h")
-
 #--------------------------------------------------------------------
 # Add subdirectories
 #--------------------------------------------------------------------
 add_subdirectory(src)
+
+if (GLFW_BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
+
+if (GLFW_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
+
+if (DOXYGEN_FOUND AND GLFW_BUILD_DOCS)
+    add_subdirectory(docs)
+endif()
 
 #--------------------------------------------------------------------
 # Install files other than the library
@@ -348,9 +361,9 @@ if (GLFW_INSTALL)
                   "${GLFW_BINARY_DIR}/src/glfw3ConfigVersion.cmake"
             DESTINATION "${GLFW_CONFIG_PATH}")
 
-    # install(EXPORT glfwTargets FILE glfw3Targets.cmake
-    #         EXPORT_LINK_INTERFACE_LIBRARIES
-    #         DESTINATION "${GLFW_CONFIG_PATH}")
+    install(EXPORT glfwTargets FILE glfw3Targets.cmake
+            EXPORT_LINK_INTERFACE_LIBRARIES
+            DESTINATION "${GLFW_CONFIG_PATH}")
     install(FILES "${GLFW_BINARY_DIR}/src/glfw3.pc"
             DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 

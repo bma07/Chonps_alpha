@@ -3,23 +3,30 @@
 
 
 // Core
-#include "Core.h"
-#include "Log.h"
-#include "DataTypes.h"
-#include "Window.h"
-#include "Layer.h"
-#include "LayerStack.h"
-#include "Input.h"
-#include "KeyCodes.h"
-#include "MouseButtonCodes.h"
-#include "Application.h"
-#include "Timer.h"
+#include "Core/Core.h"
+#include "Core/Log.h"
+#include "Core/DataTypes.h"
+#include "Core/Window.h"
+#include "Core/Layer.h"
+#include "Core/LayerStack.h"
+#include "Core/Input.h"
+#include "Core/KeyCodes.h"
+#include "Core/MouseButtonCodes.h"
+#include "Core/Application.h"
+#include "Core/Timer.h"
 
 // Events
-#include "Events/Event.h"
-#include "Events/MouseEvents.h"
-#include "Events/MouseEvents.h"
-#include "Events/WindowEvents.h"
+#include "Core/Events/Event.h"
+#include "Core/Events/MouseEvents.h"
+#include "Core/Events/MouseEvents.h"
+#include "Core/Events/WindowEvents.h"
+
+// ECS
+#include "Core/ECS/Entity.h"
+#include "Core/ECS/Components.h"
+#include "Core/ECS/ComponentManager.h"
+#include "Core/ECS/SystemManager.h"
+#include "Core/ECS/Registry.h"
 
 // Imgui
 #include "Imgui/ImguiEditor.h"

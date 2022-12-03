@@ -5,7 +5,7 @@
 
 namespace Chonps
 {
-	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, size_t size)
+	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t size)
 		: IndexBuffer(indices, size), m_Count(size / sizeof(uint32_t))
 	{
 		glGenBuffers(1, &m_ID);

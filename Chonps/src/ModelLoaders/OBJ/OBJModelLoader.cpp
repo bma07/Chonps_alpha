@@ -25,7 +25,7 @@ namespace Chonps
 	{
 		std::vector<Mesh> Meshes;
 
-		std::vector<vertex> vertices;
+		std::vector<vertextb> vertices;
 		std::vector<uint32_t> indices;
 		std::vector<Texture*> textures;
 
@@ -34,7 +34,7 @@ namespace Chonps
 		std::vector<vec3> color;
 		std::vector<vec2> texUVs;
 		std::vector<vec3> normals;
-		
+
 		std::string data;
 		if (!get_file_contents(filepath.c_str(), &data))
 		{
@@ -48,12 +48,12 @@ namespace Chonps
 		size_t dataVertices = data.find(dataType, 0);
 		while (dataVertices != std::string::npos)
 		{
-			// Find vertex position in data
+			// Find vertextb position in data
 			size_t eol = data.find_first_of("\r\n", dataVertices);
 			std::string getvec = data.substr(dataVertices + dataTypeLength, eol - dataVertices - dataTypeLength);
 			size_t offset = 0;
 			size_t count = getvec.find(" ", offset + 1);
-			
+
 			// Get x value
 			std::string vecx = getvec.substr(offset, count);
 			float vx = std::stof(vecx);
@@ -82,7 +82,7 @@ namespace Chonps
 		dataVertices = data.find(dataType, 0);
 		while (dataVertices != std::string::npos)
 		{
-			// Find vertex position in data
+			// Find vertextb position in data
 			size_t eol = data.find_first_of("\r\n", dataVertices);
 			std::string getvec = data.substr(dataVertices + dataTypeLength, eol - dataVertices - dataTypeLength);
 			size_t offset = 0;
@@ -116,7 +116,7 @@ namespace Chonps
 		dataVertices = data.find(dataType, 0);
 		while (dataVertices != std::string::npos)
 		{
-			// Find vertex position in data
+			// Find vertextb position in data
 			size_t eol = data.find_first_of("\r\n", dataVertices);
 			std::string getvec = data.substr(dataVertices + dataTypeLength, eol - dataVertices - dataTypeLength);
 			size_t offset = 0;
@@ -149,7 +149,7 @@ namespace Chonps
 		{
 			size_t eol = data.find_first_of("\r\n", dataVertices);
 			std::string mtlfilename = data.substr(dataVertices + dataTypeLength, eol - dataVertices - dataTypeLength);
-			
+
 			std::string mtlfilepath = mtlfilename;
 			size_t directory = filepath.find_last_of("/\\");
 			if (directory != std::string::npos)
@@ -173,7 +173,7 @@ namespace Chonps
 					size_t nextnewmtlpos = mtldata.find(material, nextLinePos);
 					std::string materialSource = mtldata.substr(materialeol, nextnewmtlpos);
 
-					
+
 					// Find color data
 					const char* mtldataType = "Kd ";
 					size_t mtldataTypeLength = std::strlen(mtldataType);
@@ -212,7 +212,7 @@ namespace Chonps
 					{
 						size_t mtleol = materialSource.find_first_of("\r\n", mtldataTypePos);
 						std::string getTexturePath = materialSource.substr(mtldataTypePos + mtldataTypeLength, mtleol - mtldataTypePos - mtldataTypeLength);
-						
+
 						Texture* tex = createTexture(getTexturePath, TexT::Diffuse);
 						objMat.map_Kd = tex;
 
@@ -244,7 +244,6 @@ namespace Chonps
 						uint32_t whiteTextureData = 0xffffffff;
 						Texture* tex = Chonps::createTexture(1, 1, &whiteTextureData, sizeof(uint32_t));
 						objMat.map_Kd = tex;
-						objMat.HasMaterials = true;
 					}
 
 					materials[materialName] = objMat;
@@ -276,7 +275,7 @@ namespace Chonps
 			size_t dataFaceVertices = data.find(dataFaceType, 0);
 			while (dataFaceVertices != std::string::npos)
 			{
-				// Find vertex position in data
+				// Find vertextb position in data
 				size_t eol = data.find_first_of("\r\n", dataFaceVertices);
 				std::string getface = data.substr(dataFaceVertices + dataFaceTypeLength, eol - dataFaceVertices - dataFaceTypeLength);
 				size_t count = getface.find(" ", 0);
@@ -302,7 +301,7 @@ namespace Chonps
 					// Add Indices
 					indices.push_back(indexValue++);
 
-					vertex Vertex = { pos[posIndex - 1], vec3(0.8f), texUVs[texIndex - 1], normals[normIndex - 1] };
+					vertextb Vertex = { pos[posIndex - 1], vec3(0.8f), texUVs[texIndex - 1], normals[normIndex - 1] };
 					vertices.push_back(Vertex);
 
 					offset += face.length() + 1;
@@ -338,7 +337,7 @@ namespace Chonps
 				size_t dataFaceVertices = materialSource.find(dataFaceType, 0);
 				while (dataFaceVertices != std::string::npos)
 				{
-					// Find vertex position in data
+					// Find vertextb position in data
 					size_t eol = materialSource.find_first_of("\r\n", dataFaceVertices);
 					std::string getface = materialSource.substr(dataFaceVertices + dataFaceTypeLength, eol - dataFaceVertices - dataFaceTypeLength);
 					size_t count = getface.find(" ", 0);
@@ -371,7 +370,7 @@ namespace Chonps
 								colors = mat.second.Kd;
 						}
 
-						vertex Vertex = { pos[posIndex - 1], colors, texUVs[texIndex - 1], normals[normIndex - 1] };
+						vertextb Vertex = { pos[posIndex - 1], colors, texUVs[texIndex - 1], normals[normIndex - 1] };
 						vertices.push_back(Vertex);
 
 						offset += face.length() + 1;

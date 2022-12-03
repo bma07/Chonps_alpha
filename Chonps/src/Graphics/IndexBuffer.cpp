@@ -6,27 +6,27 @@
 
 namespace Chonps
 {
-	IndexBuffer* createIndexBuffer(uint32_t* indices, size_t size)
+	IndexBuffer* createIndexBuffer(uint32_t* indices, uint32_t size)
 	{
 		switch (getGraphicsContext())
 		{
-			case API::None:
+			case RenderAPI::None:
 			{
 				CHONPS_CORE_WARN("WANRING: EBO: createEBO(indices, size) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case API::OpenGL:
+			case RenderAPI::OpenGL:
 			{
 				return new OpenGLIndexBuffer(indices, size);
 			}
 
-			case API::Vulkan:
+			case RenderAPI::Vulkan:
 			{
 				break;
 			}
 
-			case API::DirectX:
+			case RenderAPI::DirectX:
 			{
 				break;
 			}
@@ -39,23 +39,23 @@ namespace Chonps
 	{
 		switch (getGraphicsContext())
 		{
-			case API::None:
+			case RenderAPI::None:
 			{
 				CHONPS_CORE_WARN("WANRING: EBO: createVertexEBO(indices) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case API::OpenGL:
+			case RenderAPI::OpenGL:
 			{
 				return new OpenGLIndexBuffer(indices);
 			}
 
-			case API::Vulkan:
+			case RenderAPI::Vulkan:
 			{
 				break;
 			}
 
-			case API::DirectX:
+			case RenderAPI::DirectX:
 			{
 				break;
 			}

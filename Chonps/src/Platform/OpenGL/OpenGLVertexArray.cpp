@@ -34,27 +34,27 @@ namespace Chonps
 		glGenVertexArrays(1, &m_ID);
 	}
 
-	void OpenGLVertexArray::LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, uint32_t numComponents, ShaderDataType type, size_t stride, void* offset)
+	void OpenGLVertexArray::LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, uint32_t numComponents, ShaderDataType type, uint32_t stride, void* offset)
 	{
 		VBO->Bind();
 		glEnableVertexAttribArray(layout);
 		glVertexAttribPointer(layout, numComponents, getShaderDataTypeConvertOpenGL(type), GL_FALSE, (GLsizei)stride, offset);
 		VBO->Unbind();
-
-
+		m_VertexCount = VBO->GetCount();
 	}
 
-	void OpenGLVertexArray::LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, ShaderDataType numComponents, ShaderDataType type, size_t stride, void* offset)
+	void OpenGLVertexArray::LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, ShaderDataType numComponents, ShaderDataType type, uint32_t stride, void* offset)
 	{
 		VBO->Bind();
 		glEnableVertexAttribArray(layout);
 		glVertexAttribPointer(layout, getShaderDataTypeComponent(numComponents), getShaderDataTypeConvertOpenGL(type), GL_FALSE, (GLsizei)stride, offset);
 		VBO->Unbind();
+		m_VertexCount = VBO->GetCount();
 	}
 
-	void OpenGLVertexArray::LinkIndexBuffer(IndexBuffer* EBO)
+	void OpenGLVertexArray::LinkIndexBuffer(IndexBuffer* IBO)
 	{
-		m_Count = EBO->GetCount();
+		m_IndexCount = IBO->GetCount();
 	}
 
 	void OpenGLVertexArray::Bind() const

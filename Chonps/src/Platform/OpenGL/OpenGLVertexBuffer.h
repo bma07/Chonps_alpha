@@ -9,17 +9,19 @@ namespace Chonps
 	{
 	public:
 		// VBO constructor for static arrays
-		OpenGLVertexBuffer(float* vertices, size_t size);
+		OpenGLVertexBuffer(float* vertices, uint32_t size);
 		// VBO constructor for dynamic array
-		OpenGLVertexBuffer(std::vector<vertex>& vertices);
-
+		OpenGLVertexBuffer(std::vector<vertextb>& vertices);
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 		virtual void Delete() override;
 
+		virtual uint32_t GetCount() const override { return m_Count; }
+
 	private:
 		uint32_t m_ID;
+		uint32_t m_Count;
 	};
 }
 

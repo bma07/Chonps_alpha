@@ -8,17 +8,20 @@
 
 namespace Chonps
 {
-	static API s_API = API::None;
+	static RenderAPI s_API = RenderAPI::None;
+	
+	// Create the renderering API that holds the renderering context and implementation
+	static RendererAPI* s_RendererAPI;
 
 	bool RendererAPI::m_GammaCorrection = false;
 	float RendererAPI::m_Gamma = 2.2f;
 
-	bool setRenderAPI(API api /*= API::OpenGL*/)
+	bool setRenderContext(RenderAPI api /*= API::OpenGL*/)
 	{
 		s_API = api;
 		setRendererAPI();
 
-		if (api == API::None)
+		if (api == RenderAPI::None)
 		{
 			CHONPS_CORE_WARN("No graphics API selected!");
 			return false;
@@ -27,7 +30,7 @@ namespace Chonps
 		return true;
 	}
 
-	API getGraphicsContext()
+	RenderAPI getGraphicsContext()
 	{
 		return s_API;
 	}
@@ -36,37 +39,48 @@ namespace Chonps
 	{
 		switch (getGraphicsContext())
 		{
-			case Chonps::API::None: return "None";
-			case Chonps::API::OpenGL: return "OpenGL";
-			case Chonps::API::Vulkan: return "Vulkan";
-			case Chonps::API::DirectX: return "DirectX";
+			case Chonps::RenderAPI::None: return "None";
+			case Chonps::RenderAPI::OpenGL: return "OpenGL";
+			case Chonps::RenderAPI::Vulkan: return "Vulkan";
+			case Chonps::RenderAPI::DirectX: return "DirectX";
 		}
 
 		CHONPS_CORE_ERROR("Cannot find the graphics API selected!");
 		return "null";
 	}
 
+	void setRendererAPI()
+	{
+		s_RendererAPI = createRendererAPI();
+	}
+
+	// Sets and updates the RenderingAPI to the graphics API currently selected
+	RendererAPI* getRendererAPI()
+	{
+		return s_RendererAPI;
+	}
+
 	RendererAPI* createRendererAPI()
 	{
 		switch (getGraphicsContext())
 		{
-		case API::None:
+		case RenderAPI::None:
 		{
 			CHONPS_CORE_WARN("WANRING: RENDERER_API: createRendererAPI() - No graphics API selected beforehand!");
 			break;
 		}
 
-		case API::OpenGL:
+		case RenderAPI::OpenGL:
 		{
 			return new OpenGLRendererAPI();
 		}
 
-		case API::Vulkan:
+		case RenderAPI::Vulkan:
 		{
 			break;
 		}
 
-		case API::DirectX:
+		case RenderAPI::DirectX:
 		{
 			break;
 		}

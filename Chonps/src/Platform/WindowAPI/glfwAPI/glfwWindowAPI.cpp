@@ -4,11 +4,9 @@
 #include "Graphics/RendererAPI.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 
-#include "Events/KeyEvents.h"
-#include "Events/MouseEvents.h"
-#include "Events/WindowEvents.h"
-
-
+#include "Core/Events/KeyEvents.h"
+#include "Core/Events/MouseEvents.h"
+#include "Core/Events/WindowEvents.h"
 
 namespace Chonps
 {
@@ -19,7 +17,7 @@ namespace Chonps
 		CHONPS_CORE_ERROR("GLFW ERROR ({0}): {1}", error, descripion);
 	}
 
-	void glfwInitWindowAPI()
+	void glfwInitWindowContext()
 	{
 		if (!s_glfwInit)
 		{
@@ -31,7 +29,7 @@ namespace Chonps
 		else CHONPS_CORE_WARN("glfw already initialized");
 	}
 
-	void glfwTerminateWindowAPI()
+	void glfwTerminateWindowContext()
 	{
 		if (s_glfwInit)
 		{
@@ -70,25 +68,25 @@ namespace Chonps
 
 		switch (getGraphicsContext())
 		{
-			case Chonps::API::None:
+			case Chonps::RenderAPI::None:
 			{
 				CHONPS_CORE_WARN("WANRING: No graphics API selected beforehand!");
 				CHONPS_CORE_WARN("WARNING: WINDOW: Automatically initializing rendering context...");
-				CHONPS_CORE_ASSERT(setRenderAPI(), "No graphics API found or can be used!");
+				CHONPS_CORE_ASSERT(setRenderContext(), "No graphics API found or can be used!");
 			}
 
-			case Chonps::API::OpenGL:
+			case Chonps::RenderAPI::OpenGL:
 			{
 				gladInit(m_Window, m_Data.Width, m_Data.Height);
 				break;
 			}
 
-			case Chonps::API::Vulkan:
+			case Chonps::RenderAPI::Vulkan:
 			{
 				break;
 			}
 
-			case Chonps::API::DirectX:
+			case Chonps::RenderAPI::DirectX:
 			{
 				break;
 			}

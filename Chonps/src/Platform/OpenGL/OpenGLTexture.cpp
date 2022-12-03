@@ -8,7 +8,7 @@
 
 namespace Chonps
 {
-	OpenGLTexture::OpenGLTexture(const std::string& filepath, TexT texType /*= TexT::Diffuse*/, TexF texFilter /*= TexF::Default*/, TexW texWrap /*= TexW::Repeat*/)
+	OpenGLTexture::OpenGLTexture(const std::string& filepath, TexType texType /*= TexT::Diffuse*/, TexFilterPair texFilter /*= { TexFilter::Linear, TexFilter::Nearest }*/, TexWrap texWrap /*= TexW::Repeat*/)
 		: Texture(filepath, texType, texFilter, texWrap), m_TexType(texType), m_TexFilter(texFilter), m_TexWrap(texWrap)
 	{
 		int channels;
@@ -39,16 +39,21 @@ namespace Chonps
 		CHONPS_CORE_ASSERT(internalFormat && dataFormat, "Format not supported!");
 
 		// Get texture filter mode
-		GLenum minFilter = GL_LINEAR, magFilter = GL_NEAREST;
-		if (m_TexFilter == TexF::Linear)
+		GLenum magFilter = GL_NEAREST, minFilter = GL_LINEAR;
+		switch (m_TexFilter.min)
 		{
-			minFilter = GL_LINEAR;
-			magFilter = GL_LINEAR;
+			case TexFilter::Linear: magFilter = GL_LINEAR; break;
+			case TexFilter::Nearest: magFilter = GL_NEAREST; break;
+			case TexFilter::Nearest_Mipmap_Nearest: magFilter = GL_NEAREST_MIPMAP_NEAREST; break;
+			case TexFilter::Nearest_Mipmap_Linear: magFilter = GL_NEAREST_MIPMAP_LINEAR; break;
+			case TexFilter::Linear_Mipmap_Nearest: magFilter = GL_LINEAR_MIPMAP_NEAREST; break;
+			case TexFilter::Linear_Mipmap_Linear: magFilter = GL_LINEAR_MIPMAP_LINEAR; break;
 		}
-		else if (m_TexFilter == TexF::Nearest)
+		switch (m_TexFilter.mag)
 		{
-			minFilter = GL_NEAREST;
-			magFilter = GL_NEAREST;
+			case TexFilter::Linear: magFilter = GL_LINEAR; break;
+			case TexFilter::Nearest: magFilter = GL_NEAREST; break;
+			default: CHONPS_CORE_WARN("WARNING: TEXTURE: Use of texture filter unsupported in mag filter\n Mag filter only accepts Linear or Nearest"); break;
 		}
 
 		// Get texture wrap mode format
@@ -67,6 +72,8 @@ namespace Chonps
 		glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, wrapFormat);
 		glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, wrapFormat);
 
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
 		glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -76,7 +83,6 @@ namespace Chonps
 	OpenGLTexture::OpenGLTexture(uint32_t width, uint32_t height, void* data, uint32_t size)
 		: Texture(width, height, data, size), m_Width(width), m_Height(height)
 	{
-		
 		bool gammaCorrect = OpenGLRendererAPI::GetGammaCorrectiom();
 
 		// Get color channel format
@@ -96,6 +102,10 @@ namespace Chonps
 		glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 		glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
+
+		m_TexType = TexType::Diffuse;
+		m_TexFilter = { TexFilter::Linear, TexFilter::Linear };
+		m_TexWrap = TexWrap::Repeat;
 	}
 
 	void OpenGLTexture::TexUnit(Shader* shader, const char* uniform, uint32_t unit)

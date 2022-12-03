@@ -57,24 +57,24 @@ namespace Chonps
 	{
 		switch (getGraphicsContext())
 		{
-			case API::None:
+			case RenderAPI::None:
 			{
 				CHONPS_CORE_WARN("WANRING: VBO: createVBO(vertices, size) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case API::OpenGL:
+			case RenderAPI::OpenGL:
 			{
 				return new OpenGLVertexBuffer(vertices, size);
 				break;
 			}
 
-			case API::Vulkan:
+			case RenderAPI::Vulkan:
 			{
 				break;
 			}
 
-			case API::DirectX:
+			case RenderAPI::DirectX:
 			{
 				break;
 			}
@@ -83,27 +83,27 @@ namespace Chonps
 		return nullptr;
 	}
 
-	VertexBuffer* createVertexBuffer(std::vector<vertex>& vertices)
+	VertexBuffer* createVertexBuffer(std::vector<vertextb>& vertices)
 	{
 		switch (getGraphicsContext())
 		{
-			case API::None:
+			case RenderAPI::None:
 			{
 				CHONPS_CORE_WARN("WANRING: VBO: createVertexVBO(vertices) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case API::OpenGL:
+			case RenderAPI::OpenGL:
 			{
 				return new OpenGLVertexBuffer(vertices);
 			}
 
-			case API::Vulkan:
+			case RenderAPI::Vulkan:
 			{
 				break;
 			}
 
-			case API::DirectX:
+			case RenderAPI::DirectX:
 			{
 				break;
 			}

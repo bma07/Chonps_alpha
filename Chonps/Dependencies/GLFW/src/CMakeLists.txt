@@ -1,33 +1,29 @@
 
-set(common_HEADERS internal.h mappings.h glfw_config.h ${HEADERS})
+set(common_HEADERS internal.h mappings.h
+                   "${GLFW_BINARY_DIR}/src/glfw_config.h"
+                   "${GLFW_SOURCE_DIR}/include/GLFW/glfw3.h"
+                   "${GLFW_SOURCE_DIR}/include/GLFW/glfw3native.h")
 set(common_SOURCES context.c init.c input.c monitor.c vulkan.c window.c)
 
 if (_GLFW_COCOA)
-    add_definitions(-D_GLFW_COCOA)
     set(glfw_HEADERS ${common_HEADERS} cocoa_platform.h cocoa_joystick.h
                      posix_thread.h nsgl_context.h egl_context.h osmesa_context.h)
     set(glfw_SOURCES ${common_SOURCES} cocoa_init.m cocoa_joystick.m
                      cocoa_monitor.m cocoa_window.m cocoa_time.c posix_thread.c
                      nsgl_context.m egl_context.c osmesa_context.c)
 elseif (_GLFW_WIN32)
-    add_definitions(
-        -D_GLFW_WIN32
-        -D_CRT_SECURE_NO_WARNINGS
-    )
     set(glfw_HEADERS ${common_HEADERS} win32_platform.h win32_joystick.h
                      wgl_context.h egl_context.h osmesa_context.h)
     set(glfw_SOURCES ${common_SOURCES} win32_init.c win32_joystick.c
                      win32_monitor.c win32_time.c win32_thread.c win32_window.c
                      wgl_context.c egl_context.c osmesa_context.c)
 elseif (_GLFW_X11)
-    add_definitions(-D_GLFW_X11)
     set(glfw_HEADERS ${common_HEADERS} x11_platform.h xkb_unicode.h posix_time.h
                      posix_thread.h glx_context.h egl_context.h osmesa_context.h)
     set(glfw_SOURCES ${common_SOURCES} x11_init.c x11_monitor.c x11_window.c
                      xkb_unicode.c posix_time.c posix_thread.c glx_context.c
                      egl_context.c osmesa_context.c)
 elseif (_GLFW_WAYLAND)
-    add_definitions(-D_GLFW_WAYLAND)
     set(glfw_HEADERS ${common_HEADERS} wl_platform.h
                      posix_time.h posix_thread.h xkb_unicode.h egl_context.h
                      osmesa_context.h)
@@ -83,4 +79,112 @@ if (CMAKE_VERSION VERSION_LESS "3.16" AND APPLE)
                                 LANGUAGE C)
 endif()
 
-add_library(GLFW ${glfw_SOURCES} ${glfw_HEADERS})
+add_library(glfw ${glfw_SOURCES} ${glfw_HEADERS})
+set_target_properties(glfw PROPERTIES
+                      OUTPUT_NAME ${GLFW_LIB_NAME}
+                      VERSION ${GLFW_VERSION_MAJOR}.${GLFW_VERSION_MINOR}
+                      SOVERSION ${GLFW_VERSION_MAJOR}
+                      POSITION_INDEPENDENT_CODE ON
+                      FOLDER "GLFW3")
+
+if (CMAKE_VERSION VERSION_EQUAL "3.1.0" OR
+    CMAKE_VERSION VERSION_GREATER "3.1.0")
+
+    set_target_properties(glfw PROPERTIES C_STANDARD 99)
+else()
+    # Remove this fallback when removing support for CMake version less than 3.1
+    target_compile_options(glfw PRIVATE
+                           "$<$<C_COMPILER_ID:AppleClang>:-std=c99>"
+                           "$<$<C_COMPILER_ID:Clang>:-std=c99>"
+                           "$<$<C_COMPILER_ID:GNU>:-std=c99>")
+endif()
+
+target_compile_definitions(glfw PRIVATE _GLFW_USE_CONFIG_H)
+target_include_directories(glfw PUBLIC
+                           "$<BUILD_INTERFACE:${GLFW_SOURCE_DIR}/include>"
+                           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+target_include_directories(glfw PRIVATE
+                           "${GLFW_SOURCE_DIR}/src"
+                           "${GLFW_BINARY_DIR}/src"
+                           ${glfw_INCLUDE_DIRS})
+target_link_libraries(glfw PRIVATE ${glfw_LIBRARIES})
+
+# Make GCC warn about declarations that VS 2010 and 2012 won't accept for all
+# source files that VS will build (Clang ignores this because we set -std=c99)
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    set_source_files_properties(context.c init.c input.c monitor.c vulkan.c
+                                window.c win32_init.c win32_joystick.c
+                                win32_monitor.c win32_time.c win32_thread.c
+                                win32_window.c wgl_context.c egl_context.c
+                                osmesa_context.c PROPERTIES
+                                COMPILE_FLAGS -Wdeclaration-after-statement)
+endif()
+
+# Enable a reasonable set of warnings
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR
+    CMAKE_C_COMPILER_ID STREQUAL "Clang" OR
+    CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
+
+    if (CMAKE_C_SIMULATE_ID STREQUAL "MSVC")
+        # Tell Clang-CL that this is a Clang flag
+        target_compile_options(glfw PRIVATE "/clang:-Wall")
+    else()
+        target_compile_options(glfw PRIVATE "-Wall")
+    endif()
+elseif (MSVC)
+    target_compile_options(glfw PRIVATE "/W3")
+endif()
+
+if (WIN32)
+    target_compile_definitions(glfw PRIVATE _UNICODE)
+endif()
+
+# HACK: When building on MinGW, WINVER and UNICODE need to be defined before
+# the inclusion of stddef.h (by glfw3.h), which is itself included before
+# win32_platform.h.  We define them here until a saner solution can be found
+# NOTE: MinGW-w64 and Visual C++ do /not/ need this hack.
+if (MINGW)
+    target_compile_definitions(glfw PRIVATE UNICODE WINVER=0x0501)
+endif()
+
+if (BUILD_SHARED_LIBS)
+    if (WIN32)
+        if (MINGW)
+            # Remove the dependency on the shared version of libgcc
+            # NOTE: MinGW-w64 has the correct default but MinGW needs this
+            target_link_libraries(glfw PRIVATE "-static-libgcc")
+
+            # Remove the lib prefix on the DLL (but not the import library)
+            set_target_properties(glfw PROPERTIES PREFIX "")
+
+            # Add a suffix to the import library to avoid naming conflicts
+            set_target_properties(glfw PROPERTIES IMPORT_SUFFIX "dll.a")
+        else()
+            # Add a suffix to the import library to avoid naming conflicts
+            set_target_properties(glfw PROPERTIES IMPORT_SUFFIX "dll.lib")
+        endif()
+
+        target_compile_definitions(glfw INTERFACE GLFW_DLL)
+    elseif (APPLE)
+        # Add -fno-common to work around a bug in Apple's GCC
+        target_compile_options(glfw PRIVATE "-fno-common")
+    endif()
+
+    if (UNIX)
+        # Hide symbols not explicitly tagged for export from the shared library
+        target_compile_options(glfw PRIVATE "-fvisibility=hidden")
+    endif()
+endif()
+
+if (MSVC)
+    target_compile_definitions(glfw PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
+
+if (GLFW_INSTALL)
+    install(TARGETS glfw
+            EXPORT glfwTargets
+            RUNTIME DESTINATION "bin"
+            ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+            LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+endif()
+

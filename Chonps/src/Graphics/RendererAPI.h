@@ -3,7 +3,7 @@
 
 namespace Chonps
 {
-	enum class API
+	enum class RenderAPI
 	{
 		None = 0,
 		OpenGL,
@@ -11,9 +11,9 @@ namespace Chonps
 		DirectX
 	};
 
-	bool setRenderAPI(API api = API::OpenGL);
+	bool setRenderContext(RenderAPI api = RenderAPI::OpenGL);
 
-	API getGraphicsContext();
+	RenderAPI getGraphicsContext();
 	std::string getGraphicsContextName();
 
 
@@ -21,7 +21,7 @@ namespace Chonps
 	{
 	public:
 		virtual void Init() = 0;
-		virtual void SetClearColor(const float r, const float g, const float b, const float w) = 0;
+		virtual void ClearColor(const float r, const float g, const float b, const float w) = 0;
 		virtual void Clear() = 0;
 		
 		void GammaCorrection(bool correct) { m_GammaCorrection = correct; }
@@ -31,6 +31,9 @@ namespace Chonps
 
 		virtual void Draw(const size_t& count) = 0;
 		virtual void FrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height) = 0;
+
+		virtual void EnableCullFace() = 0;
+		virtual void DisableCullFace() = 0;
 
 		virtual void UploadUniform1f(uint32_t shader, const char* uniform, float x) = 0;
 		virtual void UploadUniform2f(uint32_t shader, const char* uniform, float x, float y) = 0;
@@ -79,6 +82,8 @@ namespace Chonps
 		static float m_Gamma;
 	};
 
+	void setRendererAPI();
+	RendererAPI* getRendererAPI();
 	RendererAPI* createRendererAPI();
 }
 

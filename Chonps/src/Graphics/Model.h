@@ -32,41 +32,24 @@ namespace Chonps
 		Model() {}
 		Model(const std::string& filepath, mt3d modelType = mt3d::NA);
 
-		void Draw(Shader* shader, mat4 Matrix = mat4(1.0f));
-		void SpaceOrientationMode(MTO mode) { m_SpaceOrientationMode = mode; }
-
-		void Translate(float x, float y, float z);
-		void Translate(vec3 translation);
-		void Rotate(float x, float y, float z);
-		void Rotate(vec3 rotation);
-		void Scale(float x, float y, float z);
-		void Scale(vec3 scaling);
-
-		void SetPosition(float x, float y, float z);
-		void SetPosition(vec3 translation);
-		void SetOrientation(float x, float y, float z);
-		void SetOrientation(vec3 rotation);
-		void SetScale(float x, float y, float z);
-		void SetScale(vec3 scaling);
+		void Draw(Shader* shader, glm::mat4 Matrix = glm::mat4(1.0f));
+		void AttachShader(Shader* shader);
 
 		void Delete();
 
 	private:
 		std::vector<Mesh> m_Meshes;
-		mat4 m_ModelMatrix = mat4(1.0f);
-		mat4 m_TranslationMatrix = mat4(1.0f);
-		mat4 m_RotationMatrix = mat4(1.0f);
-		mat4 m_ScaleMatrix = mat4(1.0f);
 
-		vec3 m_Position = vec3(0.0f, 0.0f, 0.0f);
-		quat m_Orientation = quat(1.0f, 0.0f, 0.0f, 0.0f);
-		vec3 m_Scale = vec3(1.0f, 1.0f, 1.0f);
+		glm::vec3 m_Position = glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::quat m_Orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+		glm::vec3 m_Scale = glm::vec3(1.0f, 1.0f, 1.0f);
 
-		MTO m_SpaceOrientationMode = MTO::Global;
 		std::string m_ModelType;
 
 		void GetModelData(const std::string& filepath, mt3d modelType);
 	};
+
+	std::vector<Mesh> loadModel(const std::string& filepath, mt3d modelType = mt3d::NA);
 }
 
 #endif

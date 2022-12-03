@@ -1,8 +1,8 @@
 #ifndef IMGUI_EDITOR_H
 #define IMGUI_EDITOR_H
 
-#include "Layer.h"
-#include "Window.h"
+#include "Core/Layer.h"
+#include "Core/Window.h"
 
 namespace Chonps
 {

@@ -5,20 +5,20 @@
 
 namespace Chonps
 {
-	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, size_t size)
-		: VBO(vertices, size)
+	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size)
+		: VBO(vertices, size), m_Count(size / sizeof(uint32_t))
 	{
 		glGenBuffers(1, &m_ID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_ID);
 		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 	}
 
-	OpenGLVertexBuffer::OpenGLVertexBuffer(std::vector<vertex>& vertices)
-		: VBO(vertices)
+	OpenGLVertexBuffer::OpenGLVertexBuffer(std::vector<vertextb>& vertices)
+		: VBO(vertices), m_Count(vertices.size())
 	{
 		glGenBuffers(1, &m_ID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_ID);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertex), vertices.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertextb), vertices.data(), GL_STATIC_DRAW);
 	}
 
 	void OpenGLVertexBuffer::Bind() const

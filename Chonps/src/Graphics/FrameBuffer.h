@@ -9,6 +9,7 @@ namespace Chonps
 	{
 		None = 0,
 		RGB, RGBA, RGBA8, RGBA16F, RGBA32F, RED_INT,
+		DEPTH_COMPONENT,
 		DEPTH24STENCIL8
 	};
 	typedef FrameBufferTextureFormat FBTexFormat;

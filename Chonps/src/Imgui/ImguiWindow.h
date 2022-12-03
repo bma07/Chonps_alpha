@@ -1,7 +1,7 @@
 #ifndef IMGUI_WINDOW_H
 #define IMGUI_WINDOW_H
 
-#include "Window.h"
+#include "Core/Window.h"
 
 namespace Chonps
 {

@@ -29,6 +29,8 @@ namespace Chonps
 
 		virtual uint32_t GetID() const override { return m_ID; }
 
+		operator uint32_t& () { return m_ID; }
+
 	private:
 		std::string m_Name;
 		uint32_t m_ID;

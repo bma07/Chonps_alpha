@@ -2,7 +2,9 @@
 #include "Model.h"
 
 #include "File.h"
+
 #include "ModelLoaders/OBJ/OBJModelLoader.h"
+#include "ModelLoaders/gltf/gltfModelLoader.h"
 
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vector_angle.hpp>
@@ -19,12 +21,19 @@ namespace Chonps
 		GetModelData(filepath, modelType);
 	}
 
-	void Model::Draw(Shader* shader, mat4 Matrix /*= mat4(1.0f)*/)
+	void Model::Draw(Shader* shader, glm::mat4 Matrix /*= glm::mat4(1.0f)*/)
 	{
 		for (auto Mesh : m_Meshes)
 		{
-			Mesh.Draw(shader, Matrix * m_ModelMatrix * m_TranslationMatrix * m_RotationMatrix * m_ScaleMatrix);
+			Mesh.Draw(shader, Matrix);
 		}
+	}
+
+	void Model::AttachShader(Shader* shader)
+	{
+		shader->Bind();
+		for (auto mesh : m_Meshes)
+			mesh.AttachShader(shader);
 	}
 
 	void Model::GetModelData(const std::string& filepath, mt3d modelType)
@@ -33,96 +42,40 @@ namespace Chonps
 		{
 			m_Meshes = loadOBJModel(filepath);
 		}
-	}
-
-	// Translates the model by the amount given in coordinates
-	void Model::Translate(float x, float y, float z)
-	{
-		mat4 translate = mat4(1.0f);
-		translate = glm::translate(translate, vec3(x, y, z));
-		m_TranslationMatrix = m_SpaceOrientationMode == MTO::Global ? translate * m_TranslationMatrix : m_TranslationMatrix * translate;
-	}
-
-	// Translates the model by the amount given
-	void Model::Translate(vec3 translation)
-	{
-		mat4 translate = mat4(1.0f);
-		translate = glm::translate(translate, translation);
-		m_TranslationMatrix = m_SpaceOrientationMode == MTO::Global ? translate * m_TranslationMatrix : m_TranslationMatrix * translate;
-	}
-
-	// Rotates the model by the amount given in coordinates
-	void Model::Rotate(float x, float y, float z)
-	{
-		glm::quat newOrientation = glm::quat(glm::radians(glm::vec3(x, y, z))) * m_Orientation;
-		m_SpaceOrientationMode == MTO::Global ? m_ModelMatrix = glm::mat4_cast(newOrientation) : m_RotationMatrix = glm::mat4_cast(newOrientation);
-		m_Orientation = newOrientation;
-	}
-
-	// Rotates the model by the amount given
-	void Model::Rotate(vec3 rotation)
-	{
-		glm::quat newOrientation = glm::quat(glm::radians(rotation)) * m_Orientation;
-		m_SpaceOrientationMode == MTO::Global ? m_ModelMatrix = glm::mat4_cast(newOrientation) : m_RotationMatrix = glm::mat4_cast(newOrientation);
-		m_Orientation = newOrientation;
-	}
-
-	// Scales the model by the amount given in coordinates
-	void Model::Scale(float x, float y, float z)
-	{
-		mat4 scale = mat4(1.0f);
-		scale = glm::scale(scale, vec3(x, y, z));
-		m_ScaleMatrix = m_SpaceOrientationMode == MTO::Global ? scale * m_ScaleMatrix : m_ScaleMatrix * scale;
-	}
-
-	// Scales the model by the amount given
-	void Model::Scale(vec3 scaling)
-	{
-		mat4 scale = mat4(1.0f);
-		scale = glm::scale(scale, scaling);
-		m_ScaleMatrix = m_SpaceOrientationMode == MTO::Global ? scale * m_ScaleMatrix : m_ScaleMatrix * scale;
-	}
-
-	// Set precise position, rotation and scale in global coordinates 
-	void Model::SetPosition(float x, float y, float z)
-	{
-		m_Position = vec3(x, y, z);
-		m_TranslationMatrix = glm::translate(m_Position);
-	}
-
-	void Model::SetPosition(vec3 translation)
-	{
-		m_Position = translation;
-		m_TranslationMatrix = glm::translate(m_Position);
-	}
-
-	void Model::SetOrientation(float x, float y, float z)
-	{
-		m_Orientation = quat(glm::radians(vec3(x, y, z)));
-		m_RotationMatrix = glm::mat4_cast(glm::quat(glm::radians(vec3(0.0f))) * m_Orientation);
-	}
-
-	void Model::SetOrientation(vec3 rotation)
-	{
-		m_Orientation = quat(glm::radians(rotation));
-		m_RotationMatrix = glm::mat4_cast(quat(glm::radians(vec3(0.0f))) * m_Orientation);
-	}
-
-	void Model::SetScale(float x, float y, float z)
-	{
-		m_Scale = vec3(x, y, z);
-		m_ScaleMatrix = glm::scale(m_Scale);
-	}
-
-	void Model::SetScale(vec3 scaling)
-	{
-		m_Scale = scaling;
-		m_ScaleMatrix = glm::scale(m_Scale);
+		if (modelType == mt3d::Gltf || m_ModelType == "gltf")
+		{
+			m_Meshes = loadgltfModel(filepath);
+		}
 	}
 
 	void Model::Delete()
 	{
 		for (auto Mesh : m_Meshes)
 			Mesh.Delete();
+	}
+
+
+	std::vector<Mesh> loadModel(const std::string& filepath, mt3d modelType)
+	{
+		std::vector<Mesh> meshes;
+
+		size_t fileLength = filepath.length();
+		size_t lastDot = filepath.rfind('.') + 1;
+		auto count = fileLength - lastDot;
+		std::string modelTypeName = filepath.substr(lastDot, count);
+
+		if (modelType == mt3d::Obj || modelTypeName == "obj")
+		{
+			meshes = loadOBJModel(filepath);
+			return meshes;
+		}
+		else if (modelType == mt3d::Gltf || modelTypeName == "gltf")
+		{
+			meshes = loadgltfModel(filepath);
+			return meshes;
+		}
+		else CHONPS_CORE_ERROR("ERROR: MODEL: Could not load model! Model file type not supported: {0}", modelTypeName);
+
+		return meshes;
 	}
 }

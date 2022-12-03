@@ -41,7 +41,11 @@ namespace Chonps
 		{
 			case TexFilter::Linear: return GL_LINEAR;
 			case TexFilter::Nearest: return GL_NEAREST;
-			case TexFilter::Default: return GL_NEAREST;
+			default: 
+			{
+				CHONPS_CORE_WARN("WARNING: FRAMEBUFFER: Cannot create texture with unsupported texture filter\nFramebuffer only supports Linear or Nearest");
+				return GL_NEAREST;
+			}
 		}
 
 		return 0;
@@ -101,7 +105,7 @@ namespace Chonps
 
 		for (auto spec : m_FrameBufferSpecification.Attachments.TextureAttachments)
 		{
-			if (spec.TextureFormat != FrameBufferTextureFormat::DEPTH24STENCIL8)
+			if (spec.TextureFormat != FrameBufferTextureFormat::DEPTH24STENCIL8 && spec.TextureFormat != FrameBufferTextureFormat::DEPTH_COMPONENT)
 				m_ColorAttachmentSpecifications.emplace_back(spec);
 			else
 				m_DepthAttachmentSpecification = spec;
@@ -139,31 +143,31 @@ namespace Chonps
 
 				switch (m_ColorAttachmentSpecifications[i].TextureFormat)
 				{
-				case FrameBufferTextureFormat::RGB:
-				{
-					AttachColorTexture(m_ColorAttachments[i], m_FrameBufferSpecification.Samples, GL_RGB8, GL_RGB, m_FrameBufferSpecification.Width, m_FrameBufferSpecification.Height, m_ColorAttachmentSpecifications[i], i);
-					break;
-				}
-				case FrameBufferTextureFormat::RGBA8:
-				{
-					AttachColorTexture(m_ColorAttachments[i], m_FrameBufferSpecification.Samples, GL_RGBA8, GL_RGBA, m_FrameBufferSpecification.Width, m_FrameBufferSpecification.Height, m_ColorAttachmentSpecifications[i], i);
-					break;
-				}
-				case FrameBufferTextureFormat::RGBA16F:
-				{
-					AttachColorTexture(m_ColorAttachments[i], m_FrameBufferSpecification.Samples, GL_RGBA16F, GL_RGBA, m_FrameBufferSpecification.Width, m_FrameBufferSpecification.Height, m_ColorAttachmentSpecifications[i], i);
-					break;
-				}
-				case FrameBufferTextureFormat::RGBA32F:
-				{
-					AttachColorTexture(m_ColorAttachments[i], m_FrameBufferSpecification.Samples, GL_RGBA32F, GL_RGBA, m_FrameBufferSpecification.Width, m_FrameBufferSpecification.Height, m_ColorAttachmentSpecifications[i], i);
-					break;
-				}
-				case FrameBufferTextureFormat::RED_INT:
-				{
-					AttachColorTexture(m_ColorAttachments[i], m_FrameBufferSpecification.Samples, GL_R32I, GL_RED_INTEGER, m_FrameBufferSpecification.Width, m_FrameBufferSpecification.Height, m_ColorAttachmentSpecifications[i], i);
-					break;
-				}
+					case FrameBufferTextureFormat::RGB:
+					{
+						AttachColorTexture(m_ColorAttachments[i], m_FrameBufferSpecification.Samples, GL_RGB8, GL_RGB, m_FrameBufferSpecification.Width, m_FrameBufferSpecification.Height, m_ColorAttachmentSpecifications[i], i);
+						break;
+					}
+					case FrameBufferTextureFormat::RGBA8:
+					{
+						AttachColorTexture(m_ColorAttachments[i], m_FrameBufferSpecification.Samples, GL_RGBA8, GL_RGBA, m_FrameBufferSpecification.Width, m_FrameBufferSpecification.Height, m_ColorAttachmentSpecifications[i], i);
+						break;
+					}
+					case FrameBufferTextureFormat::RGBA16F:
+					{
+						AttachColorTexture(m_ColorAttachments[i], m_FrameBufferSpecification.Samples, GL_RGBA16F, GL_RGBA, m_FrameBufferSpecification.Width, m_FrameBufferSpecification.Height, m_ColorAttachmentSpecifications[i], i);
+						break;
+					}
+					case FrameBufferTextureFormat::RGBA32F:
+					{
+						AttachColorTexture(m_ColorAttachments[i], m_FrameBufferSpecification.Samples, GL_RGBA32F, GL_RGBA, m_FrameBufferSpecification.Width, m_FrameBufferSpecification.Height, m_ColorAttachmentSpecifications[i], i);
+						break;
+					}
+					case FrameBufferTextureFormat::RED_INT:
+					{
+						AttachColorTexture(m_ColorAttachments[i], m_FrameBufferSpecification.Samples, GL_R32I, GL_RED_INTEGER, m_FrameBufferSpecification.Width, m_FrameBufferSpecification.Height, m_ColorAttachmentSpecifications[i], i);
+						break;
+					}
 				}
 			}
 		}
@@ -174,11 +178,16 @@ namespace Chonps
 			glBindTexture(Multisampled(multisample), m_RBO);
 			switch (m_DepthAttachmentSpecification.TextureFormat)
 			{
-			case FrameBufferTextureFormat::DEPTH24STENCIL8:
-			{
-				AttachDepthTexture(m_RBO, m_FrameBufferSpecification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_FrameBufferSpecification.Width, m_FrameBufferSpecification.Height, m_DepthAttachmentSpecification);
-				break;
-			}
+				case FrameBufferTextureFormat::DEPTH24STENCIL8:
+				{
+					AttachDepthTexture(m_RBO, m_FrameBufferSpecification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_FrameBufferSpecification.Width, m_FrameBufferSpecification.Height, m_DepthAttachmentSpecification);
+					break;
+				}
+				case FrameBufferTextureFormat::DEPTH_COMPONENT:
+				{
+					AttachDepthTexture(m_RBO, m_FrameBufferSpecification.Samples, GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT, m_FrameBufferSpecification.Width, m_FrameBufferSpecification.Height, m_DepthAttachmentSpecification);
+					break;
+				}
 			}
 		}
 

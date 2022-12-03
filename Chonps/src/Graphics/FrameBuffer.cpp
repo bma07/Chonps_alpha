@@ -11,23 +11,23 @@ namespace Chonps
 	{
 		switch (getGraphicsContext())
 		{
-			case API::None:
+			case RenderAPI::None:
 			{
 				CHONPS_CORE_WARN("WANRING: FBO: createFBO() - No graphics API selected beforehand!");
 				break;
 			}
 
-			case API::OpenGL:
+			case RenderAPI::OpenGL:
 			{
 				return new OpenGLFrameBuffer(frameBufferSpecification);
 			}
 
-			case API::Vulkan:
+			case RenderAPI::Vulkan:
 			{
 				break;
 			}
 
-			case API::DirectX:
+			case RenderAPI::DirectX:
 			{
 				break;
 			}

@@ -1,14 +1,17 @@
-#ifndef GLFW_API_H
-#define GLFW_API_H
+#ifndef CHONPS_GLFW_API_H
+#define CHONPS_GLFW_API_H
 
-#include "Core.h"
-#include "Window.h"
+#include "Core/Core.h"
+#include "Core/Window.h"
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
 namespace Chonps
 {
+	void glfwInitWindowContext();
+	void glfwTerminateWindowContext();
+
 	class glfwWindowAPI : public Window
 	{
 	public:

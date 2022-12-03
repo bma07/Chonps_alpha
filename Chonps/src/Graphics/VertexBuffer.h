@@ -1,7 +1,7 @@
 #ifndef CHONPS_VERTEX_BUFFER_H
 #define CHONPS_VERTEX_BUFFER_H
 
-#include "DataTypes.h"
+#include "Core/DataTypes.h"
 
 #include <vector>
 
@@ -25,19 +25,21 @@ namespace Chonps
 	{
 	public:
 		// VBO constructor for static arrays
-		VertexBuffer(float* vertices, size_t size) {}
+		VertexBuffer(float* vertices, uint32_t size) {}
 		// VBO constructor for dynamic array
-		VertexBuffer(std::vector<vertex>& vertices) {}
+		VertexBuffer(std::vector<vertextb>& vertices) {}
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 		virtual void Delete() = 0;
 
+		virtual uint32_t GetCount() const = 0;
+
 	};
 	typedef VertexBuffer VBO;
 
 	VertexBuffer* createVertexBuffer(float* vertices, uint32_t size);
-	VertexBuffer* createVertexBuffer(std::vector<vertex>& vertices);
+	VertexBuffer* createVertexBuffer(std::vector<vertextb>& vertices);
 }
 
 #endif

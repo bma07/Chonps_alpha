@@ -7,28 +7,28 @@
 
 namespace Chonps
 {
-	Texture* createTexture(const std::string& filepath, TexT texType /*= TexT::Diffuse*/, TexF texFilter /*= TexF::Linear*/, TexW texWrap /*= TexW::Repeat*/)
+	Texture* createTexture(const std::string& filepath, TexType texType /*= TexT::Diffuse*/, TexFilterPair texFilter /*= { TexFilter::Linear, TexFilter::Nearest }*/, TexWrap texWrap /*= TexW::Repeat*/)
 	{
 		switch (getGraphicsContext())
 		{
-			case API::None:
+			case RenderAPI::None:
 			{
 				CHONPS_CORE_WARN("WANRING: TEXTURE: createTexture(filepath) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case API::OpenGL:
+			case RenderAPI::OpenGL:
 			{
 				return new OpenGLTexture(filepath, texType, texFilter, texWrap);
 				break;
 			}
 
-			case API::Vulkan:
+			case RenderAPI::Vulkan:
 			{
 				break;
 			}
 
-			case API::DirectX:
+			case RenderAPI::DirectX:
 			{
 				break;
 			}
@@ -41,24 +41,24 @@ namespace Chonps
 	{
 		switch (getGraphicsContext())
 		{
-			case API::None:
+			case RenderAPI::None:
 			{
 				CHONPS_CORE_WARN("WANRING: TEXTURE: createTexture(width, height, data, size) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case API::OpenGL:
+			case RenderAPI::OpenGL:
 			{
 				return new OpenGLTexture(width, height, data, size);
 				break;
 			}
 
-			case API::Vulkan:
+			case RenderAPI::Vulkan:
 			{
 				break;
 			}
 
-			case API::DirectX:
+			case RenderAPI::DirectX:
 			{
 				break;
 			}

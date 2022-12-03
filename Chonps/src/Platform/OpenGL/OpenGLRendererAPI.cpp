@@ -16,7 +16,7 @@ namespace Chonps
 		glFrontFace(GL_CCW);
 	}
 
-	void OpenGLRendererAPI::SetClearColor(const float r, const float g, const float b, const float w)
+	void OpenGLRendererAPI::ClearColor(const float r, const float g, const float b, const float w)
 	{
 		glClearColor(r, g, b, w);
 	}
@@ -41,6 +41,16 @@ namespace Chonps
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, readFBO);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFBO);
 		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	}
+
+	void OpenGLRendererAPI::EnableCullFace()
+	{
+		glEnable(GL_CULL_FACE);
+	}
+
+	void OpenGLRendererAPI::DisableCullFace()
+	{
+		glDisable(GL_CULL_FACE);
 	}
 
 	void OpenGLRendererAPI::UploadUniform1f(uint32_t shader, const char* uniform, float x)
@@ -207,5 +217,4 @@ namespace Chonps
 	{
 		glUniformMatrix4x3fv(glGetUniformLocation(shader, uniform), count, transpose, v);
 	}
-
 }
