@@ -20,8 +20,11 @@ namespace Chonps
 	};
 	typedef IndexBuffer IBO;
 
-	IndexBuffer* createIndexBuffer(uint32_t* indices, uint32_t size);
-	IndexBuffer* createIndexBuffer(std::vector<uint32_t>& indices);
+	std::shared_ptr<IndexBuffer> createIndexBuffer(uint32_t* indices, uint32_t size);
+	std::shared_ptr<IndexBuffer> createIndexBuffer(std::vector<uint32_t>& indices);
+
+	IndexBuffer* createIndexBufferRp(uint32_t* indices, uint32_t size);
+	IndexBuffer* createIndexBufferRp(std::vector<uint32_t>& indices);
 }
 
 #endif

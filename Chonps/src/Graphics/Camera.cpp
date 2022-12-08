@@ -49,7 +49,12 @@ namespace Chonps
 		m_CameraMatrix = m_ProjectionMatrix * m_ViewMatrix;
 	}
 
-	Camera* createCamera(int width, int height)
+	std::shared_ptr<Camera> createCamera(int width, int height)
+	{
+		return std::make_shared<Camera>(width, height);
+	}
+
+	Camera* createCameraRp(int width, int height)
 	{
 		return new Camera(width, height);
 	}

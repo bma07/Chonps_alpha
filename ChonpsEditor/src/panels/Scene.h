@@ -49,8 +49,7 @@ namespace Chonps
 
 		// WASD movement for Camera Editor
 		void CameraInputs(Camera& camera, float dt = 1.0f);
-		glm::vec3 m_CameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);
-		glm::vec3 m_CameraOrientation = glm::vec3(0.0f, 0.0f, -1.0f);
+
 		float m_CameraSpeed = 4.0f;
 		bool m_CameraFirstClick = true;
 		float m_CameraSensitivity = 0.1f;

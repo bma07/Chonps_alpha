@@ -78,30 +78,33 @@ namespace Chonps
 	{
 		if (Chonps::mouseButtonPressed(m_Window, CHONPS_MOUSE_BUTTON_3))
 		{
+			glm::vec3 camPos = camera.GetPosition();
+			glm::vec3 camOri = camera.GetOrientation();
+
 			// Handles key inputs
 			if (Chonps::keyPressed(m_Window, CHONPS_KEY_W))
 			{
-				m_CameraPosition += (m_CameraSpeed * m_CameraOrientation) * dt;
+				camPos += (m_CameraSpeed * camOri) * dt;
 			}
 			if (Chonps::keyPressed(m_Window, CHONPS_KEY_A))
 			{
-				m_CameraPosition += (m_CameraSpeed * -glm::normalize(glm::cross(m_CameraOrientation, camera.GetUpVector()))) * dt;
+				camPos += (m_CameraSpeed * -glm::normalize(glm::cross(camOri, camera.GetUpVector()))) * dt;
 			}
 			if (Chonps::keyPressed(m_Window, CHONPS_KEY_S))
 			{
-				m_CameraPosition += (m_CameraSpeed * -m_CameraOrientation) * dt;
+				camPos += (m_CameraSpeed * -camOri) * dt;
 			}
 			if (Chonps::keyPressed(m_Window, CHONPS_KEY_D))
 			{
-				m_CameraPosition += (m_CameraSpeed * glm::normalize(glm::cross(m_CameraOrientation, camera.GetUpVector()))) * dt;
+				camPos += (m_CameraSpeed * glm::normalize(glm::cross(camOri, camera.GetUpVector()))) * dt;
 			}
 			if (Chonps::keyPressed(m_Window, CHONPS_KEY_SPACE))
 			{
-				m_CameraPosition += (m_CameraSpeed * camera.GetUpVector()) * dt;
+				camPos += (m_CameraSpeed * camera.GetUpVector()) * dt;
 			}
 			if (Chonps::keyPressed(m_Window, CHONPS_KEY_LEFT_CONTROL))
 			{
-				m_CameraPosition += (m_CameraSpeed * -camera.GetUpVector()) * dt;
+				camPos += (m_CameraSpeed * -camera.GetUpVector()) * dt;
 			}
 			if (Chonps::keyPressed(m_Window, CHONPS_KEY_LEFT_SHIFT))
 			{
@@ -112,7 +115,7 @@ namespace Chonps
 				m_CameraSpeed = 4.0f;
 			}
 
-			camera.SetPosition(m_CameraPosition);
+			camera.SetPosition(camPos);
 
 			float xpos, ypos;
 			Chonps::getMousePos(m_Window, &xpos, &ypos);
@@ -132,15 +135,15 @@ namespace Chonps
 			xoffset *= m_CameraSensitivity;
 			yoffset *= m_CameraSensitivity;
 
-			glm::vec3 newOrientation = glm::rotate(m_CameraOrientation, glm::radians(yoffset), glm::normalize(glm::cross(m_CameraOrientation, camera.GetUpVector())));
-			if (abs(glm::angle(newOrientation, camera.GetUpVector()) - glm::radians(90.0f)) <= glm::radians(85.0f))
+			glm::vec3 newOrientation = glm::rotate(camOri, glm::radians(yoffset), glm::normalize(glm::cross(camOri, camera.GetUpVector())));
+			if (abs(glm::angle(glm::normalize(newOrientation), camera.GetUpVector()) - glm::radians(90.0f)) <= glm::radians(85.0f))
 			{
-				m_CameraOrientation = newOrientation;
+				camOri = newOrientation;
 			}
 
-			// Rotates the m_CameraOrientation left and right
-			m_CameraOrientation = glm::rotate(m_CameraOrientation, glm::radians(-xoffset), camera.GetUpVector());
-			camera.SetOrientation(m_CameraOrientation);
+			// Rotates the orientation left and right
+			camOri = glm::rotate(camOri, glm::radians(-xoffset), camera.GetUpVector());
+			camera.SetOrientation(camOri);
 
 			if (xpos > m_Window->GetWidth() - 2)
 			{
@@ -178,7 +181,7 @@ namespace Chonps
 			auto& transComp = s_Scene->GetRegistry().get_component<TransformComponent>(entity);
 
 			for (auto mesh : meshComp.meshes)
-				mesh.Draw(meshComp.shader, transComp.transform);
+				mesh.Draw(meshComp.shader, transComp.transform());
 		}
 	}
 }

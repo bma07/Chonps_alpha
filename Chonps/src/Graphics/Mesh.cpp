@@ -52,16 +52,16 @@ namespace Chonps
 
 		computeTangents(vertices, indices);
 
-		VertexBuffer* vbo = createVertexBuffer(vertices);
-		IndexBuffer* ibo = createIndexBuffer(indices);
+		std::shared_ptr<VertexBuffer> vbo = createVertexBuffer(vertices);
+		std::shared_ptr<IndexBuffer> ibo = createIndexBuffer(indices);
 
-		m_VAO->LinkIndexBuffer(ibo);
-		m_VAO->LinkVertexBuffer(vbo, 0, 3, SDT::Float, sizeof(vertextb), (void*)0);
-		m_VAO->LinkVertexBuffer(vbo, 1, 3, SDT::Float, sizeof(vertextb), (void*)(3 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(vbo, 2, 2, SDT::Float, sizeof(vertextb), (void*)(6 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(vbo, 3, 3, SDT::Float, sizeof(vertextb), (void*)(8 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(vbo, 4, 3, SDT::Float, sizeof(vertextb), (void*)(11 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(vbo, 5, 3, SDT::Float, sizeof(vertextb), (void*)(14 * sizeof(float)));
+		m_VAO->LinkIndexBuffer(&(*ibo));
+		m_VAO->LinkVertexBuffer(&(*vbo), 0, 3, SDT::Float, sizeof(vertextb), (void*)0);
+		m_VAO->LinkVertexBuffer(&(*vbo), 1, 3, SDT::Float, sizeof(vertextb), (void*)(3 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(&(*vbo), 2, 2, SDT::Float, sizeof(vertextb), (void*)(6 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(&(*vbo), 3, 3, SDT::Float, sizeof(vertextb), (void*)(8 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(&(*vbo), 4, 3, SDT::Float, sizeof(vertextb), (void*)(11 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(&(*vbo), 5, 3, SDT::Float, sizeof(vertextb), (void*)(14 * sizeof(float)));
 		m_VAO->Unbind();
 		vbo->Unbind();
 		ibo->Unbind();
@@ -78,7 +78,7 @@ namespace Chonps
 
 		uploadUniform4mfv(shader->GetID(), Mesh::s_MatrixUniform, 1, false, glm::value_ptr(matrix * m_MeshMatrix));
 
-		renderDraw(m_VAO);
+		renderDraw(&(*m_VAO));
 
 		for (auto texture : m_Textures)
 			texture->Unbind();
@@ -139,7 +139,6 @@ namespace Chonps
 	void Mesh::Delete()
 	{
 		m_VAO->Delete();
-		delete m_VAO;
 
 		for (auto i : m_Textures)
 		{

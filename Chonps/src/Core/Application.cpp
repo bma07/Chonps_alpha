@@ -17,11 +17,10 @@ namespace Chonps
 
 		if (getGraphicsContext() == RenderAPI::None) setRenderContext(RenderAPI::OpenGL);
 
-		m_Window = std::unique_ptr<Window>(createWindow(Title, width, height, fullScreen));
+		m_Window = createWindow(Title, width, height, fullScreen);
 		m_Window->SetEventCallback(std::bind(&Application::OnEvent, this, std::placeholders::_1));
 
-		m_ImguiEditor = new ImguiEditor(&(*m_Window));
-		add_overlay(m_ImguiEditor);
+		imguiInit(&(*m_Window));
 	}
 
 	void Application::Run()
@@ -37,10 +36,10 @@ namespace Chonps
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
 
-			m_ImguiEditor->NewFrame();
+			imguiNewFrame();
 			for (Layer* layer : m_LayerStack)
 				layer->OnImGuiRender();
-			m_ImguiEditor->Render();
+			imguiRender();
 
 			if (m_UpdateWindowRender)
 			{
@@ -49,8 +48,8 @@ namespace Chonps
 			}
 		}
 
-		remove_layer(m_ImguiEditor);
 		m_Window->Delete();
+		imguiShutdown();
 	}
 
 	void Application::OnEvent(Event& e)

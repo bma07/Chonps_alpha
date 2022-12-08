@@ -7,7 +7,7 @@
 
 namespace Chonps
 {
-	static Input* s_Input;
+	static std::shared_ptr<Input> s_Input;
 
 	void windowInputInit()
 	{
@@ -20,7 +20,7 @@ namespace Chonps
 			}
 			case Chonps::WindowAPI::Glfw:
 			{
-				s_Input = new glfwInput();
+				s_Input = std::make_shared<glfwInput>();
 				break;
 			}
 			case Chonps::WindowAPI::Win32:

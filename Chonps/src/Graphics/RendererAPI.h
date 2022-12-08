@@ -83,8 +83,8 @@ namespace Chonps
 	};
 
 	void setRendererAPI();
-	RendererAPI* getRendererAPI();
-	RendererAPI* createRendererAPI();
+	std::shared_ptr<RendererAPI> getRendererAPI();
+	std::shared_ptr<RendererAPI> createRendererAPI();
 }
 
 #endif

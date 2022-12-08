@@ -3,7 +3,7 @@
 
 int main()
 {
-	Chonps::Log::Init();
+	Chonps::logInit();
 
 	CHONPS_INFO("Initialized Log");
 

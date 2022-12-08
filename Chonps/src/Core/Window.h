@@ -42,7 +42,8 @@ namespace Chonps
 		virtual void Delete() = 0;
 	};
 
-	Window* createWindow(std::string title, unsigned int width, unsigned int height, bool fullScreen = false);
+	std::shared_ptr<Window> createWindow(std::string title, unsigned int width, unsigned int height, bool fullScreen = false);
+	Window* createWindowRp(std::string title, unsigned int width, unsigned int height, bool fullScreen = false);
 
 	bool setWindowContext(WindowAPI api = WindowAPI::Glfw);
 	bool windowTerminateContext();

@@ -19,10 +19,16 @@ namespace Chonps
 	};
 
 	// Creates Shader from two seperate vertex and fragment files
-	Shader* createShader(const std::string& vertex, const std::string& fragment, const std::string& name = "Shader");
+	std::shared_ptr<Shader> createShader(const std::string& vertex, const std::string& fragment, const std::string& name = "Shader");
 
 	// Creates Shader from single file containing all shaders
-	Shader* createShader(const std::string& filepath);
+	std::shared_ptr<Shader> createShader(const std::string& filepath);
+
+	// Creates Shader from two seperate vertex and fragment files
+	Shader* createShaderRp(const std::string& vertex, const std::string& fragment, const std::string& name = "Shader");
+
+	// Creates Shader from single file containing all shaders
+	Shader* createShaderRp(const std::string& filepath);
 
 
 	void uploadUniform1f(uint32_t shader, const char* uniform, float x);

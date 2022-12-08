@@ -58,8 +58,11 @@ namespace Chonps
 
 	};
 
-	Texture* createTexture(const std::string& filepath, TexType texType = TexType::Diffuse, TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, TexWrap texWrap = TexWrap::Repeat);
-	Texture* createTexture(uint32_t width, uint32_t height, void* data, uint32_t size);
+	std::shared_ptr<Texture> createTexture(const std::string& filepath, TexType texType = TexType::Diffuse, TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, TexWrap texWrap = TexWrap::Repeat);
+	std::shared_ptr<Texture> createTexture(uint32_t width, uint32_t height, void* data, uint32_t size);
+
+	Texture* createTextureRp(const std::string& filepath, TexType texType = TexType::Diffuse, TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, TexWrap texWrap = TexWrap::Repeat);
+	Texture* createTextureRp(uint32_t width, uint32_t height, void* data, uint32_t size);
 }
 
 #endif

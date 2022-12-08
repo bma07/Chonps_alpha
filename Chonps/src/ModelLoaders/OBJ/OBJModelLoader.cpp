@@ -213,7 +213,7 @@ namespace Chonps
 						size_t mtleol = materialSource.find_first_of("\r\n", mtldataTypePos);
 						std::string getTexturePath = materialSource.substr(mtldataTypePos + mtldataTypeLength, mtleol - mtldataTypePos - mtldataTypeLength);
 
-						Texture* tex = createTexture(getTexturePath, TexT::Diffuse);
+						Texture* tex = createTextureRp(getTexturePath, TexT::Diffuse);
 						objMat.map_Kd = tex;
 
 						size_t nextLineTexPos = data.find_first_not_of("\r\n", materialeol);
@@ -230,7 +230,7 @@ namespace Chonps
 						size_t mtleol = materialSource.find_first_of("\r\n", mtldataTypePos);
 						std::string getTexturePath = materialSource.substr(mtldataTypePos + mtldataTypeLength, mtleol - mtldataTypePos - mtldataTypeLength);
 
-						Texture* tex = createTexture(getTexturePath, TexT::Specular);
+						Texture* tex = createTextureRp(getTexturePath, TexT::Specular);
 						objMat.map_Ks = tex;
 
 						size_t nextLineTexPos = data.find_first_not_of("\r\n", materialeol);
@@ -242,7 +242,7 @@ namespace Chonps
 					if (!objMat.HasMaterials)
 					{
 						uint32_t whiteTextureData = 0xffffffff;
-						Texture* tex = Chonps::createTexture(1, 1, &whiteTextureData, sizeof(uint32_t));
+						Texture* tex = createTextureRp(1, 1, &whiteTextureData, sizeof(uint32_t));
 						objMat.map_Kd = tex;
 					}
 

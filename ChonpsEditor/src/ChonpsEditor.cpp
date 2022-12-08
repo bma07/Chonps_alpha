@@ -58,19 +58,19 @@ namespace Chonps
 
 		const std::string resPathDir = "D:/Dev/Chonps/Sandbox/res/"; // TEMPORARY: will remove later
 
-		m_Shader = Chonps::Unique<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/shader.glsl"));
-		m_LightShader = Chonps::Unique<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/lightShader.glsl"));
-		m_FrameBufferShader = Chonps::Unique<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/FBOshader.glsl"));
-		m_CubemapShader = Chonps::Unique<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/cubemapShader.glsl"));
-		m_PlaneShader = Chonps::Unique<Chonps::Shader>(Chonps::createShader(resPathDir + "shaders/infiniteGrid.glsl"));
+		m_Shader = Chonps::createShader(resPathDir + "shaders/shader.glsl");
+		m_LightShader = Chonps::createShader(resPathDir + "shaders/lightShader.glsl");
+		m_FrameBufferShader = Chonps::createShader(resPathDir + "shaders/FBOshader.glsl");
+		m_CubemapShader = Chonps::createShader(resPathDir + "shaders/cubemapShader.glsl");
+		m_PlaneShader = Chonps::createShader(resPathDir + "shaders/infiniteGrid.glsl");
 
-		m_FrameBufferVAO = Chonps::Unique<Chonps::VAO>(Chonps::createVertexArray());
+		m_FrameBufferVAO = Chonps::createVertexArray();
 
 		m_FrameBufferVAO->Bind();
-		Chonps::VBO* FrambeBufferVBO = Chonps::createVertexBuffer(screen, sizeof(screen));
+		Chonps::Shared<Chonps::VBO> FrambeBufferVBO = Chonps::createVertexBuffer(screen, sizeof(screen));
 
-		m_FrameBufferVAO->LinkVertexBuffer(FrambeBufferVBO, 0, 2, Chonps::SDT::Float, 4 * sizeof(float), (void*)0);
-		m_FrameBufferVAO->LinkVertexBuffer(FrambeBufferVBO, 1, 2, Chonps::SDT::Float, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+		m_FrameBufferVAO->LinkVertexBuffer(&(*FrambeBufferVBO), 0, 2, Chonps::SDT::Float, 4 * sizeof(float), (void*)0);
+		m_FrameBufferVAO->LinkVertexBuffer(&(*FrambeBufferVBO), 1, 2, Chonps::SDT::Float, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 		m_FrameBufferVAO->Unbind();
 		FrambeBufferVBO->Unbind();
 
@@ -79,7 +79,7 @@ namespace Chonps
 		fbSpec.Height = 600;
 		fbSpec.Attachments = { Chonps::FBTexFormat::RGBA32F, Chonps::FBTexFormat::DEPTH24STENCIL8 };
 
-		m_FBO = Chonps::Unique<Chonps::FBO>(Chonps::createFrameBuffer(fbSpec));
+		m_FBO = Chonps::createFrameBuffer(fbSpec);
 
 		Chonps::FrameBufferSpecification MsaafbSpec;
 		MsaafbSpec.Width = 800;
@@ -87,21 +87,21 @@ namespace Chonps
 		MsaafbSpec.Attachments = { Chonps::FBTexFormat::RGBA32F, Chonps::FBTexFormat::DEPTH24STENCIL8 };
 		MsaafbSpec.Samples = 8;
 
-		m_MsaaFBO = Chonps::Unique<Chonps::FBO>(Chonps::createFrameBuffer(MsaafbSpec));
+		m_MsaaFBO = Chonps::createFrameBuffer(MsaafbSpec);
 
 		Chonps::FrameBufferSpecification ImguifbSpec;
 		ImguifbSpec.Width = 800;
 		ImguifbSpec.Height = 600;
 		ImguifbSpec.Attachments = { Chonps::FBTexFormat::RGBA32F, Chonps::FBTexFormat::DEPTH24STENCIL8 };
 
-		m_ImguiFBO = Chonps::Unique<Chonps::FBO>(Chonps::createFrameBuffer(ImguifbSpec));
+		m_ImguiFBO = Chonps::createFrameBuffer(ImguifbSpec);
 
 		/*Chonps::FrameBufferSpecification ShadowfbSpec;
 		ShadowfbSpec.Width = 1024;
 		ShadowfbSpec.Height = 1024;
 		ShadowfbSpec.Attachments = { {Chonps::FBTexFormat::DEPTH_COMPONENT} };
 
-		m_ShadowFBO = Chonps::Unique<Chonps::FBO>(Chonps::createFrameBuffer());*/
+		m_ShadowFBO = Chonps::createFrameBuffer();*/
 
 		std::string cubeMapFaces[6] =
 		{
@@ -113,35 +113,36 @@ namespace Chonps
 			resPathDir + "cubemaps/Chapel/negz.jpg",
 		};
 
-		m_Cubemap = Chonps::Unique<Chonps::Cubemap>(Chonps::createCubemap(cubeMapFaces));
+		m_Cubemap = Chonps::createCubemap(cubeMapFaces);
 
 
-		m_Camera.SetUp(glm::vec3(0.0f, 0.0f, 5.0f), 65.0f, 0.01f, 500.0f);
+		m_Camera.SetUp(glm::vec3(5.0f, 5.0f, 5.0f), 65.0f, 0.01f, 500.0f);
+		m_Camera.SetOrientation(glm::vec3(-1.0f, -1.0f, -1.0f));
 
 		glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		glm::mat4 lightModel = glm::mat4(1.0f);
 		lightModel = glm::translate(lightModel, m_lightPos);
 
-		m_LightVAO = Chonps::Unique<Chonps::VAO>(Chonps::createVertexArray());
+		m_LightVAO = Chonps::createVertexArray();
 
 		m_LightVAO->Bind();
-		Chonps::VBO* lightVBO = Chonps::createVertexBuffer(lightVertices, sizeof(lightVertices));
-		Chonps::IBO* lightIBO = Chonps::createIndexBuffer(lightIndices, sizeof(lightIndices));
+		Chonps::Shared<Chonps::VBO> lightVBO = Chonps::createVertexBuffer(lightVertices, sizeof(lightVertices));
+		Chonps::Shared<Chonps::IBO> lightIBO = Chonps::createIndexBuffer(lightIndices, sizeof(lightIndices));
 
-		m_LightVAO->LinkIndexBuffer(lightIBO);
-		m_LightVAO->LinkVertexBuffer(lightVBO, 0, 3, Chonps::SDT::Float, 5 * sizeof(float), (void*)0);
-		m_LightVAO->LinkVertexBuffer(lightVBO, 1, 2, Chonps::SDT::Float, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		m_LightVAO->LinkIndexBuffer(&(*lightIBO));
+		m_LightVAO->LinkVertexBuffer(&(*lightVBO), 0, 3, Chonps::SDT::Float, 5 * sizeof(float), (void*)0);
+		m_LightVAO->LinkVertexBuffer(&(*lightVBO), 1, 2, Chonps::SDT::Float, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 		m_LightVAO->Unbind();
 		lightVBO->Unbind();
 		lightIBO->Unbind();
 
-		m_PlaneVAO = Chonps::Unique<Chonps::VAO>(Chonps::createVertexArray());
+		m_PlaneVAO = Chonps::createVertexArray();
 		m_PlaneVAO->Bind();
-		Chonps::VBO* planeVBO = Chonps::createVertexBuffer(planeVertices, sizeof(planeVertices));
-		Chonps::IBO* planeIBO = Chonps::createIndexBuffer(planeIndices, sizeof(planeIndices));
+		Chonps::Shared<Chonps::VBO> planeVBO = Chonps::createVertexBuffer(planeVertices, sizeof(planeVertices));
+		Chonps::Shared<Chonps::IBO> planeIBO = Chonps::createIndexBuffer(planeIndices, sizeof(planeIndices));
 
-		m_PlaneVAO->LinkIndexBuffer(planeIBO);
-		m_PlaneVAO->LinkVertexBuffer(planeVBO, 0, 3, Chonps::SDT::Float, 3 * sizeof(float), (void*)0);
+		m_PlaneVAO->LinkIndexBuffer(&(*planeIBO));
+		m_PlaneVAO->LinkVertexBuffer(&(*planeVBO), 0, 3, Chonps::SDT::Float, 3 * sizeof(float), (void*)0);
 		m_PlaneVAO->Unbind();
 		planeVBO->Unbind();
 		planeIBO->Unbind();
@@ -161,7 +162,7 @@ namespace Chonps
 		m_CubemapShader->Bind();
 		Chonps::uploadUniform1i(m_CubemapShader->GetID(), "skybox", 0);
 
-		m_SunTexture = Chonps::Unique<Chonps::Texture>(Chonps::createTexture(resPathDir + "textures/sun.png", Chonps::TexT::Diffuse, { Chonps::TexF::Linear, Chonps::TexF::Linear }));
+		m_SunTexture = Chonps::createTexture(resPathDir + "textures/sun.png", Chonps::TexT::Diffuse, { Chonps::TexF::Linear, Chonps::TexF::Linear });
 		m_SunTexture->TexUnit(&(*m_LightShader), "texID", 0);
 
 		Chonps::renderInit();
@@ -172,9 +173,11 @@ namespace Chonps
 
 		MeshComponent meshComp(Chonps::loadModel(resPathDir + "models/gltf/Flivver/Flivver.gltf"), &(*m_Shader));
 		TransformComponent transComp = { {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f} };
+		TagComponent tagComp({ "GameObject", "Model", "EditorOnly" });
 
 		m_Scene->GetRegistry().add_component<TransformComponent>(entity, transComp);
 		m_Scene->GetRegistry().add_component<MeshComponent>(entity, meshComp);
+		m_Scene->GetRegistry().add_component<TagComponent>(entity, tagComp);
 		m_SceneHierarchy.SetScene(m_Scene);
 		m_Properties.SetScene(m_Scene, &m_SceneHierarchy);
 	}

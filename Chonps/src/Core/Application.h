@@ -14,8 +14,6 @@
 
 #include "Input.h"
 
-#include "Imgui/ImguiEditor.h"
-
 namespace Chonps
 {
 	class Application
@@ -41,9 +39,8 @@ namespace Chonps
 		inline void SetRun(bool run) { m_Running = run; }
 
 	private:
-		std::unique_ptr<Window> m_Window;
+		std::shared_ptr<Window> m_Window;
 		LayerStack m_LayerStack;
-		ImguiEditor* m_ImguiEditor;
 		float m_Timestep = 0.0f;
 		bool m_Running = true;
 		bool m_UpdateWindowRender = true;

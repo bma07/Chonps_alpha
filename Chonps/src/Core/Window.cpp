@@ -97,4 +97,56 @@ namespace Chonps
 		CHONPS_CORE_ERROR("ERROR: WINDOW: getWindowContextName() - Cannot find the Windows API selected!");
 		return "null";
 	}
+
+	std::shared_ptr<Window> createWindow(std::string title, unsigned int width, unsigned int height, bool fullScreen)
+	{
+		switch (getWindowContext())
+		{
+			case WindowAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: WINDOW: createWindow() - No graphics API selected beforehand!");
+				break;
+			}
+
+			case WindowAPI::Glfw:
+			{
+				return std::make_shared<glfwWindowAPI>(title, width, height, fullScreen);
+				break;
+			}
+
+			case WindowAPI::Win32:
+			{
+				break;
+			}
+		}
+
+		CHONPS_CORE_ERROR("ERROR: WINDOW: Could not create Window!");
+		return nullptr;
+	}
+
+	Window* createWindowRp(std::string title, unsigned int width, unsigned int height, bool fullScreen)
+	{
+		switch (getWindowContext())
+		{
+			case WindowAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: WINDOW: createWindow() - No graphics API selected beforehand!");
+				break;
+			}
+
+			case WindowAPI::Glfw:
+			{
+				return new glfwWindowAPI(title, width, height, fullScreen);
+				break;
+			}
+
+			case WindowAPI::Win32:
+			{
+				break;
+			}
+		}
+
+		CHONPS_CORE_ERROR("ERROR: WINDOW: Could not create Window!");
+		return nullptr;
+	}
 }

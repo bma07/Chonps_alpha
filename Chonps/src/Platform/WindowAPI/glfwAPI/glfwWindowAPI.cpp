@@ -40,11 +40,6 @@ namespace Chonps
 			CHONPS_CORE_WARN("glfw already terminated!");
 	}
 
-	Window* createWindow(std::string title, unsigned int width, unsigned int height, bool fullScreen)
-	{
-		return new glfwWindowAPI(title, width, height, fullScreen);
-	}
-
 	glfwWindowAPI::glfwWindowAPI(std::string Title, int Width, int Height, bool fullScreen)
 		: Window(Title, Width, Height)
 	{

@@ -62,9 +62,9 @@ namespace Chonps
 	typedef Camera PerspectiveCamera;
 	typedef Camera Camera3D;
 
-	// NOTE: The Camera class does not need to be created dynamically since it is platform independent
 	// Optional: This function is optional for creating a Camera class dynamically
-	Camera* createCamera(int width, int height);
+	std::shared_ptr<Camera> createCamera(int width, int height);
+	Camera* createCameraRp(int width, int height);
 }
 
 #endif

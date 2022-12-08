@@ -12,6 +12,7 @@ namespace Chonps
 
 		virtual void LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, uint32_t numComponents, ShaderDataType type, uint32_t stride, void* offset) override;
 		virtual void LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, ShaderDataType numComponents, ShaderDataType type, uint32_t stride, void* offset) override;
+		
 		virtual void LinkIndexBuffer(IndexBuffer* IBO) override;
 
 		virtual void Bind() const override;

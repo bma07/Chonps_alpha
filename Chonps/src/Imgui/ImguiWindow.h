@@ -5,15 +5,15 @@
 
 namespace Chonps
 {
-	void ImguiInit(Window* window);
+	void imguiInit(Window* window);
 
-	void ImguiNewFrame();
+	void imguiNewFrame();
 
-	void ImguiNewFrame(Window* window);
+	void imguiNewFrame(Window* window);
 
-	void ImguiRender();
+	void imguiRender();
 
-	void ImguiShutdown();
+	void imguiShutdown();
 }
 
 

@@ -37,7 +37,7 @@ namespace Chonps
 		static const char* s_MatrixUniform;
 		static const char* s_TexUnitName;
 
-		VertexArray* m_VAO;
+		std::shared_ptr<VertexArray> m_VAO;
 
 		bool m_HasTexture = false;
 		bool m_TextureAttached = false;

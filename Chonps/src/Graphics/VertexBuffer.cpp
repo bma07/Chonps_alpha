@@ -53,13 +53,72 @@ namespace Chonps
 		return 0;
 	}
 
-	VertexBuffer* createVertexBuffer(float* vertices, uint32_t size)
+	std::shared_ptr<VertexBuffer> createVertexBuffer(float* vertices, uint32_t size)
 	{
 		switch (getGraphicsContext())
 		{
 			case RenderAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: VBO: createVBO(vertices, size) - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: VBO: createVertexBuffer(vertices, size) - No graphics API selected beforehand!");
+				break;
+			}
+
+			case RenderAPI::OpenGL:
+			{
+				return std::make_shared<OpenGLVertexBuffer>(vertices, size);
+				break;
+			}
+
+			case RenderAPI::Vulkan:
+			{
+				break;
+			}
+
+			case RenderAPI::DirectX:
+			{
+				break;
+			}
+		}
+		CHONPS_CORE_ERROR("ERROR: VBO: Could not create VBO!");
+		return nullptr;
+	}
+
+	std::shared_ptr<VertexBuffer> createVertexBuffer(std::vector<vertextb>& vertices)
+	{
+		switch (getGraphicsContext())
+		{
+			case RenderAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: VBO: createVertexBuffer(vertices) - No graphics API selected beforehand!");
+				break;
+			}
+
+			case RenderAPI::OpenGL:
+			{
+				return std::make_shared<OpenGLVertexBuffer>(vertices);
+			}
+
+			case RenderAPI::Vulkan:
+			{
+				break;
+			}
+
+			case RenderAPI::DirectX:
+			{
+				break;
+			}
+		}
+		CHONPS_CORE_ERROR("ERROR: VBO: Could not create VBO!");
+		return nullptr;
+	}
+
+	VertexBuffer* createVertexBufferRp(float* vertices, uint32_t size)
+	{
+		switch (getGraphicsContext())
+		{
+			case RenderAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: VBO: createVertexBufferRp(vertices, size) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -83,13 +142,13 @@ namespace Chonps
 		return nullptr;
 	}
 
-	VertexBuffer* createVertexBuffer(std::vector<vertextb>& vertices)
+	VertexBuffer* createVertexBufferRp(std::vector<vertextb>& vertices)
 	{
 		switch (getGraphicsContext())
 		{
 			case RenderAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: VBO: createVertexVBO(vertices) - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: VBO: createVertexBufferRp(vertices) - No graphics API selected beforehand!");
 				break;
 			}
 

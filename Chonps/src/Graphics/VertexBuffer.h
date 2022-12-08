@@ -38,8 +38,11 @@ namespace Chonps
 	};
 	typedef VertexBuffer VBO;
 
-	VertexBuffer* createVertexBuffer(float* vertices, uint32_t size);
-	VertexBuffer* createVertexBuffer(std::vector<vertextb>& vertices);
+	std::shared_ptr<VertexBuffer> createVertexBuffer(float* vertices, uint32_t size);
+	std::shared_ptr<VertexBuffer> createVertexBuffer(std::vector<vertextb>& vertices);
+
+	VertexBuffer* createVertexBufferRp(float* vertices, uint32_t size);
+	VertexBuffer* createVertexBufferRp(std::vector<vertextb>& vertices);
 }
 
 #endif

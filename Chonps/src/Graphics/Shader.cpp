@@ -8,13 +8,72 @@
 
 namespace Chonps
 {
-	Shader* createShader(const std::string& vertex, const std::string& fragment, const std::string& name /*= Shader*/)
+	std::shared_ptr<Shader> createShader(const std::string& vertex, const std::string& fragment, const std::string& name)
 	{
 		switch (getGraphicsContext())
 		{
 			case RenderAPI::None:
 			{
 				CHONPS_CORE_WARN("WANRING: SHADER: createShader(vertex, fragment, name) - No graphics API selected beforehand!");
+				break;
+			}
+
+			case RenderAPI::OpenGL:
+			{
+				return std::make_shared<OpenGLShader>(name, vertex, fragment);
+				break;
+			}
+
+			case RenderAPI::Vulkan:
+			{
+				break;
+			}
+
+			case RenderAPI::DirectX:
+			{
+				break;
+			}
+		}
+		CHONPS_CORE_ERROR("ERROR: SHADER: Could not create Shader!");
+		return nullptr;
+	}
+
+	std::shared_ptr<Shader> createShader(const std::string& filepath)
+	{
+		switch (getGraphicsContext())
+		{
+			case RenderAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: SHADER: createShader(filepath) - No graphics API selected beforehand!");
+				break;
+			}
+
+			case RenderAPI::OpenGL:
+			{
+				return std::make_shared<OpenGLShader>(filepath);
+			}
+
+			case RenderAPI::Vulkan:
+			{
+				break;
+			}
+
+			case RenderAPI::DirectX:
+			{
+				break;
+			}
+		}
+		CHONPS_CORE_ERROR("ERROR: SHADER: Could not create Shader!");
+		return nullptr;
+	}
+
+	Shader* createShaderRp(const std::string& vertex, const std::string& fragment, const std::string& name /*= Shader*/)
+	{
+		switch (getGraphicsContext())
+		{
+			case RenderAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: SHADER: createShaderRp(vertex, fragment, name) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -38,13 +97,13 @@ namespace Chonps
 		return nullptr;
 	}
 
-	Shader* createShader(const std::string& filepath)
+	Shader* createShaderRp(const std::string& filepath)
 	{
 		switch (getGraphicsContext())
 		{
 			case RenderAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: SHADER: createShader(filepath) - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: SHADER: createShaderRp(filepath) - No graphics API selected beforehand!");
 				break;
 			}
 

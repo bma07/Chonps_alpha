@@ -6,13 +6,71 @@
 
 namespace Chonps
 {
-	IndexBuffer* createIndexBuffer(uint32_t* indices, uint32_t size)
+	std::shared_ptr<IndexBuffer> createIndexBuffer(uint32_t* indices, uint32_t size)
 	{
 		switch (getGraphicsContext())
 		{
 			case RenderAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: EBO: createEBO(indices, size) - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: EBO: createIndexBuffer(indices, size) - No graphics API selected beforehand!");
+				break;
+			}
+
+			case RenderAPI::OpenGL:
+			{
+				return std::make_shared<OpenGLIndexBuffer>(indices, size);
+			}
+
+			case RenderAPI::Vulkan:
+			{
+				break;
+			}
+
+			case RenderAPI::DirectX:
+			{
+				break;
+			}
+		}
+		CHONPS_CORE_ERROR("ERROR: EBO: Could not create EBO!");
+		return nullptr;
+	}
+
+	std::shared_ptr<IndexBuffer> createIndexBuffer(std::vector<uint32_t>& indices)
+	{
+		switch (getGraphicsContext())
+		{
+			case RenderAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: EBO: createIndexBuffer(indices) - No graphics API selected beforehand!");
+				break;
+			}
+
+			case RenderAPI::OpenGL:
+			{
+				return std::make_shared<OpenGLIndexBuffer>(indices);
+			}
+
+			case RenderAPI::Vulkan:
+			{
+				break;
+			}
+
+			case RenderAPI::DirectX:
+			{
+				break;
+			}
+		}
+		CHONPS_CORE_ERROR("ERROR: EBO: Could not create EBO!");
+		return nullptr;
+	}
+
+	IndexBuffer* createIndexBufferRp(uint32_t* indices, uint32_t size)
+	{
+		switch (getGraphicsContext())
+		{
+			case RenderAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: EBO: createIndexBufferRp(indices, size) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -35,13 +93,13 @@ namespace Chonps
 		return nullptr;
 	}
 
-	IndexBuffer* createIndexBuffer(std::vector<uint32_t>& indices)
+	IndexBuffer* createIndexBufferRp(std::vector<uint32_t>& indices)
 	{
 		switch (getGraphicsContext())
 		{
 			case RenderAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: EBO: createVertexEBO(indices) - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: EBO: createIndexBufferRp(indices) - No graphics API selected beforehand!");
 				break;
 			}
 

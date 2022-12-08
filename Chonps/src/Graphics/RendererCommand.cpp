@@ -55,7 +55,7 @@ namespace Chonps
 	// Clears the window and set the color of the viewport/background
 	void renderClearColor(const float r, const float g, const float b, const float w /*= 0.0f*/)
 	{
-		RendererAPI* rendererAPI = getRendererAPI();
+		std::shared_ptr<RendererAPI> rendererAPI = getRendererAPI();
 		float gamma = rendererAPI->GetGamma();
 		rendererAPI->GetGammaCorrection() // Check Gamma
 			? rendererAPI->ClearColor(pow(r, gamma), pow(g, gamma), pow(b, gamma), w) // if Gamma Corrected

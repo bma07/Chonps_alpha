@@ -93,9 +93,9 @@ namespace Chonps
 		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
 		ImU32 tablebgColor1 = ImGui::GetColorU32(ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
-		ImU32 tablebgColor2 = ImGui::GetColorU32(ImVec4(0.06f, 0.06f, 0.06f, 1.0f));
+		ImU32 tablebgColor2 = ImGui::GetColorU32(ImVec4(0.08f, 0.08f, 0.08f, 1.0f));
 		ImU32 tablebgColorHovered = ImGui::GetColorU32(ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
-		ImU32 tablebgColorHighlighted = ImGui::GetColorU32(ImVec4(0.2f, 0.5f, 1.0f, 1.0f));
+		ImU32 tablebgColorHighlighted = ImGui::GetColorU32(ImVec4(0.26f, 0.26f, 0.26f, 1.0f));
 
 		if (ImGui::BeginTable("SceneHierarchyPanel", 1, ImGuiTableFlags_RowBg | ImGuiTableFlags_NoClip))
 		{
@@ -279,13 +279,19 @@ namespace Chonps
 						{
 							if (!m_Scene->m_Registry.has_component<TransformComponent>(m_SelectedEntity))
 								m_Scene->m_Registry.add_component<TransformComponent>(m_SelectedEntity, TransformComponent());
-							else CHONPS_WARN("WARNING: ECS: Entity already has component of this type: {0}", typeid(TransformComponent).name());
+							else CHONPS_WARN("WARNING: ECS: Entity already has component of this type: {0}", "TransformComponent");
 						}
 						if (ImGui::MenuItem("Mesh"))
 						{
 							if (!m_Scene->m_Registry.has_component<MeshComponent>(m_SelectedEntity))
 								m_Scene->m_Registry.add_component<MeshComponent>(m_SelectedEntity, MeshComponent());
-							else CHONPS_WARN("WARNING: ECS: Entity already has component of this type: {0}", typeid(MeshComponent).name());
+							else CHONPS_WARN("WARNING: ECS: Entity already has component of this type: {0}", "MeshComponent");
+						}
+						if (ImGui::MenuItem("Tag"))
+						{
+							if (!m_Scene->m_Registry.has_component<TagComponent>(m_SelectedEntity))
+								m_Scene->m_Registry.add_component<TagComponent>(m_SelectedEntity, TagComponent());
+							else CHONPS_WARN("WARNING: ECS: Entity already has component of this type: {0}", "TagComponent");
 						}
 
 						ImGui::EndMenu();
