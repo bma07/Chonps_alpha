@@ -152,7 +152,7 @@ namespace Chonps
 			}
 
 			// Get Textures
-			std::vector<Texture*> textures = getTextures(JSON["materials"][meshMaterialIndex]);
+			std::vector<std::shared_ptr<Texture>> textures = getTextures(JSON["materials"][meshMaterialIndex]);
 
 			// Create Mesh
 			Mesh mesh = Mesh(vertices, indices, textures);
@@ -270,9 +270,9 @@ namespace Chonps
 		return indices;
 	}
 
-	std::vector<Texture*> gltfModel::getTextures(json material)
+	std::vector<std::shared_ptr<Texture>> gltfModel::getTextures(json material)
 	{
-		std::vector<Texture*> textures;
+		std::vector<std::shared_ptr<Texture>> textures;
 
 		std::string fileString = std::string(m_File);
 		std::string fileDirectory = fileString.substr(0, fileString.find_last_of("/\\") + 1);
@@ -302,17 +302,17 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTextureRp((fileDirectory + texPath).c_str(), TexType::Diffuse, GetTexFilter(magFilter, minFilter));
+				std::shared_ptr<Texture> texture = createTexture((fileDirectory + texPath).c_str(), TexType::Diffuse, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
-				m_Textures.emplace_back(texture);
+				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);
 			}
 		}
 		else // White Texture if no Diffuse Texture was found
 		{
 			uint32_t whiteTextureData = 0xffffffff;
-			Texture* tex = createTextureRp(1, 1, &whiteTextureData, sizeof(uint32_t));
-			textures.emplace_back(tex);
+			std::shared_ptr<Texture> texture = createTexture(1, 1, &whiteTextureData, sizeof(uint32_t));
+			textures.emplace_back(texture);
 		}
 		if (material["pbrMetallicRoughness"].find("metallicRoughnessTexture") != material["pbrMetallicRoughness"].end()) // Metallic Roughness
 		{
@@ -336,9 +336,9 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTextureRp((fileDirectory + texPath).c_str(), TexType::MetallicRoughness, GetTexFilter(magFilter, minFilter));
+				std::shared_ptr<Texture> texture = createTexture((fileDirectory + texPath).c_str(), TexType::MetallicRoughness, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
-				m_Textures.emplace_back(texture);
+				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);
 			}
 		}
@@ -364,9 +364,9 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTextureRp((fileDirectory + texPath).c_str(), TexType::Normal, GetTexFilter(magFilter, minFilter));
+				std::shared_ptr<Texture> texture = createTexture((fileDirectory + texPath).c_str(), TexType::Normal, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
-				m_Textures.emplace_back(texture);
+				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);
 			}
 		}
@@ -392,9 +392,9 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTextureRp((fileDirectory + texPath).c_str(), TexType::Occlusion, GetTexFilter(magFilter, minFilter));
+				std::shared_ptr<Texture> texture = createTexture((fileDirectory + texPath).c_str(), TexType::Occlusion, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
-				m_Textures.emplace_back(texture);
+				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);
 			}
 		}
@@ -420,9 +420,9 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTextureRp((fileDirectory + texPath).c_str(), TexType::Emissive, GetTexFilter(magFilter, minFilter));
+				std::shared_ptr<Texture> texture = createTexture((fileDirectory + texPath).c_str(), TexType::Emissive, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
-				m_Textures.emplace_back(texture);
+				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);
 			}
 		}

@@ -15,7 +15,7 @@ namespace Chonps
 	class Mesh
 	{
 	public:
-		Mesh(std::vector<vertextb>& vertices, std::vector<uint32_t>& indices, std::vector<Texture*> textures = std::vector<Texture*>());
+		Mesh(std::vector<vertextb>& vertices, std::vector<uint32_t>& indices, std::vector<std::shared_ptr<Texture>> textures = std::vector<std::shared_ptr<Texture>>());
 
 		void Draw(Shader* shader, glm::mat4 matrix = glm::mat4(1.0f));
 		void AttachShader(Shader* shader);
@@ -30,7 +30,7 @@ namespace Chonps
 	private:
 		std::vector<vertextb> m_Vertices;
 		std::vector<uint32_t> m_Indices;
-		std::vector<Texture*> m_Textures;
+		std::vector<std::shared_ptr<Texture>> m_Textures;
 
 		glm::mat4 m_MeshMatrix = glm::mat4(1.0f);
 

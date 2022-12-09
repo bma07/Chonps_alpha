@@ -13,7 +13,7 @@ namespace Chonps
 		{
 			case RenderAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: TEXTURE: createTexture(filepath) - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: TEXTURE: createTexture(filepath, texType, texFilter, texWrap) - No graphics API selected beforehand!");
 				break;
 			}
 

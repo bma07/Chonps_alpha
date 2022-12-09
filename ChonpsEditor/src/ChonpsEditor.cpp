@@ -171,7 +171,7 @@ namespace Chonps
 		Entity entity = m_Scene->CreateEntity();
 		m_Scene->SetEntityName(entity, "Flivver");
 
-		MeshComponent meshComp(Chonps::loadModel(resPathDir + "models/gltf/Flivver/Flivver.gltf"), &(*m_Shader));
+		MeshComponent meshComp(Chonps::loadModel(resPathDir + "models/obj/cubeTexture/cubeTexture.obj"), &(*m_Shader));
 		TransformComponent transComp = { {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f} };
 		TagComponent tagComp({ "GameObject", "Model", "EditorOnly" });
 

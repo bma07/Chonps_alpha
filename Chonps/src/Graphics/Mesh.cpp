@@ -44,7 +44,7 @@ namespace Chonps
 		}
 	}
 
-	Mesh::Mesh(std::vector<vertextb>& vertices, std::vector<uint32_t>& indices, std::vector<Texture*> textures /*= std::vector<Texture*>()*/)
+	Mesh::Mesh(std::vector<vertextb>& vertices, std::vector<uint32_t>& indices, std::vector<std::shared_ptr<Texture>> textures /*= std::vector<std::shared_ptr<Texture>>()*/)
 		: m_Vertices(vertices), m_Indices(indices), m_Textures(textures)
 	{
 		m_VAO = createVertexArray();
@@ -69,7 +69,6 @@ namespace Chonps
 
 	void Mesh::Draw(Shader* shader, glm::mat4 matrix /*= glm::mat4(1.0f)*/)
 	{
-		
 		shader->Bind();
 		m_VAO->Bind();
 
@@ -141,9 +140,6 @@ namespace Chonps
 		m_VAO->Delete();
 
 		for (auto i : m_Textures)
-		{
 			i->Delete();
-			delete i;
-		}
 	}
 }
