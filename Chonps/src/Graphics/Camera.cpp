@@ -22,29 +22,29 @@ namespace Chonps
 	// Updates Camera Matrix, call in loop
 	void Camera::UpdateMatrix()
 	{
-		m_ViewMatrix = glm::lookAt(m_Position, m_Position + m_Orientation, m_Up);
-		m_ProjectionMatrix = glm::perspective(glm::radians(m_FOVdeg), (float)m_Width / (float)m_Height, m_NearPlane, m_FarPlane);
+		m_ViewMatrix = glm::lookAt(position, position + orientation, upVector);
+		m_ProjectionMatrix = glm::perspective(glm::radians(FOVdeg), (float)m_Width / (float)m_Height, nearPlane, farPlane);
 
 		m_CameraMatrix = m_ProjectionMatrix * m_ViewMatrix;
 	}
 
 	// Sets up Camera position and FOV
-	void Camera::SetUp(glm::vec3 position, float FOVdeg, float nearPlane, float farPlane)
+	void Camera::SetUp(glm::vec3 _position, float _FOVdeg, float _nearPlane, float _farPlane)
 	{
-		m_Position = position;
-		SetFOV(FOVdeg, nearPlane, farPlane);
+		position = _position;
+		SetFOV(_FOVdeg, _nearPlane, _farPlane);
 	}
 
 	// Sets Field of View (FOV) for camera
 	// NOTE: Call this function after setting the position and orientation of the camera
-	void Camera::SetFOV(float FOVdeg, float nearPlane, float farPlane)
+	void Camera::SetFOV(float _FOVdeg, float _nearPlane, float _farPlane)
 	{
-		m_FOVdeg = FOVdeg;
-		m_NearPlane = nearPlane;
-		m_FarPlane = farPlane;
+		FOVdeg = _FOVdeg;
+		nearPlane = _nearPlane;
+		farPlane = _farPlane;
 
-		m_ViewMatrix = glm::lookAt(m_Position, m_Position + m_Orientation, m_Up);
-		m_ProjectionMatrix = glm::perspective(glm::radians(m_FOVdeg), (float)m_Width / (float)m_Height, m_NearPlane, m_FarPlane);
+		m_ViewMatrix = glm::lookAt(position, position + orientation, upVector);
+		m_ProjectionMatrix = glm::perspective(glm::radians(FOVdeg), (float)m_Width / (float)m_Height, nearPlane, farPlane);
 
 		m_CameraMatrix = m_ProjectionMatrix * m_ViewMatrix;
 	}

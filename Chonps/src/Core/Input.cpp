@@ -56,7 +56,7 @@ namespace Chonps
 		return s_Input->MouseButtonReleased(window, button);
 	}
 
-	vec2f getMousePos(Window* window)
+	pair<float, float> getMousePos(Window* window)
 	{
 		return s_Input->GetMousePos(window);
 	}
@@ -81,7 +81,7 @@ namespace Chonps
 		s_Input->SetMousePos(window, x, y);
 	}
 
-	vec2i getWindowPos(Window* window)
+	pair<int, int> getWindowPos(Window* window)
 	{
 		return s_Input->GetWindowPos(window);
 	}
@@ -91,7 +91,7 @@ namespace Chonps
 		s_Input->GetWindowPos(window, xpos, ypos);
 	}
 
-	vec2i getWindowSize(Window* window)
+	pair<int, int> getWindowSize(Window* window)
 	{
 		return s_Input->GetWindowSize(window);
 	}

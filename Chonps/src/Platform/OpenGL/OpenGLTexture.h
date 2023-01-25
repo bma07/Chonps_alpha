@@ -27,7 +27,7 @@ namespace Chonps
 
 	private:
 		uint32_t m_ID;
-		uint32_t m_Unit;
+		uint32_t m_Unit = uint32_t();
 
 		int m_Width;
 		int m_Height;

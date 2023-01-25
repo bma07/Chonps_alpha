@@ -10,9 +10,9 @@ namespace Chonps
 	enum class ShaderDataType
 	{
 		None = 0,
-		Float, Float1, Float2, Float3, Float4,
+		Float,
 		Mat2, Mat3, Mat4,
-		Int, Int1, Int2, Int3, Int4,
+		Int,
 		Bool
 	};
 
@@ -27,7 +27,7 @@ namespace Chonps
 		// VBO constructor for static arrays
 		VertexBuffer(float* vertices, uint32_t size) {}
 		// VBO constructor for dynamic array
-		VertexBuffer(std::vector<vertextb>& vertices) {}
+		VertexBuffer(std::vector<vertex>& vertices) {}
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -39,10 +39,11 @@ namespace Chonps
 	typedef VertexBuffer VBO;
 
 	std::shared_ptr<VertexBuffer> createVertexBuffer(float* vertices, uint32_t size);
-	std::shared_ptr<VertexBuffer> createVertexBuffer(std::vector<vertextb>& vertices);
+	std::shared_ptr<VertexBuffer> createVertexBuffer(std::vector<vertex>& vertices);
+
 
 	VertexBuffer* createVertexBufferRp(float* vertices, uint32_t size);
-	VertexBuffer* createVertexBufferRp(std::vector<vertextb>& vertices);
+	VertexBuffer* createVertexBufferRp(std::vector<vertex>& vertices);
 }
 
 #endif

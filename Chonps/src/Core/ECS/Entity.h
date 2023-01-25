@@ -2,7 +2,7 @@
 #define CHONPS_ENTITY_H
 
 #include "Core/Log.h"
-#include "Core/Core.h"
+#include "Core/Config.h"
 #include <bitset>
 #include <queue>
 #include <unordered_map>

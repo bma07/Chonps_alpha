@@ -1,7 +1,7 @@
 #include "cepch.h"
 #include "Model.h"
 
-#include "File.h"
+#include "Core/File.h"
 
 #include "ModelLoaders/OBJ/OBJModelLoader.h"
 #include "ModelLoaders/gltf/gltfModelLoader.h"
@@ -55,7 +55,7 @@ namespace Chonps
 	}
 
 
-	std::vector<Mesh> loadModel(const std::string& filepath, mt3d modelType)
+	std::vector<Mesh> loadModel(const std::string& filepath, mt3d modelType /*= mt3d::NA*/)
 	{
 		std::vector<Mesh> meshes;
 

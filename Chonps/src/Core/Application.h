@@ -1,7 +1,7 @@
 #ifndef CHONPS_APPLICATION_H
 #define CHONPS_APPLICATION_H
 
-#include"Core.h"
+#include "Config.h"
 
 #include "Window.h"
 #include "LayerStack.h"

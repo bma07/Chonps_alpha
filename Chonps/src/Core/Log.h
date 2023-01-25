@@ -1,7 +1,7 @@
 #ifndef CHONPS_LOG_H
 #define CHONPS_LOG_H
 
-#include "Core.h"
+#include "Config.h"
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
 

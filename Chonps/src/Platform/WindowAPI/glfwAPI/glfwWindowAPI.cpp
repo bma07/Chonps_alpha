@@ -3,6 +3,7 @@
 
 #include "Graphics/RendererAPI.h"
 #include "Platform/OpenGL/OpenGLContext.h"
+#include "Platform/Vulkan/VulkanRendererAPI.h"
 
 #include "Core/Events/KeyEvents.h"
 #include "Core/Events/MouseEvents.h"
@@ -57,11 +58,18 @@ namespace Chonps
 		if (m_Data.FullScreen)
 			fullScreen = glfwGetPrimaryMonitor();
 
+		RenderAPI graphicsAPI = getGraphicsContext();
+		if (graphicsAPI == RenderAPI::Vulkan)
+		{
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		}
+
 		CHONPS_CORE_INFO("Creating Window: {0} ({1}, {2})", m_Data.Title, m_Data.Width, m_Data.Height);
 		m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), fullScreen, nullptr);
 		CHONPS_CORE_ASSERT(m_Window, "Window failed to load!");
 
-		switch (getGraphicsContext())
+
+		switch (graphicsAPI)
 		{
 			case Chonps::RenderAPI::None:
 			{
@@ -78,6 +86,7 @@ namespace Chonps
 
 			case Chonps::RenderAPI::Vulkan:
 			{
+				setCurrentWindowForVulkanWindowSurface(m_Window);
 				break;
 			}
 
@@ -98,123 +107,139 @@ namespace Chonps
 
 		// Set GLFW Callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data.Width = width;
+			data.Height = height;
+
+			WindowResizeEvent eventType(width, height);
+			data.EventCallback(eventType);
+
+			switch (getGraphicsContext())
 			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				data.Width = width;
-				data.Height = height;
+				case RenderAPI::OpenGL: 
+				{
+					gladUpdateViewPort(window, width, height);
+					break;
+				}
+				case RenderAPI::Vulkan:
+				{
+					getVulkanBackends()->framebufferResized = true;
+				}
+			}
+		});
 
-				WindowResizeEvent eventType(width, height);
-				data.EventCallback(eventType);
-
-				gladUpdateViewPort(window, width, height);
-			});
+		glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
+		{
+			if (getGraphicsContext() == RenderAPI::Vulkan) getVulkanBackends()->framebufferResized = true;
+		});
 
 		glfwSetWindowPosCallback(m_Window, [](GLFWwindow* window, int x, int y)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				WindowMovedEvent eventType(x, y);
-				data.EventCallback(eventType);
-			});
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowMovedEvent eventType(x, y);
+			data.EventCallback(eventType);
+		});
 
 		glfwSetWindowFocusCallback(m_Window, [](GLFWwindow* window, int focused)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			if (focused)
 			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				if (focused)
-				{
-					WindowFocusEvent eventType;
-					data.EventCallback(eventType);
-				}
-				else
-				{
-					WindowLostFocusEvent eventType;
-					data.EventCallback(eventType);
-				}
-			});
+				WindowFocusEvent eventType;
+				data.EventCallback(eventType);
+			}
+			else
+			{
+				WindowLostFocusEvent eventType;
+				data.EventCallback(eventType);
+			}
+		});
 
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				WindowCloseEvent eventType;
-				data.EventCallback(eventType);
-			});
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowCloseEvent eventType;
+			data.EventCallback(eventType);
+		});
 
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				switch (action)
-				{
-				case GLFW_PRESS:
-				{
-					KeyPressedEvent eventType(key, false);
-					data.EventCallback(eventType);
-					break;
-				}
-				case GLFW_RELEASE:
-				{
-					KeyReleasedEvent eventType(key);
-					data.EventCallback(eventType);
-					break;
-				}
-				case GLFW_REPEAT:
-				{
-					KeyPressedEvent eventType(key, true);
-					data.EventCallback(eventType);
-					break;
-				}
-				}
-			});
+			switch (action)
+			{
+			case GLFW_PRESS:
+			{
+				KeyPressedEvent eventType(key, false);
+				data.EventCallback(eventType);
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				KeyReleasedEvent eventType(key);
+				data.EventCallback(eventType);
+				break;
+			}
+			case GLFW_REPEAT:
+			{
+				KeyPressedEvent eventType(key, true);
+				data.EventCallback(eventType);
+				break;
+			}
+			}
+		});
 
 		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				KeyTypedEvent eventType(keycode);
-				data.EventCallback(eventType);
-			});
+			KeyTypedEvent eventType(keycode);
+			data.EventCallback(eventType);
+		});
 
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				switch (action)
-				{
-				case GLFW_PRESS:
-				{
-					MouseButtonPressedEvent eventType(button);
-					data.EventCallback(eventType);
-					break;
-				}
-				case GLFW_RELEASE:
-				{
-					MouseButtonReleasedEvent eventType(button);
-					data.EventCallback(eventType);
-					break;
-				}
-				}
-			});
+			switch (action)
+			{
+			case GLFW_PRESS:
+			{
+				MouseButtonPressedEvent eventType(button);
+				data.EventCallback(eventType);
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				MouseButtonReleasedEvent eventType(button);
+				data.EventCallback(eventType);
+				break;
+			}
+			}
+		});
 
 		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				MouseScrolledEvent eventType((float)xOffset, (float)yOffset);
-				data.EventCallback(eventType);
-			});
+			MouseScrolledEvent eventType((float)xOffset, (float)yOffset);
+			data.EventCallback(eventType);
+		});
 
 		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				MouseMovedEvent eventType((float)xPos, (float)yPos);
-				data.EventCallback(eventType);
-			});
+			MouseMovedEvent eventType((float)xPos, (float)yPos);
+			data.EventCallback(eventType);
+		});
 
 	}
 
 	void glfwWindowAPI::OnUpdate()
 	{
-		glfwSwapBuffers(m_Window);
+		if (getGraphicsContext() == RenderAPI::OpenGL) glfwSwapBuffers(m_Window);
 		glfwPollEvents();
 	}
 
@@ -238,12 +263,18 @@ namespace Chonps
 
 	void glfwWindowAPI::SetVSync(bool enabled)
 	{
-		glfwSwapInterval(enabled);
-		m_Data.VSync = enabled;
+		if (getGraphicsContext() == RenderAPI::OpenGL)
+		{
+			glfwSwapInterval(enabled);
+			m_Data.VSync = enabled;
+		}
 	}
 
 	void glfwWindowAPI::Delete()
 	{
+		if (getGraphicsContext() == RenderAPI::Vulkan)
+			vkDeviceWaitIdle(getVulkanBackends()->device);
+
 		glfwDestroyWindow(m_Window);
 	}
 }

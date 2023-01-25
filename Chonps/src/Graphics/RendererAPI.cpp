@@ -6,15 +6,14 @@
 #include "Platform/OpenGL/OpenGLContext.h"
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
 
+#include "Platform/Vulkan/VulkanRendererAPI.h"
+
 namespace Chonps
 {
 	static RenderAPI s_API = RenderAPI::None;
-	
+
 	// Create the renderering API that holds the renderering context and implementation
 	static std::shared_ptr<RendererAPI> s_RendererAPI;
-
-	bool RendererAPI::m_GammaCorrection = false;
-	float RendererAPI::m_Gamma = 2.2f;
 
 	bool setRenderContext(RenderAPI api /*= API::OpenGL*/)
 	{
@@ -77,7 +76,7 @@ namespace Chonps
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return std::make_shared<VulkanRendererAPI>();
 			}
 
 			case RenderAPI::DirectX:
@@ -88,5 +87,4 @@ namespace Chonps
 		CHONPS_CORE_ERROR("ERROR: RENDERER_API: Could not get rendering API!");
 		return nullptr;
 	}
-
 }

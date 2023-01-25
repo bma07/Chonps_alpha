@@ -14,6 +14,8 @@ namespace Chonps
 	void imguiRender();
 
 	void imguiShutdown();
+
+	void imguiTooltip(const char* tooltip, float delay_time);
 }
 
 

@@ -16,31 +16,36 @@ namespace Chonps
 	}
 
 	// Draw vertices through the VertexArray. Draw type is in Triangles
-	void Renderer::Draw(VertexArray* VertexArray)
+	void Renderer::Draw(VertexArray* vertexArray)
 	{
-		VertexArray->Bind();
-		getRendererAPI()->Draw(VertexArray->GetIndexCount());
-		VertexArray->Unbind();
+		vertexArray->Bind();
+		getRendererAPI()->Draw(vertexArray->GetIndexCount());
+		vertexArray->Unbind();
 
-		s_Data.Stats.vertices += VertexArray->GetVertexCount();
-		s_Data.Stats.triangles += VertexArray->GetIndexCount() / 3;
-		s_Data.Stats.indices += VertexArray->GetIndexCount();
+		s_Data.Stats.vertices += vertexArray->GetVertexCount();
+		s_Data.Stats.triangles += vertexArray->GetIndexCount() / 3;
+		s_Data.Stats.indices += vertexArray->GetIndexCount();
 		s_Data.Stats.drawCalls += 1;
 	}
 
+	void Renderer::DrawLine(VertexArray* vertexArray)
+	{
+
+	}
+
 	// Call before renderering or drawing
-	void Renderer::BeginScene(Camera& camera, Shader* shader, const char* uniform /*= "camMatrix"*/)
+	void Renderer::BeginScene(Camera& camera, Shader* shader, const char* uniform)
 	{
 		shader->Bind();
 		glm::vec3 camPos = camera.GetPosition();
 		Chonps::uploadUniform3f(shader->GetID(), "camPos", camPos.x, camPos.y, camPos.z);
-		camera.UploadMatrix(shader, "camMatrix");
+		camera.UploadMatrix(shader, uniform);
 	}
 
 	// Call after scene has finished
 	void Renderer::EndScene()
 	{
-
+		
 	}
 
 	RendererStatistics& Renderer::GetStats()
@@ -57,16 +62,28 @@ namespace Chonps
 	// Render Functions
 
 	// Draw vertices through the VertexArray. Draw type is in Triangles
-	void renderDraw(VertexArray* VertexArray)
+	void renderDraw(VertexArray* vertexArray)
 	{
-		VertexArray->Bind();
-		getRendererAPI()->Draw(VertexArray->GetIndexCount());
-		VertexArray->Unbind();
+		vertexArray->Bind();
+		getRendererAPI()->Draw(vertexArray->GetIndexCount());
+		vertexArray->Unbind();
 
-		Renderer::GetStats().vertices += VertexArray->GetVertexCount();
-		Renderer::GetStats().triangles += VertexArray->GetIndexCount() / 3;
-		Renderer::GetStats().indices += VertexArray->GetIndexCount();
+		Renderer::GetStats().vertices += vertexArray->GetVertexCount();
+		Renderer::GetStats().triangles += vertexArray->GetIndexCount() / 3;
+		Renderer::GetStats().indices += vertexArray->GetIndexCount();
 		Renderer::GetStats().drawCalls += 1;
+	}
+
+	void renderDraw(const uint32_t& count)
+	{
+		getRendererAPI()->Draw(count);
+	}
+
+	void renderDrawLine(VertexArray* vertexArray)
+	{
+		vertexArray->Bind();
+		getRendererAPI()->DrawLine();
+		vertexArray->Unbind();
 	}
 
 	// Call before renderering or drawing

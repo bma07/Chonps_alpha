@@ -8,14 +8,14 @@ namespace Chonps
 	class OpenGLRendererAPI : public RendererAPI
 	{
 	public:
+		virtual ~OpenGLRendererAPI() {}
 
 		virtual void Init() override;
 		virtual void ClearColor(const float r, const float g, const float b, const float w) override;
 		virtual void Clear() override;
-		
-		static bool GetGammaCorrectiom();
 
-		virtual void Draw(const size_t& count) override;
+		virtual void Draw(const uint32_t& count) override;
+		virtual void DrawLine() override;
 		virtual void FrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height);
 
 		virtual void EnableCullFace() override;

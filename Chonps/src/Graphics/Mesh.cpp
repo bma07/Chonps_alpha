@@ -8,21 +8,21 @@ namespace Chonps
 	const char* Mesh::s_MatrixUniform = "meshMatrix";
 	const char* Mesh::s_TexUnitName = "meshTex";
 
-	void computeTangents(std::vector<vertextb>& vertices, const std::vector<uint32_t>& indices)
+	void computeTangents(std::vector<vertex>& vertices, const std::vector<uint32_t>& indices)
 	{
 		for (int i = 0; i < indices.size(); i += 3)
 		{
 			// Shortcuts for vertices
-			glm::vec3& v0 = vertices[indices[i]].position;
-			glm::vec3& v1 = vertices[indices[i + 1]].position;
-			glm::vec3& v2 = vertices[indices[i + 2]].position;
+			glm::vec3& v0 = vertices[indices[i]].pos;
+			glm::vec3& v1 = vertices[indices[i + 1]].pos;
+			glm::vec3& v2 = vertices[indices[i + 2]].pos;
 
 			// Shortcuts for UVs
 			glm::vec2& uv0 = vertices[indices[i]].texUV;
 			glm::vec2& uv1 = vertices[indices[i + 1]].texUV;
 			glm::vec2& uv2 = vertices[indices[i + 2]].texUV;
 
-			// Edges of the triangle : position delta
+			// Edges of the triangle : pos delta
 			glm::vec3 deltaPos1 = v1 - v0;
 			glm::vec3 deltaPos2 = v2 - v0;
 
@@ -44,7 +44,33 @@ namespace Chonps
 		}
 	}
 
-	Mesh::Mesh(std::vector<vertextb>& vertices, std::vector<uint32_t>& indices, std::vector<std::shared_ptr<Texture>> textures /*= std::vector<std::shared_ptr<Texture>>()*/)
+	Mesh::Mesh(std::vector<vertex>& vertices, std::vector<uint32_t>& indices, std::vector<Texture*> textures /*= std::vector<Texture*>()*/)
+		: m_Vertices(vertices), m_Indices(indices)
+	{
+		m_VAO = createVertexArray();
+		m_VAO->Bind();
+
+		computeTangents(vertices, indices);
+
+		std::shared_ptr<VertexBuffer> vbo = createVertexBuffer(vertices);
+		std::shared_ptr<IndexBuffer> ibo = createIndexBuffer(indices);
+
+		m_VAO->LinkIndexBuffer(&(*ibo));
+		m_VAO->LinkVertexBuffer(&(*vbo), 0, 3, SDT::Float, sizeof(vertex), (void*)0);
+		m_VAO->LinkVertexBuffer(&(*vbo), 1, 3, SDT::Float, sizeof(vertex), (void*)(3 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(&(*vbo), 2, 2, SDT::Float, sizeof(vertex), (void*)(6 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(&(*vbo), 3, 3, SDT::Float, sizeof(vertex), (void*)(8 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(&(*vbo), 4, 3, SDT::Float, sizeof(vertex), (void*)(11 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(&(*vbo), 5, 3, SDT::Float, sizeof(vertex), (void*)(14 * sizeof(float)));
+		m_VAO->Unbind();
+		vbo->Unbind();
+		ibo->Unbind();
+
+		for (auto tex : textures)
+			m_Textures.push_back(std::shared_ptr<Texture>(tex));
+	}
+
+	Mesh::Mesh(std::vector<vertex>& vertices, std::vector<uint32_t>& indices, std::vector<std::shared_ptr<Texture>> textures /*= std::vector<std::shared_ptr<Texture>>()*/)
 		: m_Vertices(vertices), m_Indices(indices), m_Textures(textures)
 	{
 		m_VAO = createVertexArray();
@@ -56,12 +82,12 @@ namespace Chonps
 		std::shared_ptr<IndexBuffer> ibo = createIndexBuffer(indices);
 
 		m_VAO->LinkIndexBuffer(&(*ibo));
-		m_VAO->LinkVertexBuffer(&(*vbo), 0, 3, SDT::Float, sizeof(vertextb), (void*)0);
-		m_VAO->LinkVertexBuffer(&(*vbo), 1, 3, SDT::Float, sizeof(vertextb), (void*)(3 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(&(*vbo), 2, 2, SDT::Float, sizeof(vertextb), (void*)(6 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(&(*vbo), 3, 3, SDT::Float, sizeof(vertextb), (void*)(8 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(&(*vbo), 4, 3, SDT::Float, sizeof(vertextb), (void*)(11 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(&(*vbo), 5, 3, SDT::Float, sizeof(vertextb), (void*)(14 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(&(*vbo), 0, 3, SDT::Float, sizeof(vertex), (void*)0);
+		m_VAO->LinkVertexBuffer(&(*vbo), 1, 3, SDT::Float, sizeof(vertex), (void*)(3 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(&(*vbo), 2, 2, SDT::Float, sizeof(vertex), (void*)(6 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(&(*vbo), 3, 3, SDT::Float, sizeof(vertex), (void*)(8 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(&(*vbo), 4, 3, SDT::Float, sizeof(vertex), (void*)(11 * sizeof(float)));
+		m_VAO->LinkVertexBuffer(&(*vbo), 5, 3, SDT::Float, sizeof(vertex), (void*)(14 * sizeof(float)));
 		m_VAO->Unbind();
 		vbo->Unbind();
 		ibo->Unbind();
@@ -86,6 +112,7 @@ namespace Chonps
 
 	void Mesh::AttachShader(Shader* shader)
 	{
+		shader->Bind();
 		uint32_t texSlot = 0;
 		for (auto texture : m_Textures)
 		{
@@ -133,6 +160,7 @@ namespace Chonps
 				}
 			}
 		}
+		shader->Unbind();
 	}
 
 	void Mesh::Delete()

@@ -1,6 +1,8 @@
 #include "cepch.h"
 #include "RendererCommand.h"
 
+#include "RendererBackends.h"
+
 namespace Chonps
 {
 	void RendererCommand::Init()
@@ -25,21 +27,6 @@ namespace Chonps
 		getRendererAPI()->FrameBufferBlit(readFBO, drawFBO, width, height);
 	}
 
-	void RendererCommand::GammaCorrection(bool correct)
-	{
-		getRendererAPI()->GammaCorrection(correct);
-	}
-
-	void RendererCommand::renderEnableCullFace()
-	{
-		getRendererAPI()->EnableCullFace();
-	}
-
-	void RendererCommand::renderDisableCullFace()
-	{
-		getRendererAPI()->DisableCullFace();
-	}
-
 	// Sets and init specific render function calls before drawing vertices
 	void renderInit()
 	{
@@ -56,8 +43,8 @@ namespace Chonps
 	void renderClearColor(const float r, const float g, const float b, const float w /*= 0.0f*/)
 	{
 		std::shared_ptr<RendererAPI> rendererAPI = getRendererAPI();
-		float gamma = rendererAPI->GetGamma();
-		rendererAPI->GetGammaCorrection() // Check Gamma
+		float gamma = renderGetGamma();
+		renderGetGammaCorrection() // Check Gamma
 			? rendererAPI->ClearColor(pow(r, gamma), pow(g, gamma), pow(b, gamma), w) // if Gamma Corrected
 			: rendererAPI->ClearColor(r, g, b, w); // if Gamma not corrected
 	}
@@ -65,20 +52,5 @@ namespace Chonps
 	void renderFrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height)
 	{
 		getRendererAPI()->FrameBufferBlit(readFBO, drawFBO, width, height);
-	}
-
-	void renderGammaCorrection(bool correct)
-	{
-		getRendererAPI()->GammaCorrection(correct);
-	}
-
-	void renderEnableCullFace()
-	{
-		getRendererAPI()->EnableCullFace();
-	}
-
-	void renderDisableCullFace()
-	{
-		getRendererAPI()->DisableCullFace();
 	}
 }

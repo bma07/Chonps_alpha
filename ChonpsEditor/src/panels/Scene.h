@@ -26,11 +26,12 @@ namespace Chonps
 		Registry& GetRegistry() { return m_Registry; }
 		const std::vector<Entity>& GetEntities() { return m_Entities; }
 
-		void OnUpdateRuntime(float dt = 1.0f);
+		void OnUpdateRuntime(Shader* shader, float dt = 1.0f);
 		void OnUpdateEditor(Camera& EditorCamera, float dt = 1.0f);
 		void OnViewportResize();
 
-		Entity GetPrimaryCameraEntity();
+		Entity GetPrimaryCameraEntity() { return m_PrimaryCameraEntity; }
+		void SetPrimaryCameraEntity(Entity entity) { m_PrimaryCameraEntity = entity; }
 
 	private:
 		friend class SceneHierarchyPanel;
@@ -40,7 +41,8 @@ namespace Chonps
 		std::vector<Entity> m_Entities;
 		std::unordered_map<std::string, Entity> m_EntityNametoID;
 		std::unordered_map<Entity, std::string> m_EntityIDtoName;
-		
+		Entity m_PrimaryCameraEntity = 0;
+
 		std::shared_ptr<SystemOverlay> m_System;
 		
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;

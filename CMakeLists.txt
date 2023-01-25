@@ -58,8 +58,6 @@ set(GRAPHICS_SOURCES
     Chonps/src/Graphics/Camera.h
     Chonps/src/Graphics/Cubemap.cpp
     Chonps/src/Graphics/Cubemap.h
-    Chonps/src/Graphics/File.cpp
-    Chonps/src/Graphics/File.h
     Chonps/src/Graphics/FrameBuffer.cpp
     Chonps/src/Graphics/FrameBuffer.h
     Chonps/src/Graphics/Graphics.h
@@ -77,6 +75,8 @@ set(GRAPHICS_SOURCES
     Chonps/src/Graphics/Renderer.h
     Chonps/src/Graphics/RendererAPI.cpp
     Chonps/src/Graphics/RendererAPI.h
+    Chonps/src/Graphics/RendererBackends.cpp
+    Chonps/src/Graphics/RendererBackends.h
     Chonps/src/Graphics/RendererCommand.cpp
     Chonps/src/Graphics/RendererCommand.h
     Chonps/src/Graphics/Shader.cpp
@@ -119,6 +119,20 @@ set(PLATFORM_SOURCES
     Chonps/src/Platform/OpenGL/OpenGLVertexBuffer.cpp
     Chonps/src/Platform/OpenGL/OpenGLVertexBuffer.h
 
+    # Vulkan
+    Chonps/src/Platform/Vulkan/VulkanIndexBuffer.cpp
+    Chonps/src/Platform/Vulkan/VulkanIndexBuffer.h
+    Chonps/src/Platform/Vulkan/VulkanPipeline.cpp
+    Chonps/src/Platform/Vulkan/VulkanPipeline.h
+    Chonps/src/Platform/Vulkan/VulkanRendererAPI.cpp
+    Chonps/src/Platform/Vulkan/VulkanRendererAPI.h
+    Chonps/src/Platform/Vulkan/VulkanShader.cpp
+    Chonps/src/Platform/Vulkan/VulkanShader.h
+    Chonps/src/Platform/Vulkan/VulkanVertexArray.cpp
+    Chonps/src/Platform/Vulkan/VulkanVertexArray.h
+    Chonps/src/Platform/Vulkan/VulkanVertexBuffer.cpp
+    Chonps/src/Platform/Vulkan/VulkanVertexBuffer.h
+
     # GLFW
     Chonps/src/Platform/WindowAPI/glfwAPI/glfwInput.cpp
     Chonps/src/Platform/WindowAPI/glfwAPI/glfwInput.h
@@ -155,8 +169,11 @@ set(SOURCES
     # Core
     Chonps/src/Core/Application.cpp
     Chonps/src/Core/Application.h
+    Chonps/src/Core/Config.h
     Chonps/src/Core/Core.h
     Chonps/src/Core/DataTypes.h
+	Chonps/src/Core/File.cpp
+    Chonps/src/Core/File.h
     Chonps/src/Core/Input.cpp
     Chonps/src/Core/Input.h
     Chonps/src/Core/KeyCodes.h
@@ -165,6 +182,8 @@ set(SOURCES
     Chonps/src/Core/LayerStack.cpp
     Chonps/src/Core/Log.cpp
     Chonps/src/Core/Log.h
+	Chonps/src/Core/Math.cpp
+    Chonps/src/Core/Math.h
     Chonps/src/Core/MouseButtonCodes.h
     Chonps/src/Core/Timer.h
     Chonps/src/Core/Window.cpp
@@ -190,6 +209,7 @@ target_include_directories(Chonps
         ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/glm/include
         ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/stb_image
         ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/json/include
+        ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/vulkan/include
 )
 
 
@@ -201,12 +221,18 @@ target_compile_definitions(Chonps PRIVATE
 
 target_precompile_headers(Chonps PRIVATE Chonps/src/cepch.h)
 
-# GLFW
+add_library(LIB_DIR STATIC IMPORTED)
+set_target_properties(LIB_DIR PROPERTIES
+	IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/Chonps/Dependencies/vulkan/lib/vulkan-1.lib"
+	INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/Chonps/Dependencies/vulkan/lib"
+)
+
 target_link_libraries(Chonps 
     PRIVATE 
         glfw
         glad
         opengl32
+		LIB_DIR
     PUBLIC
         Imgui
 )

@@ -11,7 +11,7 @@ namespace Chonps
 		// VBO constructor for static arrays
 		OpenGLVertexBuffer(float* vertices, uint32_t size);
 		// VBO constructor for dynamic array
-		OpenGLVertexBuffer(std::vector<vertextb>& vertices);
+		OpenGLVertexBuffer(std::vector<vertex>& vertices);
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;

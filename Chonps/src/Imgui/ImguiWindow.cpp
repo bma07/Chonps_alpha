@@ -2,6 +2,7 @@
 #include "ImguiWindow.h"
 
 #include <imgui/imgui.h>
+#include <Imgui/imgui_internal.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
 
@@ -88,5 +89,15 @@ namespace Chonps
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
+	}
+
+	void imguiTooltip(const char* tooltip, float delay_time)
+	{
+		if (ImGui::IsItemHovered() && GImGui->HoveredIdTimer > delay_time)
+		{
+			ImGui::BeginTooltip();
+			ImGui::Text(tooltip);
+			ImGui::EndTooltip();
+		}
 	}
 }

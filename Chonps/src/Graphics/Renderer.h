@@ -28,9 +28,9 @@ namespace Chonps
 	public:
 		static void Init();
 
-		static void Draw(VertexArray* VertexArray);
-
-		static void BeginScene(Camera& camera, Shader* shader, const char* uniform = "camMatrix");
+		static void Draw(VertexArray* vertexArray);
+		static void DrawLine(VertexArray* vertexArray);
+		static void BeginScene(Camera& camera, Shader* shader, const char* uniform);
 		static void EndScene();
 
 		static RendererStatistics& GetStats();
@@ -40,8 +40,9 @@ namespace Chonps
 		static RendererData s_Data;
 	};
 
-	void renderDraw(VertexArray* VertexArray);
-
+	void renderDraw(VertexArray* vertexArray);
+	void renderDraw(const uint32_t& count);
+	void renderDrawLine(VertexArray* vertexArray);
 	void renderBeginScene(Camera& camera, Shader* shader, const char* uniform = "camMatrix");
 	void renderEndScene();
 }

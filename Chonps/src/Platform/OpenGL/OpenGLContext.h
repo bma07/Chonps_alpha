@@ -1,7 +1,7 @@
 #ifndef OPENGL_CONTEXT_H
 #define OPENGL_CONTEXT_H
 
-#include "Core/Core.h"
+#include "Core/Config.h"
 
 struct GLFWwindow;
 

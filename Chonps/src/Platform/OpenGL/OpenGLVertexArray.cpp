@@ -11,17 +11,10 @@ namespace Chonps
 		{
 			case ShaderDataType::None: return GL_FLOAT;
 			case ShaderDataType::Float: return GL_FLOAT;
-			case ShaderDataType::Float1: return GL_FLOAT;
-			case ShaderDataType::Float2: return GL_FLOAT;
-			case ShaderDataType::Float3: return GL_FLOAT;
-			case ShaderDataType::Float4: return GL_FLOAT;
+			case ShaderDataType::Mat2: return GL_FLOAT;
 			case ShaderDataType::Mat3: return GL_FLOAT;
 			case ShaderDataType::Mat4: return GL_FLOAT;
 			case ShaderDataType::Int: return GL_INT;
-			case ShaderDataType::Int1: return GL_INT;
-			case ShaderDataType::Int2: return GL_INT;
-			case ShaderDataType::Int3: return GL_INT;
-			case ShaderDataType::Int4: return GL_INT;
 			case ShaderDataType::Bool: return GL_BOOL;
 		}
 
@@ -39,15 +32,6 @@ namespace Chonps
 		VBO->Bind();
 		glEnableVertexAttribArray(layout);
 		glVertexAttribPointer(layout, numComponents, getShaderDataTypeConvertOpenGL(type), GL_FALSE, (GLsizei)stride, offset);
-		VBO->Unbind();
-		m_VertexCount = VBO->GetCount();
-	}
-
-	void OpenGLVertexArray::LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, ShaderDataType numComponents, ShaderDataType type, uint32_t stride, void* offset)
-	{
-		VBO->Bind();
-		glEnableVertexAttribArray(layout);
-		glVertexAttribPointer(layout, getShaderDataTypeComponent(numComponents), getShaderDataTypeConvertOpenGL(type), GL_FALSE, (GLsizei)stride, offset);
 		VBO->Unbind();
 		m_VertexCount = VBO->GetCount();
 	}

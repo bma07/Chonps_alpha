@@ -15,8 +15,6 @@ namespace Chonps
 
 		static void FrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height);
 
-		static void GammaCorrection(bool correct);
-
 		static void renderEnableCullFace();
 		static void renderDisableCullFace();
 	};
@@ -27,11 +25,6 @@ namespace Chonps
 	void renderClearColor(const float r, const float g, const float b, const float w = 0.0f);
 
 	void renderFrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height);
-
-	void renderGammaCorrection(bool correct);
-
-	void renderEnableCullFace();
-	void renderDisableCullFace();
 }
 
 #endif

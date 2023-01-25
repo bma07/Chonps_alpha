@@ -15,7 +15,9 @@ namespace Chonps
 	class Mesh
 	{
 	public:
-		Mesh(std::vector<vertextb>& vertices, std::vector<uint32_t>& indices, std::vector<std::shared_ptr<Texture>> textures = std::vector<std::shared_ptr<Texture>>());
+		Mesh() = default;
+		Mesh(std::vector<vertex>& vertices, std::vector<uint32_t>& indices, std::vector<Texture*> textures = std::vector<Texture*>());
+		Mesh(std::vector<vertex>& vertices, std::vector<uint32_t>& indices, std::vector<std::shared_ptr<Texture>> textures = std::vector<std::shared_ptr<Texture>>());
 
 		void Draw(Shader* shader, glm::mat4 matrix = glm::mat4(1.0f));
 		void AttachShader(Shader* shader);
@@ -28,7 +30,7 @@ namespace Chonps
 		static void ChangeTexUnitName(const char* name) { s_TexUnitName = name; }
 
 	private:
-		std::vector<vertextb> m_Vertices;
+		std::vector<vertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;
 		std::vector<std::shared_ptr<Texture>> m_Textures;
 

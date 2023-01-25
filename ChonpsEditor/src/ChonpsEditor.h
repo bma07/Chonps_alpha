@@ -38,9 +38,9 @@ namespace Chonps
 		Chonps::Shared<Chonps::FBO> m_ShadowFBO;
 
 
-		Chonps::vec2 m_ViewportSize = Chonps::vec2(1.0f);
-		Chonps::vec2 m_LastViewportSize = Chonps::vec2(1.0f);
-		Chonps::vec2 m_ViewportMousePos = Chonps::vec2(0.0f);
+		glm::vec2 m_ViewportSize = glm::vec2(1.0f);
+		glm::vec2 m_LastViewportSize = glm::vec2(1.0f);
+		glm::vec2 m_ViewportMousePos = glm::vec2(0.0f);
 		bool m_ViewportFocused = false;
 		bool m_ViewportPlay = false;
 
@@ -57,7 +57,7 @@ namespace Chonps
 		SceneHierarchyPanel m_SceneHierarchy;
 		PropertiesPanel m_Properties;
 
-		Chonps::vec3 m_lightPos = Chonps::vec3(0.5f, 1.5f, 1.5f);
+		glm::vec3 m_lightPos = glm::vec3(0.5f, 1.5f, 1.5f);
 
 		Chonps::RendererStatistics m_Stats;
 

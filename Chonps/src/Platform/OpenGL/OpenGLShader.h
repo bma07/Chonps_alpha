@@ -2,7 +2,7 @@
 #define OPENGL_SHADER_H
 
 #include "Graphics/Shader.h"
-#include "Graphics/File.h"
+#include "Core/File.h"
 
 
 namespace Chonps
@@ -19,7 +19,7 @@ namespace Chonps
 	public:
 		OpenGLShader(const std::string& name, const std::string& vertexFile, const std::string& fragmentFile);
 		OpenGLShader(const std::string& filepath);
-
+		virtual ~OpenGLShader() {}
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;

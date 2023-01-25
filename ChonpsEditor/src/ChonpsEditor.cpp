@@ -171,24 +171,33 @@ namespace Chonps
 		Entity entity = m_Scene->CreateEntity();
 		m_Scene->SetEntityName(entity, "Flivver");
 
-		MeshComponent meshComp(Chonps::loadModel(resPathDir + "models/obj/cubeTexture/cubeTexture.obj"), &(*m_Shader));
+		MeshComponent meshComp(Chonps::loadModel(resPathDir + "models/gltf/Flivver/Flivver.gltf"), &(*m_Shader));
 		TransformComponent transComp = { {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f} };
 		TagComponent tagComp({ "GameObject", "Model", "EditorOnly" });
 
 		m_Scene->GetRegistry().add_component<TransformComponent>(entity, transComp);
 		m_Scene->GetRegistry().add_component<MeshComponent>(entity, meshComp);
 		m_Scene->GetRegistry().add_component<TagComponent>(entity, tagComp);
+
+		Entity entity2 = m_Scene->CreateEntity();
+		m_Scene->SetEntityName(entity2, "Camera");
+
+		m_Scene->GetRegistry().add_component<TransformComponent>(entity2, TransformComponent({0.0f, 0.0f, 5.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}));
+		m_Scene->GetRegistry().add_component<MeshComponent>(entity2, MeshComponent(Chonps::loadModel(resPathDir + "models/gltf/brick/brick.gltf"), &(*m_Shader)));
+		m_Scene->GetRegistry().add_component<CameraComponent>(entity2, CameraComponent(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, -1.0f), Chonps::getAppWindowWidth(), Chonps::getAppWindowHeight(), 65.0f, 0.01f, 500.0f));
+
 		m_SceneHierarchy.SetScene(m_Scene);
 		m_Properties.SetScene(m_Scene, &m_SceneHierarchy);
 	}
 
 	void ChonpsEditor::OnDetach()
 	{
+
 	}
 
 	void ChonpsEditor::OnUpdate()
 	{
-		float ts = Chonps::Application::GetApp().GetTimestep();
+		float dt = Chonps::Application::GetApp().GetTimestep();
 
 		if (m_LastViewportSize != m_ViewportSize)
 		{
@@ -207,19 +216,38 @@ namespace Chonps
 
 		m_SceneHierarchy.OnUpdate();
 
-		m_Camera.UpdateMatrix();
 
 		m_Cubemap->Use(&(*m_CubemapShader), m_Camera);
-
-		Chonps::renderBeginScene(m_Camera, &(*m_Shader));
 		
 
 		Chonps::Renderer::ResetStats();
-		m_Scene->OnUpdateEditor(m_Camera, ts);
+		
+		switch (m_ViewportPlay)
+		{
+		case 0:
+			m_Camera.UpdateMatrix();
+			Chonps::renderBeginScene(m_Camera, &(*m_Shader));
+			Chonps::uploadUniform3f(m_Shader->GetID(), "lightPos", m_lightPos.x, m_lightPos.y, m_lightPos.z);
+			m_Scene->OnUpdateEditor(m_Camera, dt);
+			break;
+		case 1:
+			if (m_Scene->GetPrimaryCameraEntity() > 0)
+			{
+				m_Scene->GetRegistry().get_component<CameraComponent>(m_Scene->GetPrimaryCameraEntity()).camera.SetDimensions(m_ViewportSize.x, m_ViewportSize.y);
+				m_Scene->OnUpdateRuntime(&(*m_Shader), dt);
+			}
+			else
+			{
+				CHONPS_WARN("WARNING: SCENE: Primary Camera Entity not set!");
+				m_ViewportPlay = false;
+			}
+			break;
+		} 
+
 		m_Stats = Chonps::Renderer::GetStats();
 		
 
-		Chonps::mat4 rot = Chonps::mat4(1.0f);
+		glm::mat4 rot = glm::mat4(1.0f);
 		rot = glm::inverse(glm::lookAt(m_lightPos, m_Camera.GetPosition(), glm::vec3(0.0f, 1.0f, 0.0f)));
 
 		Chonps::renderBeginScene(m_Camera, &(*m_LightShader));
@@ -227,10 +255,10 @@ namespace Chonps
 		m_SunTexture->Bind();
 		Chonps::renderDraw(&(*m_LightVAO));
 
-		Chonps::renderDisableCullFace();
+		Chonps::renderEnableCullFace(false);
 		Chonps::renderBeginScene(m_Camera, &(*m_PlaneShader));
 		Chonps::renderDraw(&(*m_PlaneVAO));
-		Chonps::renderEnableCullFace();
+		Chonps::renderEnableCullFace(true);
 
 		Chonps::renderFrameBufferBlit(m_MsaaFBO->GetID(), m_FBO->GetID(), m_MsaaFBO->GetWidth(), m_MsaaFBO->GetHeight());
 		m_MsaaFBO->End();
@@ -256,7 +284,7 @@ namespace Chonps
 
 	void ChonpsEditor::OnImGuiRender()
 	{
-		float ts = Chonps::Application::GetApp().GetTimestep() * 1000;
+		float dt = Chonps::Application::GetApp().GetTimestep() * 1000;
 
 		float currentFrame = Chonps::getTimeSeconds();
 		m_FrameCount++;
@@ -267,6 +295,7 @@ namespace Chonps
 			m_FrameCount = 0;
 		}
 
+		ImGui::ShowDemoWindow();
 
 		static bool dockSpaceOpen = true;
 		static bool opt_fullscreen = true;
@@ -313,6 +342,9 @@ namespace Chonps
 		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f));
 		style.WindowMinSize.x = WindowSize;
 
+		ImGuiStyle* ImguiStyle = &ImGui::GetStyle();
+		ImguiStyle->FramePadding = ImVec2(3, 5);
+
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
@@ -338,7 +370,6 @@ namespace Chonps
 				ImGui::EndMenu();
 			}
 
-			
 			ImGui::SameLine(120.0f);
 			ImGui::BeginTabBar("Tab");
 			if (ImGui::BeginTabItem("Scene"))
@@ -352,10 +383,14 @@ namespace Chonps
 
 				ImGui::Begin("test");
 
+				ImGui::DragFloat("LightX", &m_lightPos.x, 0.1f);
+				ImGui::DragFloat("LightY", &m_lightPos.y, 0.1f);
+				ImGui::DragFloat("LightZ", &m_lightPos.z, 0.1f);
+
 				ImGui::End();
 
 				ImGui::Begin("Renderer");
-				ImGui::Text(("FPS: " + std::to_string(m_FPS) + " | ms: " + std::to_string(ts)).c_str());
+				ImGui::Text(("FPS: " + std::to_string(m_FPS) + " | ms: " + std::to_string(dt)).c_str());
 				ImGui::Separator();
 				ImGui::Text("Statistics:");
 				ImGui::Text(("- Triangles: " + std::to_string(m_Stats.triangles)).c_str());
@@ -375,10 +410,11 @@ namespace Chonps
 				ImGui::IsWindowFocused() || ImGui::IsWindowHovered() ? m_ViewportFocused = true : m_ViewportFocused = false;
 				if (Chonps::mouseButtonPressed(m_Window, CHONPS_MOUSE_BUTTON_3) && m_ViewportFocused) ImGui::SetWindowFocus();
 				ImVec2 viewportSize = ImGui::GetContentRegionAvail();
-				m_ViewportSize = Chonps::vec2(viewportSize.x, viewportSize.y);
+				m_ViewportSize = glm::vec2(viewportSize.x, viewportSize.y);
 
 				ImVec2 viewportMousePos = ImGui::GetMousePos();
-				m_ViewportMousePos = Chonps::vec2(viewportMousePos.x, viewportMousePos.y);
+				m_ViewportMousePos = glm::vec2(viewportMousePos.x, viewportMousePos.y);
+
 				ImGui::Image(reinterpret_cast<ImTextureID>(m_ImguiFBO->GetTexID()), viewportSize, ImVec2(0, 1), ImVec2(1, 0));
 
 				if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
@@ -400,13 +436,25 @@ namespace Chonps
 				ImGui::End();
 				ImGui::EndTabItem();
 			}
-
 			ImGui::EndTabBar();
 
+			ImVec2 region = ImGui::GetContentRegionAvail();
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4);
+			ImGui::SameLine(0.0f, region.x - 40.0f);
+			if (m_ViewportPlay == false)
+			{
+				if (ImGui::Button("Play"))
+					m_ViewportPlay = true;
+			}
+			else
+			{
+				if (ImGui::Button("Stop"))
+					m_ViewportPlay = false;
+			}
+			ImGui::PopStyleVar(); // Play Button rounding
 			ImGui::EndMenuBar();
-		}
 
-		
+		}
 
 		ImGui::End(); // End Dockspace
 	}

@@ -8,6 +8,7 @@ namespace Chonps
 	public:
 		Shader(const std::string& name, const std::string& vertex, const std::string& fragment) {}
 		Shader(const std::string& filepath) {}
+		virtual ~Shader() {}
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -30,6 +31,13 @@ namespace Chonps
 	// Creates Shader from single file containing all shaders
 	Shader* createShaderRp(const std::string& filepath);
 
+	class ShaderLibrary
+	{
+	public:
+
+	private:
+		std::unordered_map<std::string, std::shared_ptr<Shader>> m_Shaders;
+	};
 
 	void uploadUniform1f(uint32_t shader, const char* uniform, float x);
 	void uploadUniform2f(uint32_t shader, const char* uniform, float x, float y);

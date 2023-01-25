@@ -4,7 +4,7 @@
 #include "Core/DataTypes.h"
 #include "Graphics/Mesh.h"
 
-#include <set>
+#include <unordered_set>
 
 namespace Chonps
 {
@@ -35,10 +35,10 @@ namespace Chonps
 		glm::mat4 transform()
 		{
 			glm::mat4 translationMat = glm::translate(glm::mat4(1.0f), position);
-			glm::mat4 orientationMat = glm::mat4_cast(glm::quat(glm::radians(rotation)));
+			glm::mat4 rotationMat = glm::mat4_cast(glm::quat(glm::radians(rotation)));
 			glm::mat4 scaleMat = glm::scale(glm::mat4(1.0f), scale);
 
-			return glm::mat4(1.0f) * translationMat * orientationMat * scaleMat;
+			return glm::mat4(1.0f) * translationMat * rotationMat * scaleMat;
 		}
 
 		glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -74,7 +74,8 @@ namespace Chonps
 	struct CameraComponent
 	{
 		CameraComponent() = default;
-		CameraComponent(glm::vec3 position, glm::vec3 orientation, float FOVdeg, float nearPlane, float farPlane)
+		CameraComponent(glm::vec3 position, glm::vec3 orientation,unsigned int width, unsigned int height, float FOVdeg, float nearPlane, float farPlane)
+			: camera(width, height)
 		{
 			camera.SetUp(position, FOVdeg, nearPlane, farPlane);
 			camera.SetOrientation(orientation);

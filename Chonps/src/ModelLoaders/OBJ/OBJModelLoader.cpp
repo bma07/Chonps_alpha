@@ -1,17 +1,17 @@
 #include "cepch.h"
 #include "OBJModelLoader.h"
 
-#include "Graphics/File.h"
+#include "Core/File.h"
 
 namespace Chonps
 {
 	struct OBJmaterial
 	{
 		float Ns;
-		vec3 Ka;
-		vec3 Kd;
-		vec3 Ks;
-		vec3 Ke;
+		glm::vec3 Ka;
+		glm::vec3 Kd;
+		glm::vec3 Ks;
+		glm::vec3 Ke;
 		float Ni;
 		float d;
 
@@ -25,15 +25,15 @@ namespace Chonps
 	{
 		std::vector<Mesh> Meshes;
 
-		std::vector<vertextb> vertices;
+		std::vector<vertex> vertices;
 		std::vector<uint32_t> indices;
-		std::vector<std::shared_ptr<Texture>> textures;
+		std::vector<Texture*> textures;
 
 
-		std::vector<vec3> pos;
-		std::vector<vec3> color;
-		std::vector<vec2> texUVs;
-		std::vector<vec3> normals;
+		std::vector<glm::vec3> pos;
+		std::vector<glm::vec3> color;
+		std::vector<glm::vec2> texUVs;
+		std::vector<glm::vec3> normals;
 
 		std::string data;
 		if (!get_file_contents(filepath.c_str(), &data))
@@ -48,7 +48,7 @@ namespace Chonps
 		size_t dataVertices = data.find(dataType, 0);
 		while (dataVertices != std::string::npos)
 		{
-			// Find vertextb position in data
+			// Find vertex position in data
 			size_t eol = data.find_first_of("\r\n", dataVertices);
 			std::string getvec = data.substr(dataVertices + dataTypeLength, eol - dataVertices - dataTypeLength);
 			size_t offset = 0;
@@ -69,7 +69,7 @@ namespace Chonps
 			std::string vecz = getvec.substr(offset);
 			float vz = std::stof(vecz);
 
-			vec3 position(vx, vy, vz);
+			glm::vec3 position(vx, vy, vz);
 			pos.push_back(position);
 
 			size_t nextLinePos = data.find_first_not_of("\r\n", eol);
@@ -82,7 +82,7 @@ namespace Chonps
 		dataVertices = data.find(dataType, 0);
 		while (dataVertices != std::string::npos)
 		{
-			// Find vertextb position in data
+			// Find vertex position in data
 			size_t eol = data.find_first_of("\r\n", dataVertices);
 			std::string getvec = data.substr(dataVertices + dataTypeLength, eol - dataVertices - dataTypeLength);
 			size_t offset = 0;
@@ -103,7 +103,7 @@ namespace Chonps
 			std::string vecz = getvec.substr(offset);
 			float vz = std::stof(vecz);
 
-			vec3 norm(vx, vy, vz);
+			glm::vec3 norm(vx, vy, vz);
 			normals.push_back(norm);
 
 			size_t nextLinePos = data.find_first_not_of("\r\n", eol);
@@ -116,7 +116,7 @@ namespace Chonps
 		dataVertices = data.find(dataType, 0);
 		while (dataVertices != std::string::npos)
 		{
-			// Find vertextb position in data
+			// Find vertex position in data
 			size_t eol = data.find_first_of("\r\n", dataVertices);
 			std::string getvec = data.substr(dataVertices + dataTypeLength, eol - dataVertices - dataTypeLength);
 			size_t offset = 0;
@@ -131,7 +131,7 @@ namespace Chonps
 			std::string vecy = getvec.substr(offset);
 			float vy = std::stof(vecy);
 
-			vec2 texCoord(vx, vy);
+			glm::vec2 texCoord(vx, vy);
 			texUVs.push_back(texCoord);
 
 			size_t nextLinePos = data.find_first_not_of("\r\n", eol);
@@ -201,7 +201,7 @@ namespace Chonps
 						std::string colb = getcolor.substr(offset);
 						float b = std::stof(colb);
 
-						objMat.Kd = vec3(r, g, b);
+						objMat.Kd = glm::vec3(r, g, b);
 					}
 
 					// Get textures
@@ -275,7 +275,7 @@ namespace Chonps
 			size_t dataFaceVertices = data.find(dataFaceType, 0);
 			while (dataFaceVertices != std::string::npos)
 			{
-				// Find vertextb position in data
+				// Find vertex position in data
 				size_t eol = data.find_first_of("\r\n", dataFaceVertices);
 				std::string getface = data.substr(dataFaceVertices + dataFaceTypeLength, eol - dataFaceVertices - dataFaceTypeLength);
 				size_t count = getface.find(" ", 0);
@@ -301,7 +301,7 @@ namespace Chonps
 					// Add Indices
 					indices.push_back(indexValue++);
 
-					vertextb Vertex = { pos[posIndex - 1], vec3(0.8f), texUVs[texIndex - 1], normals[normIndex - 1] };
+					vertex Vertex = { pos[posIndex - 1], glm::vec3(0.8f), texUVs[texIndex - 1], normals[normIndex - 1] };
 					vertices.push_back(Vertex);
 
 					offset += face.length() + 1;
@@ -337,7 +337,7 @@ namespace Chonps
 				size_t dataFaceVertices = materialSource.find(dataFaceType, 0);
 				while (dataFaceVertices != std::string::npos)
 				{
-					// Find vertextb position in data
+					// Find vertex position in data
 					size_t eol = materialSource.find_first_of("\r\n", dataFaceVertices);
 					std::string getface = materialSource.substr(dataFaceVertices + dataFaceTypeLength, eol - dataFaceVertices - dataFaceTypeLength);
 					size_t count = getface.find(" ", 0);
@@ -363,14 +363,14 @@ namespace Chonps
 						// Add Indices
 						indices.push_back(indexValue++);
 
-						vec3 colors = vec3(1.0f);
+						glm::vec3 colors = glm::vec3(1.0f);
 						for (auto mat : materials)
 						{
 							if (materialName == mat.first)
 								colors = mat.second.Kd;
 						}
 
-						vertextb Vertex = { pos[posIndex - 1], colors, texUVs[texIndex - 1], normals[normIndex - 1] };
+						vertex Vertex = { pos[posIndex - 1], colors, texUVs[texIndex - 1], normals[normIndex - 1] };
 						vertices.push_back(Vertex);
 
 						offset += face.length() + 1;

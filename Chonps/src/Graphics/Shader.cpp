@@ -5,6 +5,7 @@
 #include "RendererAPI.h"
 
 #include "Platform/OpenGL/OpenGLShader.h"
+#include "Platform/Vulkan/VulkanShader.h"
 
 namespace Chonps
 {
@@ -26,7 +27,7 @@ namespace Chonps
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return std::make_shared<VulkanShader>(name, vertex, fragment);
 			}
 
 			case RenderAPI::DirectX:
@@ -55,7 +56,7 @@ namespace Chonps
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return std::make_shared<VulkanShader>(filepath);
 			}
 
 			case RenderAPI::DirectX:
@@ -80,12 +81,11 @@ namespace Chonps
 			case RenderAPI::OpenGL:
 			{
 				return new OpenGLShader(name, vertex, fragment);
-				break;
 			}
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return new VulkanShader(name, vertex, fragment);
 			}
 
 			case RenderAPI::DirectX:
@@ -114,14 +114,14 @@ namespace Chonps
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return new VulkanShader(filepath);
 			}
 
 			case RenderAPI::DirectX:
-				{
-					break;
-				}
+			{
+				break;
 			}
+		}
 		CHONPS_CORE_ERROR("ERROR: SHADER: Could not create Shader!");
 		return nullptr;
 	}

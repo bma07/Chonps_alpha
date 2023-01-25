@@ -3,6 +3,7 @@
 
 #include "RendererAPI.h"
 #include "Platform/OpenGL/OpenGLVertexArray.h"
+#include "Platform/Vulkan/VulkanVertexArray.h"
 
 namespace Chonps
 {
@@ -23,7 +24,7 @@ namespace Chonps
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return std::make_shared<VulkanVertexArray>();
 			}
 
 			case RenderAPI::DirectX:
@@ -52,7 +53,7 @@ namespace Chonps
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return new VulkanVertexArray();
 			}
 
 			case RenderAPI::DirectX:

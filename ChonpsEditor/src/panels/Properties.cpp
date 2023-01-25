@@ -1,6 +1,8 @@
 #include "Properties.h"
 
 #include "Core/ECS/Components.h"
+#include "Core/Math.h"
+#include "Imgui/ImguiWindow.h"
 
 #include <Imgui/imgui.h>
 #include <Imgui/imgui_internal.h>
@@ -26,6 +28,8 @@ namespace Chonps
 		ImGui::Begin("Components");
 		
 		Entity selectedEntity = m_SceneHierarchy->GetSelectedEntity();
+
+		// Components Collapsing Headers ------------------------------------------------------------- /
 
 		if (m_Scene->m_Registry.has_component<TransformComponent>(selectedEntity))
 		{
@@ -61,6 +65,7 @@ namespace Chonps
 				IMGUI_SPACING;
 			}
 		}
+
 		if (m_Scene->m_Registry.has_component<MeshComponent>(selectedEntity))
 		{
 			if (ImGui::CollapsingHeader("Mesh"))
@@ -82,6 +87,69 @@ namespace Chonps
 				IMGUI_SPACING;
 			}
 		}
+
+		if (m_Scene->m_Registry.has_component<CameraComponent>(selectedEntity))
+		{
+			if (ImGui::CollapsingHeader("Camera"))
+			{
+				CameraComponent* component = &m_Scene->m_Registry.get_component<CameraComponent>(selectedEntity);
+
+				TransformComponent* transform = &m_Scene->m_Registry.get_component<TransformComponent>(selectedEntity);
+				component->camera.position = transform->position;
+
+				ImVec2 region = ImGui::GetContentRegionAvail();
+
+				ImGui::Indent(20);
+
+				if (ImGui::Button(" Primary Camera ", ImVec2(region.x - 65.0f, 0)))
+				{
+					m_Scene->SetPrimaryCameraEntity(selectedEntity);
+				}
+				Chonps::imguiTooltip("Set as Primary Camera Entity", 1.5f);
+
+				ImGui::Separator();
+				
+				ImGui::Text("Orientation:");
+				if (ImGui::IsItemClicked())
+					component->camera.SetOrientation(glm::vec3(0.0f, 0.0f, 0.0f));
+
+				glm::vec3* camOri = &component->camera.orientation;
+				ImGui::DragFloat(" x##Cam2", &camOri->x, 0.01f);
+				ImGui::DragFloat(" y##Cam2", &camOri->y, 0.01f);
+				ImGui::DragFloat(" z##Cam2", &camOri->z, 0.01f);
+
+				static int s_CurrentSelectedViewMode = 0;
+				const char* camViewMode[2] = { " Perspective", " Orthographic" };
+				ImGui::Text("View");
+				ImGui::Combo("##CamViewMode", &s_CurrentSelectedViewMode, camViewMode, 2);
+
+				ImGui::Text("FOV:");
+				static int s_CurrentSelectedAngleType = 0;
+				if (s_CurrentSelectedAngleType == 0)
+					ImGui::DragFloat("##CamFOVdeg", &component->camera.FOVdeg, 1.0f, 1.0f, 120.0f, "%.3f deg");
+				else
+				{
+					float camFOVrad = radians(component->camera.FOVdeg);
+					ImGui::DragFloat("##CamFOVrad", &camFOVrad, 0.01f, 0.0174533f, 2.0944f, "%.3f rad");
+					component->camera.FOVdeg = degrees(camFOVrad);
+				}
+				const char* angleMeasureType[2] = { " degrees", " radians" };
+				ImGui::Combo("##CamAngleMeasureType", &s_CurrentSelectedAngleType, angleMeasureType, 2);
+
+				ImGui::Text("Near/Far Plane");
+				float* camNearFarPlane[2] = { &component->camera.nearPlane, &component->camera.farPlane };
+				ImGui::DragFloatRange2("##CamNearFarPlane", camNearFarPlane[0], camNearFarPlane[1], 0.5f, 0.001f, 1000.0f);
+
+				ImGui::Text("Up Vector:");
+				glm::vec3* camUpVec = &component->camera.upVector;
+				float* camUpVecArr[3] = { &camUpVec->x, &camUpVec->y, &camUpVec->z };
+				ImGui::DragFloat3("##CamUpVec", *camUpVecArr, 0.05f, 0.0f, 1.0f);
+
+				ImGui::Unindent(20);
+				IMGUI_SPACING;
+			}
+		}
+
 		if (m_Scene->m_Registry.has_component<TagComponent>(selectedEntity))
 		{
 			if (ImGui::CollapsingHeader("Tag"))
@@ -126,6 +194,8 @@ namespace Chonps
 				IMGUI_SPACING;
 			}
 		}
+
+		// ------------------------------------------------------------------------------------------- /
 
 		ImGui::End();
 		ImGui::PopStyleVar();

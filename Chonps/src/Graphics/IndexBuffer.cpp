@@ -3,6 +3,7 @@
 
 #include "RendererAPI.h"
 #include "Platform/OpenGL/OpenGLIndexBuffer.h"
+#include "Platform/Vulkan/VulkanIndexBuffer.h"
 
 namespace Chonps
 {
@@ -23,7 +24,7 @@ namespace Chonps
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return std::make_shared<VulkanIndexBuffer>(indices, size);;
 			}
 
 			case RenderAPI::DirectX:
@@ -52,7 +53,7 @@ namespace Chonps
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return std::make_shared<VulkanIndexBuffer>(indices);
 			}
 
 			case RenderAPI::DirectX:
@@ -81,7 +82,7 @@ namespace Chonps
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return new VulkanIndexBuffer(indices, size);
 			}
 
 			case RenderAPI::DirectX:
@@ -110,7 +111,7 @@ namespace Chonps
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return new VulkanIndexBuffer(indices);
 			}
 
 			case RenderAPI::DirectX:

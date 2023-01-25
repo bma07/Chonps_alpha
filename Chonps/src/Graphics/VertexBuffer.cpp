@@ -3,6 +3,7 @@
 
 #include "RendererAPI.h"
 #include "Platform/OpenGL/OpenGLVertexBuffer.h"
+#include "Platform/Vulkan/VulkanVertexBuffer.h"
 
 namespace Chonps
 {
@@ -11,17 +12,10 @@ namespace Chonps
 		switch (type)
 		{
 			case ShaderDataType::Float: return sizeof(float);
-			case ShaderDataType::Float1: return sizeof(float);
-			case ShaderDataType::Float2: return sizeof(float) * 2;
-			case ShaderDataType::Float3: return sizeof(float) * 3;
-			case ShaderDataType::Float4: return sizeof(float) * 4;
+			case ShaderDataType::Mat2: return sizeof(float) * 2 * 2;
 			case ShaderDataType::Mat3: return sizeof(float) * 3 * 3;
 			case ShaderDataType::Mat4: return sizeof(float) * 4 * 4;
 			case ShaderDataType::Int: return sizeof(int);
-			case ShaderDataType::Int1: return sizeof(int);
-			case ShaderDataType::Int2: return sizeof(int) * 2;
-			case ShaderDataType::Int3: return sizeof(int) * 3;
-			case ShaderDataType::Int4: return sizeof(int) * 4;
 			case ShaderDataType::Bool: return sizeof(bool);
 		}
 
@@ -34,18 +28,10 @@ namespace Chonps
 		switch (type)
 		{
 			case ShaderDataType::Float: return 1;
-			case ShaderDataType::Float1: return 1;
-			case ShaderDataType::Float2: return 2;
-			case ShaderDataType::Float3: return 3;
-			case ShaderDataType::Float4: return 4;
 			case ShaderDataType::Mat2: return 2 * 2;
 			case ShaderDataType::Mat3: return 3 * 3;
 			case ShaderDataType::Mat4: return 4 * 4;
 			case ShaderDataType::Int: return 1;
-			case ShaderDataType::Int1: return 1;
-			case ShaderDataType::Int2: return 2;
-			case ShaderDataType::Int3: return 3;
-			case ShaderDataType::Int4: return 4;
 			case ShaderDataType::Bool: return 1;
 		}
 
@@ -66,12 +52,11 @@ namespace Chonps
 			case RenderAPI::OpenGL:
 			{
 				return std::make_shared<OpenGLVertexBuffer>(vertices, size);
-				break;
 			}
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return std::make_shared<VulkanVertexBuffer>(vertices, size);
 			}
 
 			case RenderAPI::DirectX:
@@ -83,7 +68,7 @@ namespace Chonps
 		return nullptr;
 	}
 
-	std::shared_ptr<VertexBuffer> createVertexBuffer(std::vector<vertextb>& vertices)
+	std::shared_ptr<VertexBuffer> createVertexBuffer(std::vector<vertex>& vertices)
 	{
 		switch (getGraphicsContext())
 		{
@@ -100,7 +85,7 @@ namespace Chonps
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return std::make_shared<VulkanVertexBuffer>(vertices);
 			}
 
 			case RenderAPI::DirectX:
@@ -125,12 +110,11 @@ namespace Chonps
 			case RenderAPI::OpenGL:
 			{
 				return new OpenGLVertexBuffer(vertices, size);
-				break;
 			}
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return new VulkanVertexBuffer(vertices, size);
 			}
 
 			case RenderAPI::DirectX:
@@ -142,7 +126,7 @@ namespace Chonps
 		return nullptr;
 	}
 
-	VertexBuffer* createVertexBufferRp(std::vector<vertextb>& vertices)
+	VertexBuffer* createVertexBufferRp(std::vector<vertex>& vertices)
 	{
 		switch (getGraphicsContext())
 		{
@@ -154,12 +138,12 @@ namespace Chonps
 
 			case RenderAPI::OpenGL:
 			{
-				return new OpenGLVertexBuffer(vertices);
+				//return new OpenGLVertexBuffer(vertices);
 			}
 
 			case RenderAPI::Vulkan:
 			{
-				break;
+				return new VulkanVertexBuffer(vertices);
 			}
 
 			case RenderAPI::DirectX:

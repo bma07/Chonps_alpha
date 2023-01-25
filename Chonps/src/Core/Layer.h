@@ -1,7 +1,6 @@
 #ifndef CHONPS_LAYER_H
 #define CHONPS_LAYER_H
 
-#include "Core.h"
 #include "Events/Event.h"
 
 namespace Chonps

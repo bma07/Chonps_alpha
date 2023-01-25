@@ -2,7 +2,6 @@
 #include "Window.h"
 
 #include "Platform/WindowAPI/glfwAPI/glfwWindowAPI.h"
-
 #include "Input.h"
 
 namespace Chonps

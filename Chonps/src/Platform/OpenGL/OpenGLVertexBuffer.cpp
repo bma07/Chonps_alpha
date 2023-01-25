@@ -13,12 +13,12 @@ namespace Chonps
 		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 	}
 
-	OpenGLVertexBuffer::OpenGLVertexBuffer(std::vector<vertextb>& vertices)
+	OpenGLVertexBuffer::OpenGLVertexBuffer(std::vector<vertex>& vertices)
 		: VBO(vertices), m_Count(vertices.size())
 	{
 		glGenBuffers(1, &m_ID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_ID);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertextb), vertices.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertex), vertices.data(), GL_STATIC_DRAW);
 	}
 
 	void OpenGLVertexBuffer::Bind() const

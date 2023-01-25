@@ -25,15 +25,15 @@ namespace Chonps
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
-
-	bool OpenGLRendererAPI::GetGammaCorrectiom()
-	{
-		return m_GammaCorrection;
-	}
 	
-	void OpenGLRendererAPI::Draw(const size_t& count)
+	void OpenGLRendererAPI::Draw(const uint32_t& count)
 	{
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0);
+	}
+
+	void OpenGLRendererAPI::DrawLine()
+	{
+		glDrawArrays(GL_LINES, 0, 2);
 	}
 
 	void OpenGLRendererAPI::FrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height)

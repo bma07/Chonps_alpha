@@ -1,8 +1,7 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-#include "cepch.h"
-#include "Core.h"
+#include "Core/Config.h"
 
 #define BIT(x) (1 << x)
 

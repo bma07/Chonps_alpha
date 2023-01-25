@@ -12,9 +12,8 @@ namespace Chonps
 		VertexArray() {}
 
 		virtual void LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, uint32_t numComponents, ShaderDataType type, uint32_t stride, void* offset) = 0;
-		virtual void LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, ShaderDataType numComponents, ShaderDataType type, uint32_t stride, void* offset) = 0;
 		
-		virtual void LinkIndexBuffer(IndexBuffer* EBO) = 0;
+		virtual void LinkIndexBuffer(IndexBuffer* IBO) = 0;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;

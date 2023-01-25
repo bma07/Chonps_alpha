@@ -5,6 +5,7 @@
 #include <Core/Input.h>
 #include <Core/MouseButtonCodes.h>
 #include <Core/KeyCodes.h>
+#include <Core/Math.h>
 
 namespace Chonps
 {
@@ -54,9 +55,15 @@ namespace Chonps
 		m_EntityIDtoName.erase(entity);
 	}
 
-	void Scene::OnUpdateRuntime(float dt /*= 1.0f*/)
+	void Scene::OnUpdateRuntime(Shader* shader, float dt /*= 1.0f*/)
 	{
+		Entity primaryCamEntity = GetPrimaryCameraEntity();
 
+		CameraComponent* camComp = &m_Registry.get_component<CameraComponent>(primaryCamEntity);
+		camComp->camera.UpdateMatrix();
+		renderBeginScene(camComp->camera, shader);
+
+		m_System->OnUpdate();
 	}
 
 	void Scene::OnUpdateEditor(Camera& EditorCamera, float dt /*= 1.0f*/)
@@ -67,11 +74,7 @@ namespace Chonps
 
 	void Scene::OnViewportResize()
 	{
-	}
 
-	Entity Scene::GetPrimaryCameraEntity()
-	{
-		return Entity();
 	}
 
 	void Scene::CameraInputs(Camera& camera, float dt /*= 1.0f*/)
@@ -136,14 +139,13 @@ namespace Chonps
 			yoffset *= m_CameraSensitivity;
 
 			glm::vec3 newOrientation = glm::rotate(camOri, glm::radians(yoffset), glm::normalize(glm::cross(camOri, camera.GetUpVector())));
-			if (abs(glm::angle(glm::normalize(newOrientation), camera.GetUpVector()) - glm::radians(90.0f)) <= glm::radians(85.0f))
-			{
+			if (abs(glm::angle(glm::normalize(newOrientation), glm::normalize(camera.GetUpVector())) - glm::radians(90.0f)) <= glm::radians(85.0f))
 				camOri = newOrientation;
-			}
 
 			// Rotates the orientation left and right
 			camOri = glm::rotate(camOri, glm::radians(-xoffset), camera.GetUpVector());
 			camera.SetOrientation(camOri);
+
 
 			if (xpos > m_Window->GetWidth() - 2)
 			{

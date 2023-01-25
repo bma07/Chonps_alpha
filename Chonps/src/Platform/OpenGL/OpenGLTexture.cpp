@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 #include <stb_image.h>
 
-#include "OpenGLRendererAPI.h"
+#include "Graphics/RendererBackends.h"
 
 namespace Chonps
 {
@@ -17,7 +17,7 @@ namespace Chonps
 		stbi_set_flip_vertically_on_load(false);
 		if (!data) CHONPS_CORE_ERROR("ERROR: TEXTURE: Failed to load texture data: {0}", filepath);
 
-		bool gammaCorrect = OpenGLRendererAPI::GetGammaCorrectiom();
+		bool gammaCorrect = renderGetGammaCorrection();
 
 		// Get color channel format
 		GLenum internalFormat = 0, dataFormat = 0;
@@ -83,7 +83,7 @@ namespace Chonps
 	OpenGLTexture::OpenGLTexture(uint32_t width, uint32_t height, void* data, uint32_t size)
 		: Texture(width, height, data, size), m_Width(width), m_Height(height)
 	{
-		bool gammaCorrect = OpenGLRendererAPI::GetGammaCorrectiom();
+		bool gammaCorrect = renderGetGammaCorrection();
 
 		// Get color channel format
 		GLenum internalFormat = 0, dataFormat = 0;

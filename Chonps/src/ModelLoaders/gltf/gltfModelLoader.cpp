@@ -1,7 +1,7 @@
 #include "cepch.h"
 #include "gltfModelLoader.h"
 
-#include "Graphics/File.h"
+#include "Core/File.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -137,11 +137,11 @@ namespace Chonps
 			indices.insert(indices.end(), indicesRaw.begin(), indicesRaw.end());
 
 			// Combine all mesh data and Get Model data
-			std::vector<vertextb> vertices;
+			std::vector<vertex> vertices;
 			for (unsigned int i = 0; i < position.size(); i++)
 			{
 				vertices.emplace_back(
-					vertextb
+					vertex
 					{
 						position[i],
 						colors[i],
