@@ -20,9 +20,12 @@ namespace Chonps
 		virtual void Delete() override;
 
 		virtual uint32_t GetCount() const override { return m_Count; }
+		virtual uint32_t* GetIndices() const override { return m_Indices; }
+		virtual uint32_t GetSize() const override { return m_Count * sizeof(uint32_t); }
 
 	private:
 		uint32_t m_Count;
+		uint32_t* m_Indices;
 
 		VkBuffer m_IndexBuffer = VK_NULL_HANDLE;
 		VkBuffer m_StagingBuffer = VK_NULL_HANDLE;

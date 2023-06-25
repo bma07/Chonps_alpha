@@ -53,15 +53,26 @@
 	#define CHONPS_ASSERT(x, ...) { if(!(x)) { CHONPS_ERROR("Assertion Failed: {0}", __VA_ARGS__); assert(false); } }
 	#define CHONPS_CORE_ASSERT(x, ...) { if(!(x)) { CHONPS_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); assert(false); } }
 #else
-	#define CHONPS_ASSERT(x, ...)
-	#define CHONPS_CORE_ASSERT(x, ...)
+	#define CHONPS_ASSERT(x, ...) (x)
+	#define CHONPS_CORE_ASSERT(x, ...) (x)
 #endif
+
+
+// Specification
+#ifndef CHONPS_FORCE_GRAPHICS_API_NAMESPACES
+	#define CHONPS_GRAPHICS_API_NAMESPACES_NOT_REQUIRED
+#endif
+
 
 #define CHONPS_TRUE 1
 #define CHONPS_FALSE 0
 
-#define CHONPS_PI 3.1415926535897932384626433832795028841971693993751
-#define CHONPS_RAD (3.1415926535897932384626433832795028841971693993751 / 180)
+#define CHONPS_UINT8_MAX  0xff
+#define CHONPS_UINT16_MAX 0xffff
+#define CHONPS_UINT32_MAX 0xffffffff
+#define CHONPS_UINT64_MAX 0xffffffffffffffff
+
+#define ALIGN(x) alignas(x)
 
 namespace Chonps
 {

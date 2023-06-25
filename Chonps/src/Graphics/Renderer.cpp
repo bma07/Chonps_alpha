@@ -38,8 +38,8 @@ namespace Chonps
 	{
 		shader->Bind();
 		glm::vec3 camPos = camera.GetPosition();
-		Chonps::uploadUniform3f(shader->GetID(), "camPos", camPos.x, camPos.y, camPos.z);
-		camera.UploadMatrix(shader, uniform);
+		Chonps::oglSpec::uploadUniform3f(shader->GetID(), "camPos", camPos.x, camPos.y, camPos.z);
+		Chonps::oglSpec::uploadUniform4mfv(shader->GetID(), "camMatrix", 1, false, glm::value_ptr(camera.GetCameraMatrix()));
 	}
 
 	// Call after scene has finished
@@ -64,9 +64,7 @@ namespace Chonps
 	// Draw vertices through the VertexArray. Draw type is in Triangles
 	void renderDraw(VertexArray* vertexArray)
 	{
-		vertexArray->Bind();
-		getRendererAPI()->Draw(vertexArray->GetIndexCount());
-		vertexArray->Unbind();
+		getRendererAPI()->Draw(vertexArray);
 
 		Renderer::GetStats().vertices += vertexArray->GetVertexCount();
 		Renderer::GetStats().triangles += vertexArray->GetIndexCount() / 3;
@@ -81,9 +79,7 @@ namespace Chonps
 
 	void renderDrawLine(VertexArray* vertexArray)
 	{
-		vertexArray->Bind();
-		getRendererAPI()->DrawLine();
-		vertexArray->Unbind();
+		getRendererAPI()->DrawLine(vertexArray);
 	}
 
 	// Call before renderering or drawing
@@ -91,8 +87,8 @@ namespace Chonps
 	{
 		shader->Bind();
 		glm::vec3 camPos = camera.GetPosition();
-		Chonps::uploadUniform3f(shader->GetID(), "camPos", camPos.x, camPos.y, camPos.z);
-		camera.UploadMatrix(shader, "camMatrix");
+		Chonps::oglSpec::uploadUniform3f(shader->GetID(), "camPos", camPos.x, camPos.y, camPos.z);
+		Chonps::oglSpec::uploadUniform4mfv(shader->GetID(), "camMatrix", 1, false, glm::value_ptr(camera.GetCameraMatrix()));
 	}
 
 	// Call after scene has finished

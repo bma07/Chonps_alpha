@@ -67,7 +67,7 @@ namespace Chonps
 	
 	// When the topology type is set to Default it will automatically be set to Triangle
 	// This is different from filling in a Vulkan pipeline where when the topology is
-	// set to default it will be set to the RenderAPI's topology type
+	// set to default it will be set to the GraphicsAPI's topology type
 	void renderSetTopologyType(RenderTopologyType type);
 	
 	// Get the topology type for renderering primitive geometry data

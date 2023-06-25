@@ -58,8 +58,8 @@ namespace Chonps
 		if (m_Data.FullScreen)
 			fullScreen = glfwGetPrimaryMonitor();
 
-		RenderAPI graphicsAPI = getGraphicsContext();
-		if (graphicsAPI == RenderAPI::Vulkan)
+		GraphicsAPI graphicsAPI = getGraphicsAPI();
+		if (graphicsAPI == GraphicsAPI::Vulkan)
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
@@ -71,26 +71,24 @@ namespace Chonps
 
 		switch (graphicsAPI)
 		{
-			case Chonps::RenderAPI::None:
+			case Chonps::GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: No graphics API selected beforehand!");
-				CHONPS_CORE_WARN("WARNING: WINDOW: Automatically initializing rendering context...");
-				CHONPS_CORE_ASSERT(setRenderContext(), "No graphics API found or can be used!");
+				CHONPS_CORE_ASSERT(false, "No graphics API selected beforehand! Cannot create window without a rendering context!");
 			}
 
-			case Chonps::RenderAPI::OpenGL:
+			case Chonps::GraphicsAPI::OpenGL:
 			{
 				gladInit(m_Window, m_Data.Width, m_Data.Height);
 				break;
 			}
 
-			case Chonps::RenderAPI::Vulkan:
+			case Chonps::GraphicsAPI::Vulkan:
 			{
 				setCurrentWindowForVulkanWindowSurface(m_Window);
 				break;
 			}
 
-			case Chonps::RenderAPI::DirectX:
+			case Chonps::GraphicsAPI::DirectX:
 			{
 				break;
 			}
@@ -115,14 +113,14 @@ namespace Chonps
 			WindowResizeEvent eventType(width, height);
 			data.EventCallback(eventType);
 
-			switch (getGraphicsContext())
+			switch (getGraphicsAPI())
 			{
-				case RenderAPI::OpenGL: 
+				case GraphicsAPI::OpenGL: 
 				{
 					gladUpdateViewPort(window, width, height);
 					break;
 				}
-				case RenderAPI::Vulkan:
+				case GraphicsAPI::Vulkan:
 				{
 					getVulkanBackends()->framebufferResized = true;
 				}
@@ -131,7 +129,7 @@ namespace Chonps
 
 		glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
-			if (getGraphicsContext() == RenderAPI::Vulkan) getVulkanBackends()->framebufferResized = true;
+			if (getGraphicsAPI() == GraphicsAPI::Vulkan) getVulkanBackends()->framebufferResized = true;
 		});
 
 		glfwSetWindowPosCallback(m_Window, [](GLFWwindow* window, int x, int y)
@@ -239,7 +237,7 @@ namespace Chonps
 
 	void glfwWindowAPI::OnUpdate()
 	{
-		if (getGraphicsContext() == RenderAPI::OpenGL) glfwSwapBuffers(m_Window);
+		if (getGraphicsAPI() == GraphicsAPI::OpenGL) glfwSwapBuffers(m_Window);
 		glfwPollEvents();
 	}
 
@@ -258,12 +256,13 @@ namespace Chonps
 
 	void glfwWindowAPI::SetContextCurrent()
 	{
-		glfwMakeContextCurrent(m_Window);
+		if (getGraphicsAPI() == GraphicsAPI::OpenGL)
+			glfwMakeContextCurrent(m_Window);
 	}
 
 	void glfwWindowAPI::SetVSync(bool enabled)
 	{
-		if (getGraphicsContext() == RenderAPI::OpenGL)
+		if (getGraphicsAPI() == GraphicsAPI::OpenGL)
 		{
 			glfwSwapInterval(enabled);
 			m_Data.VSync = enabled;
@@ -272,7 +271,7 @@ namespace Chonps
 
 	void glfwWindowAPI::Delete()
 	{
-		if (getGraphicsContext() == RenderAPI::Vulkan)
+		if (getGraphicsAPI() == GraphicsAPI::Vulkan)
 			vkDeviceWaitIdle(getVulkanBackends()->device);
 
 		glfwDestroyWindow(m_Window);

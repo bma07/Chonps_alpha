@@ -35,7 +35,7 @@ namespace Chonps
 		std::vector<float> getFloats(json accessor);
 		glm::vec3 getColors(json material);
 		std::vector<uint32_t> getIndices(json accessor);
-		std::vector<std::shared_ptr<Texture>> getTextures(json material);
+		std::vector<Texture*> getTextures(json material);
 		TexFilterPair GetTexFilter(uint32_t mag, uint32_t min);
 		TexWrap GetTexWrap(uint32_t wrap);
 	};

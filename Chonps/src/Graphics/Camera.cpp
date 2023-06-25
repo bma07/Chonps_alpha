@@ -9,22 +9,25 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
+#include "RendererAPI.h"
+
 namespace Chonps
 {
 	Camera::Camera(int width, int height)
 		: m_Width(width), m_Height(height) {}
 
-	void Camera::UploadMatrix(Shader* shader, const char* uniform)
-	{
-		uploadUniform4mfv(shader->GetID(), uniform, 1, false, glm::value_ptr(m_CameraMatrix));
-	}
-
 	// Updates Camera Matrix, call in loop
 	void Camera::UpdateMatrix()
 	{
-		m_ViewMatrix = glm::lookAt(position, position + orientation, upVector);
-		m_ProjectionMatrix = glm::perspective(glm::radians(FOVdeg), (float)m_Width / (float)m_Height, nearPlane, farPlane);
+		m_ViewMatrix = glm::lookAt(position, orientation, upVector);
 
+		if (m_Width > 0 && m_Height > 0)
+			m_ProjectionMatrix = glm::perspective(glm::radians(FOVdeg), (float)m_Width / (float)m_Height, nearPlane, farPlane);
+
+		// Vulkan's y-coordinate is flipped which is why we flip the proj matrix
+		if (getGraphicsAPI() == GraphicsAPI::Vulkan)
+			m_ProjectionMatrix[1][1] *= -1;
+		
 		m_CameraMatrix = m_ProjectionMatrix * m_ViewMatrix;
 	}
 
@@ -43,18 +46,15 @@ namespace Chonps
 		nearPlane = _nearPlane;
 		farPlane = _farPlane;
 
-		m_ViewMatrix = glm::lookAt(position, position + orientation, upVector);
-		m_ProjectionMatrix = glm::perspective(glm::radians(FOVdeg), (float)m_Width / (float)m_Height, nearPlane, farPlane);
-
-		m_CameraMatrix = m_ProjectionMatrix * m_ViewMatrix;
+		UpdateMatrix();
 	}
 
-	std::shared_ptr<Camera> createCamera(int width, int height)
+	std::shared_ptr<Camera> createCameraSp(int width, int height)
 	{
 		return std::make_shared<Camera>(width, height);
 	}
 
-	Camera* createCameraRp(int width, int height)
+	Camera* createCamera(int width, int height)
 	{
 		return new Camera(width, height);
 	}

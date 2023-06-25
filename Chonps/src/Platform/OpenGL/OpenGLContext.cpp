@@ -18,9 +18,9 @@ namespace Chonps
 			CHONPS_CORE_ASSERT(status, "Failed to initialize Glad!");
 
 			CHONPS_CORE_INFO("OpenGL Info:");
-			CHONPS_CORE_INFO("	Vendor: {0}", (const char*)glGetString(GL_VENDOR));
-			CHONPS_CORE_INFO("	Renderer: {0}", (const char*)glGetString(GL_RENDERER));
-			CHONPS_CORE_INFO("	Version: {0}", (const char*)glGetString(GL_VERSION));
+			CHONPS_CORE_INFO("\tVendor: {0}", (const char*)glGetString(GL_VENDOR));
+			CHONPS_CORE_INFO("\tRenderer: {0}", (const char*)glGetString(GL_RENDERER));
+			CHONPS_CORE_INFO("\tVersion: {0}", (const char*)glGetString(GL_VERSION));
 
 			s_GladInit = true;
 		}

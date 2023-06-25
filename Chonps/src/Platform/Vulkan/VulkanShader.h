@@ -30,7 +30,10 @@ namespace Chonps
 		std::string m_Name;
 		uint32_t m_ID;
 
-		VulkanPipeline m_GraphicsPipeline;
+		VkShaderModule m_VertexShaderModule;
+		VkShaderModule m_FragmentShaderModule;
+
+		VulkanPipelineShaderStages m_ShaderStages;
 	};
 }
 

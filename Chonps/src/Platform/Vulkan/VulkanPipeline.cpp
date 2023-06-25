@@ -89,7 +89,7 @@ namespace Chonps
 		s_StandardPipelineSpecification.rasterizer.rasterizerDiscardEnable = false;
 		s_StandardPipelineSpecification.rasterizer.lineWidth = 1.0f;
 		s_StandardPipelineSpecification.rasterizer.cullMode = RenderCullFaceMode::Back;
-		s_StandardPipelineSpecification.rasterizer.frontFace = RenderCullFrontFace::Clockwise;
+		s_StandardPipelineSpecification.rasterizer.frontFace = RenderCullFrontFace::CounterClockwise;
 		s_StandardPipelineSpecification.rasterizer.depthBiasEnable = false;
 		s_StandardPipelineSpecification.rasterizer.depthBiasConstantFactor = 0.0f; // Optional
 		s_StandardPipelineSpecification.rasterizer.depthBiasClamp = 0.0f; // Optional
@@ -123,7 +123,7 @@ namespace Chonps
 		s_StandardPipelineSpecification = pipelineSpecification;
 	}
 
-	vkSpec::PipelineSpecification vkSpec::getStandardVulkanPipelineSpecification()
+	vkSpec::PipelineSpecification& vkSpec::getStandardVulkanPipelineSpecification()
 	{
 		return s_StandardPipelineSpecification;
 	}
@@ -131,6 +131,8 @@ namespace Chonps
 	VulkanPipeline createVulkanPipeline(const vkSpec::PipelineSpecification& pipelineSpecification, VkPipelineShaderStageCreateInfo shaderStages[], VkPipelineVertexInputStateCreateInfo vertexInputInfo)
 	{
 		VulkanPipeline pipeline{};
+
+		VulkanBackends* vkBackends = getVulkanBackends();
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -141,15 +143,15 @@ namespace Chonps
 		VkViewport viewport{};
 		viewport.x = pipelineSpecification.viewport.x;
 		viewport.y = pipelineSpecification.viewport.y;
-		pipelineSpecification.viewport.width < 0 ? viewport.width = (float)getVulkanBackends()->swapChainExtent.width : viewport.width = pipelineSpecification.viewport.width;
-		pipelineSpecification.viewport.height < 0 ? viewport.height = (float)getVulkanBackends()->swapChainExtent.height : viewport.height = pipelineSpecification.viewport.height;
+		pipelineSpecification.viewport.width < 0 ? viewport.width = (float)vkBackends->swapChainExtent.width : viewport.width = pipelineSpecification.viewport.width;
+		pipelineSpecification.viewport.height < 0 ? viewport.height = (float)vkBackends->swapChainExtent.height : viewport.height = pipelineSpecification.viewport.height;
 		viewport.minDepth = pipelineSpecification.viewport.minDepth;
 		viewport.maxDepth = pipelineSpecification.viewport.maxDepth;
 
 		VkRect2D scissor{};
 		scissor.offset.x = pipelineSpecification.viewport.scissorsOffset.x;
 		scissor.offset.y = pipelineSpecification.viewport.scissorsOffset.y;
-		scissor.extent = getVulkanBackends()->swapChainExtent;
+		scissor.extent = vkBackends->swapChainExtent;
 
 		std::vector<VkDynamicState> dynamicStates =
 		{
@@ -199,7 +201,7 @@ namespace Chonps
 		colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
 		colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
 		colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
-		
+
 		VkPipelineColorBlendStateCreateInfo colorBlending{};
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlending.logicOpEnable = pipelineSpecification.colorBlend.logicOpEnable;
@@ -211,14 +213,44 @@ namespace Chonps
 		colorBlending.blendConstants[2] = pipelineSpecification.colorBlend.blendConstants[2]; // Optional
 		colorBlending.blendConstants[3] = pipelineSpecification.colorBlend.blendConstants[3]; // Optional
 
+		VkPipelineDepthStencilStateCreateInfo depthStencil{};
+		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depthStencil.depthTestEnable = VK_TRUE;
+		depthStencil.depthWriteEnable = VK_TRUE;
+		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+		depthStencil.depthBoundsTestEnable = VK_FALSE;
+		depthStencil.minDepthBounds = 0.0f; // Optional
+		depthStencil.maxDepthBounds = 1.0f; // Optional
+		depthStencil.stencilTestEnable = VK_FALSE;
+		depthStencil.front = {}; // Optional
+		depthStencil.back = {}; // Optional
+
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = pipelineSpecification.pipelineLayout.setLayoutCount; // Optional
-		pipelineLayoutInfo.pSetLayouts = static_cast<VkDescriptorSetLayout*>(pipelineSpecification.pipelineLayout.setLayouts); // Optional
-		pipelineLayoutInfo.pushConstantRangeCount = pipelineSpecification.pipelineLayout.pushConstantRangeCount; // Optional
-		pipelineLayoutInfo.pPushConstantRanges = static_cast<VkPushConstantRange*>(pipelineSpecification.pipelineLayout.pushConstantRanges); // Optional
 
-		CHONPS_CORE_ASSERT(vkCreatePipelineLayout(getVulkanBackends()->device, &pipelineLayoutInfo, nullptr, &pipeline.pipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout!");
+		if (!vkBackends->toPipelineDescriptorSetLayouts.empty())
+		{
+			pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(vkBackends->toPipelineDescriptorSetLayouts.size());
+			pipelineLayoutInfo.pSetLayouts = vkBackends->toPipelineDescriptorSetLayouts.data();
+		}
+		else
+		{
+			pipelineLayoutInfo.setLayoutCount = 0;
+			pipelineLayoutInfo.pSetLayouts = nullptr;
+		}
+
+		if (vkBackends->pushConstantRangeCount > 0)
+		{
+			pipelineLayoutInfo.pushConstantRangeCount = vkBackends->pushConstantRangeCount;
+			pipelineLayoutInfo.pPushConstantRanges = &vkBackends->pushConstantRange;
+		}
+		else
+		{
+			pipelineLayoutInfo.pushConstantRangeCount = 0;
+			pipelineLayoutInfo.pPushConstantRanges = nullptr;
+		}
+
+		CHONPS_CORE_ASSERT(vkCreatePipelineLayout(vkBackends->device, &pipelineLayoutInfo, nullptr, &pipeline.pipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout!");
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -229,16 +261,16 @@ namespace Chonps
 		pipelineInfo.pViewportState = &viewportState;
 		pipelineInfo.pRasterizationState = &rasterizer;
 		pipelineInfo.pMultisampleState = &multisampling;
-		pipelineInfo.pDepthStencilState = nullptr; // Optional
+		pipelineInfo.pDepthStencilState = &depthStencil;
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = &dynamicState;
 		pipelineInfo.layout = pipeline.pipelineLayout;
-		pipelineInfo.renderPass = getVulkanBackends()->renderPass;
+		pipelineInfo.renderPass = vkBackends->renderPass;
 		pipelineInfo.subpass = 0;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex = -1; // Optional
 
-		CHONPS_CORE_ASSERT(vkCreateGraphicsPipelines(getVulkanBackends()->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.pipeline) == VK_SUCCESS, "Failed to create graphics pipeline!");
+		CHONPS_CORE_ASSERT(vkCreateGraphicsPipelines(vkBackends->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.pipeline) == VK_SUCCESS, "Failed to create graphics pipeline!");
 
 		return pipeline;
 	}

@@ -7,27 +7,27 @@
 
 namespace Chonps
 {
-	std::shared_ptr<VertexArray> createVertexArray()
+	std::shared_ptr<VertexArray> createVertexArraySp()
 	{
-		switch (getGraphicsContext())
+		switch (getGraphicsAPI())
 		{
-			case RenderAPI::None:
+			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: VAO: createVertexArray() - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: VAO: createVertexArraySp() - No graphics API selected beforehand!");
 				break;
 			}
 
-			case RenderAPI::OpenGL:
+			case GraphicsAPI::OpenGL:
 			{
 				return std::make_shared<OpenGLVertexArray>();
 			}
 
-			case RenderAPI::Vulkan:
+			case GraphicsAPI::Vulkan:
 			{
 				return std::make_shared<VulkanVertexArray>();
 			}
 
-			case RenderAPI::DirectX:
+			case GraphicsAPI::DirectX:
 			{
 				break;
 			}
@@ -36,27 +36,27 @@ namespace Chonps
 		return nullptr;
 	}
 
-	VertexArray* createVertexArrayRp()
+	VertexArray* createVertexArray()
 	{
-		switch (getGraphicsContext())
+		switch (getGraphicsAPI())
 		{
-			case RenderAPI::None:
+			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: VAO: createVertexArrayRp() - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: VAO: createVertexArray() - No graphics API selected beforehand!");
 				break;
 			}
 
-			case RenderAPI::OpenGL:
+			case GraphicsAPI::OpenGL:
 			{
 				return new OpenGLVertexArray();
 			}
 
-			case RenderAPI::Vulkan:
+			case GraphicsAPI::Vulkan:
 			{
 				return new VulkanVertexArray();
 			}
 
-			case RenderAPI::DirectX:
+			case GraphicsAPI::DirectX:
 			{
 				break;
 			}

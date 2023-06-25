@@ -2,7 +2,7 @@
 #define CHONPS_CORE_H
 
 // Core
-#include "Core.h"
+#include "Config.h"
 #include "Log.h"
 #include "DataTypes.h"
 #include "File.h"
@@ -14,6 +14,7 @@
 #include "Math.h"
 #include "MouseButtonCodes.h"
 #include "Application.h"
+#include "ThreadPool.h"
 #include "Timer.h"
 
 // Events

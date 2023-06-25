@@ -18,10 +18,14 @@ namespace Chonps
 		virtual void Delete() override;
 
 		virtual uint32_t GetCount() const override { return m_Count; }
+		virtual float* GetVertices() const override { return m_Vertices; }
+		virtual uint32_t GetSize() const override { return m_Size; }
 
 	private:
 		uint32_t m_ID;
 		uint32_t m_Count;
+		float* m_Vertices;
+		uint32_t m_Size;
 	};
 }
 

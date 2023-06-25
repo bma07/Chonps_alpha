@@ -46,7 +46,7 @@ namespace Chonps
 
 		Entity create()
 		{
-			if (s_EnableEntityLimit) CHONPS_CORE_ASSERT(m_ExistingEntities < s_MaxEntities, "Entity limit reached! Too many entities created");
+			if (s_EnableEntityLimit) CHONPS_CORE_ASSERT((m_ExistingEntities < s_MaxEntities), "Entity limit reached! Too many entities created");
 
 			if ((m_AvailableEntities.size() == 1) && !s_EnableEntityLimit)
 				m_AvailableEntities.push(++m_AvailableEntities.front());
@@ -60,7 +60,7 @@ namespace Chonps
 
 		void destroy(Entity entity)
 		{
-			if (s_EnableEntityLimit) CHONPS_CORE_ASSERT(entity < s_MaxEntities, "Entity out of bound!");
+			if (s_EnableEntityLimit) CHONPS_CORE_ASSERT((entity < s_MaxEntities), "Entity out of bound!");
 
 			m_EntitySignatures[entity].reset();
 
@@ -70,7 +70,7 @@ namespace Chonps
 
 		void set_signature(Entity entity, Signature signature)
 		{
-			if (s_EnableEntityLimit) CHONPS_CORE_ASSERT(entity < s_MaxEntities, "Entity out of bound!");
+			if (s_EnableEntityLimit) CHONPS_CORE_ASSERT((entity < s_MaxEntities), "Entity out of bound!");
 			m_EntitySignatures[entity] = signature;
 		}
 

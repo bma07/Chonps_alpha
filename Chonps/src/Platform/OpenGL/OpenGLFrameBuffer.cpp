@@ -119,7 +119,7 @@ namespace Chonps
 		if (m_FBO)
 		{
 			glDeleteFramebuffers(1, &m_FBO);
-			glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
+			glDeleteTextures(static_cast<GLsizei>(m_ColorAttachments.size()), m_ColorAttachments.data());
 			glDeleteTextures(1, &m_RBO);
 
 			m_ColorAttachments.clear();
@@ -135,9 +135,9 @@ namespace Chonps
 		if (m_ColorAttachmentSpecifications.size())
 		{
 			m_ColorAttachments.resize(m_ColorAttachmentSpecifications.size());
-			CreateTextures(multisample, m_ColorAttachments.data(), m_ColorAttachments.size());
+			CreateTextures(multisample, m_ColorAttachments.data(), static_cast<uint32_t>(m_ColorAttachments.size()));
 
-			for (size_t i = 0; i < m_ColorAttachments.size(); i++)
+			for (uint32_t i = 0; i < m_ColorAttachments.size(); i++)
 			{
 				glBindTexture(Multisampled(multisample), m_ColorAttachments[i]);
 
@@ -195,7 +195,7 @@ namespace Chonps
 		{
 			CHONPS_CORE_ASSERT(m_ColorAttachments.size() <= 4, "Amount of Color Attachments more than four");
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-			glDrawBuffers(m_ColorAttachments.size(), buffers);
+			glDrawBuffers(static_cast<GLsizei>(m_ColorAttachments.size()), buffers);
 		}
 		else if (m_ColorAttachments.empty())
 		{

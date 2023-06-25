@@ -23,11 +23,11 @@ namespace Chonps
 		static const char* m_CubemapViewUniformName;
 	};
 
-	std::shared_ptr<Cubemap> createCubemap(const std::string cubeMapFaces[6]);
-	std::shared_ptr<Cubemap> createCubemap(const std::string& posx, const std::string& negx, const std::string& posy, const std::string& negy, const std::string& posz, const std::string& negz);
+	std::shared_ptr<Cubemap> createCubemapSp(const std::string cubeMapFaces[6]);
+	std::shared_ptr<Cubemap> createCubemapSp(const std::string& posx, const std::string& negx, const std::string& posy, const std::string& negy, const std::string& posz, const std::string& negz);
 
-	Cubemap* createCubemapRp(const std::string cubeMapFaces[6]);
-	Cubemap* createCubemapRp(const std::string& posx, const std::string& negx, const std::string& posy, const std::string& negy, const std::string& posz, const std::string& negz);
+	Cubemap* createCubemap(const std::string cubeMapFaces[6]);
+	Cubemap* createCubemap(const std::string& posx, const std::string& negx, const std::string& posy, const std::string& negy, const std::string& posz, const std::string& negz);
 }
 
 #endif

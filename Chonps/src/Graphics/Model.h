@@ -29,11 +29,19 @@ namespace Chonps
 	class Model
 	{
 	public:
-		Model() {}
+		Model() = default;
 		Model(const std::string& filepath, mt3d modelType = mt3d::NA);
 
-		void Draw(Shader* shader, glm::mat4 Matrix = glm::mat4(1.0f));
-		void AttachShader(Shader* shader);
+		std::vector<Mesh> GetMeshes() { return m_Meshes; }
+		Mesh GetMesh(uint32_t index = 0) { return m_Meshes[index]; }
+
+		void SetPosition(glm::vec3 newPosition) { m_Position = newPosition; }
+		void SetOrientation(glm::quat newOrientation) { m_Orientation = newOrientation; }
+		void SetScale(glm::vec3 newScale) { m_Scale = newScale; }
+
+		glm::vec3 GetPosition() { return m_Position; }
+		glm::quat GetOrientation() { return m_Orientation; }
+		glm::vec3 GetScale() { return m_Scale; }
 
 		void Delete();
 

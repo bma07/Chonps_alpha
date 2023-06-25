@@ -20,28 +20,19 @@ namespace Chonps
 		virtual void Delete() override;
 
 		virtual uint32_t GetCount() const override { return m_Count; }
+		virtual float* GetVertices() const override { return m_Vertices; }
+		virtual uint32_t GetSize() const override { return m_Size; }
 
 	private:
 		uint32_t m_Count;
+		float* m_Vertices;
+		uint32_t m_Size;
 		VkBuffer m_VertexBuffer = VK_NULL_HANDLE;
 		VkBuffer m_StagingBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory m_VertexBufferMemory = VK_NULL_HANDLE;
 		VkDeviceMemory m_StagingBufferMemory = VK_NULL_HANDLE;
 		VkDeviceSize m_VertexBufferSize;
 	};
-
-	namespace vkSpec
-	{
-		VkVertexInputBindingDescription2EXT getBindingDescription();
-
-		VkVertexInputAttributeDescription2EXT getAttributeDescriptions(uint32_t layout, VkFormat type, uint32_t stride, void* offset);
-		
-		uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-
-		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		
-		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-	}
 }
 
 #endif

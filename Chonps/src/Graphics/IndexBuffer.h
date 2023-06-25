@@ -16,15 +16,16 @@ namespace Chonps
 		virtual void Delete() = 0;
 
 		virtual uint32_t GetCount() const = 0;
-
+		virtual uint32_t* GetIndices() const = 0;
+		virtual uint32_t GetSize() const = 0;
 	};
 	typedef IndexBuffer IBO;
 
-	std::shared_ptr<IndexBuffer> createIndexBuffer(uint32_t* indices, uint32_t size);
-	std::shared_ptr<IndexBuffer> createIndexBuffer(std::vector<uint32_t>& indices);
+	std::shared_ptr<IndexBuffer> createIndexBufferSp(uint32_t* indices, uint32_t size);
+	std::shared_ptr<IndexBuffer> createIndexBufferSp(std::vector<uint32_t>& indices);
 
-	IndexBuffer* createIndexBufferRp(uint32_t* indices, uint32_t size);
-	IndexBuffer* createIndexBufferRp(std::vector<uint32_t>& indices);
+	IndexBuffer* createIndexBuffer(uint32_t* indices, uint32_t size);
+	IndexBuffer* createIndexBuffer(std::vector<uint32_t>& indices);
 }
 
 #endif

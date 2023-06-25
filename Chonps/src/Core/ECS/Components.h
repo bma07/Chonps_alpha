@@ -51,12 +51,6 @@ namespace Chonps
 		MeshComponent() = default;
 		MeshComponent(std::vector<Mesh> mesh)
 			: meshes(mesh) {}
-		MeshComponent(std::vector<Mesh> mesh, Shader* shader)
-			: meshes(mesh), shader(shader)
-		{
-			for (auto& meshes : mesh)
-				meshes.AttachShader(shader);
-		}
 
 		Shader* shader;
 		std::vector<Mesh> meshes;

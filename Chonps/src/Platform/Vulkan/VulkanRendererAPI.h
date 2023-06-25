@@ -2,6 +2,7 @@
 #define VULKAN_RENDERER_API_H
 
 #include "Graphics/RendererAPI.h" 
+#include "Graphics/DrawList.h"
 #include "Platform/WindowAPI/glfwAPI/glfwWindowAPI.h"
 
 namespace Chonps
@@ -21,6 +22,45 @@ namespace Chonps
 		std::vector<VkPresentModeKHR> presentModes;
 	};
 
+	struct VulkanPipelineShaderStages
+	{
+		VkPipelineShaderStageCreateInfo vertexShaderStage;
+		VkPipelineShaderStageCreateInfo fragementShaderStage;
+	};
+
+	struct VulkanTextureData
+	{
+		VkImage textureImage;
+		VkDeviceMemory textureImageMemory;
+		VkImageView textureImageView;
+		VkSampler textureSampler;
+		uint32_t unit;
+	};
+
+	struct PushConstantTextureIndexData
+	{
+		int texIndex;
+	};
+
+	struct VulkanPipeline
+	{
+		VkPipeline pipeline;
+		VkPipelineLayout pipelineLayout;
+	};
+
+	struct ThreadDrawCmdData
+	{
+		DrawCommand drawCmd;
+		VkBuffer vertexBuffer, indexBuffer;
+	};
+
+	struct ThreadData
+	{
+		std::vector<ThreadDrawCmdData> drawCommandData;
+		VkCommandPool commandPool;
+		std::vector<VkCommandBuffer> commandBuffers;
+	};
+
 	struct VulkanBackends
 	{
 		VkInstance instance;
@@ -29,6 +69,7 @@ namespace Chonps
 		VkDevice device;
 		VkQueue graphicsQueue;
 		VkQueue presentQueue;
+		QueueFamilyIndices queueFamiliyIndices;
 		VkSurfaceKHR surface;
 
 		VkSwapchainKHR swapChain;
@@ -36,19 +77,71 @@ namespace Chonps
 		std::vector<VkImageView> swapChainImageViews;
 		VkFormat swapChainImageFormat;
 		VkExtent2D swapChainExtent;
+		const uint32_t maxFramesInFlight = 3;
+		const uint32_t maxDescriptorCounts = 65536;
+		const uint32_t maxTextures = 4096;
+		const uint32_t maxObjectCount = 5000;
+		std::queue<uint32_t> shaderCountIDs;
 
 		VkRenderPass renderPass;
+		VkPipelineLayout pipelineLayout;
 		VkVertexInputBindingDescription2EXT bindingDescriptions;
 		std::vector<VkVertexInputAttributeDescription2EXT> attributeDescriptions;
-		VkPipelineLayout pipelineLayout;
-		VkPipeline graphicsPipeline;
+		std::vector<VkDescriptorSetLayout> toPipelineDescriptorSetLayouts;
+		std::unordered_map<uint32_t, VkDescriptorSetLayout> uboDescriptorSetLayouts;
+		std::unordered_map<uint32_t, VulkanPipeline> graphicsPipeline;
+		std::unordered_map<uint32_t, VulkanPipelineShaderStages> pipelineShaderStages;
+		uint32_t currentBindedGraphicsPipeline = 0;
+		VkPushConstantRange pushConstantRange;
+		uint32_t pushConstantRangeCount = 0;
+		uint32_t imageIndex;
+		uint32_t indexCount;
+
+		VkBuffer bufferArray = VK_NULL_HANDLE;
+		VkDeviceMemory bufferArrayMemory = VK_NULL_HANDLE;
+		VkDeviceSize bufferArraySize = 0;
+		VkDeviceSize bufferArrayIndexOffset = 0;
+
 		VkBuffer vertexBuffer;
 		VkBuffer indexBuffer;
 		VkBuffer stagingVertexBuffer;
 		VkBuffer stagingIndexBuffer;
 		VkDeviceSize vertexBufferSize;
 		VkDeviceSize indexBufferSize;
-		VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
+		std::vector<VkBuffer> uniformBuffers;
+		std::vector<void*> uniformBuffersMapped;
+		VkDescriptorPool descriptorPool;
+		uint32_t currentDescriptorSetBinding;
+		std::vector<std::vector<VkBuffer>> submitUniformBuffers;
+		std::vector<std::vector<VkDeviceMemory>> submitUniformBuffersMemory;
+		std::vector<std::vector<void*>> submitUniformBuffersMapped;
+		std::vector<VkDescriptorSet> descriptorSets;
+		std::vector<std::vector<VkDescriptorSet>> submitDescriptorSets;
+		VkDescriptorSetLayout descriptorSetLayout;
+		std::vector<std::vector<VkDescriptorSet>> samplerDescriptorSets;
+		VkDescriptorSetLayout samplerDescriptorSetsLayout;
+		std::vector<VkDescriptorSet> nullSamplerDescriptorSets;
+		uint32_t drawCallCount = 0, drawCallCountTotal = 0;
+		bool firstTimeDrawCallCount = true;
+
+		const void* uboData;
+		size_t uboSize;
+		uint32_t uboOffset;
+
+		uint32_t textureBinding, samplerBinding;
+		std::queue<uint32_t> textureCountIDs;
+		std::unordered_map<uint32_t, VulkanTextureData> textureImages;
+		std::vector<VkDescriptorImageInfo> imageInfos;
+		std::unordered_set<uint32_t> currentBindedTextureImages;
+		PushConstantTextureIndexData textureIndexConstant;
+		VulkanTextureData nullDataTexture;
+		bool allowClearBindedTextures = false;
+
+		VkImage depthImage;
+		VkDeviceMemory depthImageMemory;
+		VkImageView depthImageView;
+
+		VkClearValue clearColor = {{0.0f, 0.0f, 0.0f, 1.0f}};
 
 		std::vector<VkFramebuffer> swapChainFramebuffers;
 		VkCommandPool commandPool;
@@ -58,8 +151,11 @@ namespace Chonps
 		std::vector<VkSemaphore> renderFinishedSemaphores;
 		std::vector<VkFence> inFlightFences;
 		bool framebufferResized = false;
-
 		uint32_t currentFrame = 0;
+
+		bool multithreadingEnabled = true;
+		uint32_t numThreads;
+		uint32_t threadIndex = 0;
 	};
 
 	class VulkanRendererAPI : public RendererAPI
@@ -73,52 +169,17 @@ namespace Chonps
 		virtual void Clear() override;
 
 		virtual void Draw(const uint32_t& count) override;
-		virtual void DrawLine() override;
-		virtual void FrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height);
+		virtual void Draw(VertexArray* vertexArray) override;
+
+		virtual void DrawLine(VertexArray* vertexArray) override;
+
+		virtual void BeginNextFrame() override;
+		virtual void DrawSubmit() override;
+
+		virtual void FrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height) override;
 
 		virtual void EnableCullFace() override;
 		virtual void DisableCullFace() override;
-
-		virtual void UploadUniform1f(uint32_t shader, const char* uniform, float x) override;
-		virtual void UploadUniform2f(uint32_t shader, const char* uniform, float x, float y) override;
-		virtual void UploadUniform3f(uint32_t shader, const char* uniform, float x, float y, float z) override;
-		virtual void UploadUniform4f(uint32_t shader, const char* uniform, float x, float y, float z, float w) override;
-
-		virtual void UploadUniform1i(uint32_t shader, const char* uniform, int x) override;
-		virtual void UploadUniform2i(uint32_t shader, const char* uniform, int x, int y) override;
-		virtual void UploadUniform3i(uint32_t shader, const char* uniform, int x, int y, int z) override;
-		virtual void UploadUniform4i(uint32_t shader, const char* uniform, int x, int y, int z, int w) override;
-
-		virtual void UploadUniform1ui(uint32_t shader, const char* uniform, unsigned int x) override;
-		virtual void UploadUniform2ui(uint32_t shader, const char* uniform, unsigned int x, unsigned int y) override;
-		virtual void UploadUniform3ui(uint32_t shader, const char* uniform, unsigned int x, unsigned int y, unsigned int z) override;
-		virtual void UploadUniform4ui(uint32_t shader, const char* uniform, unsigned int x, unsigned int y, unsigned int z, unsigned int w) override;
-
-		virtual void UploadUniform1fv(uint32_t shader, const char* uniform, unsigned int count, const float* v) override;
-		virtual void UploadUniform2fv(uint32_t shader, const char* uniform, unsigned int count, const float* v) override;
-		virtual void UploadUniform3fv(uint32_t shader, const char* uniform, unsigned int count, const float* v) override;
-		virtual void UploadUniform4fv(uint32_t shader, const char* uniform, unsigned int count, const float* v) override;
-
-		virtual void UploadUniform1iv(uint32_t shader, const char* uniform, unsigned int count, const int* v) override;
-		virtual void UploadUniform2iv(uint32_t shader, const char* uniform, unsigned int count, const int* v) override;
-		virtual void UploadUniform3iv(uint32_t shader, const char* uniform, unsigned int count, const int* v) override;
-		virtual void UploadUniform4iv(uint32_t shader, const char* uniform, unsigned int count, const int* v) override;
-
-		virtual void UploadUniform1uiv(uint32_t shader, const char* uniform, unsigned int count, const unsigned int* v) override;
-		virtual void UploadUniform2uiv(uint32_t shader, const char* uniform, unsigned int count, const unsigned int* v) override;
-		virtual void UploadUniform3uiv(uint32_t shader, const char* uniform, unsigned int count, const unsigned int* v) override;
-		virtual void UploadUniform4uiv(uint32_t shader, const char* uniform, unsigned int count, const unsigned int* v) override;
-
-		virtual void UploadUniform2mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v) override;
-		virtual void UploadUniform3mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v) override;
-		virtual void UploadUniform4mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v) override;
-
-		virtual void UploadUniform2x3mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v) override;
-		virtual void UploadUniform3x2mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v) override;
-		virtual void UploadUniform2x4mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v) override;
-		virtual void UploadUniform4x2mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v) override;
-		virtual void UploadUniform3x4mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v) override;
-		virtual void UploadUniform4x3mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v) override;
 
 	private:
 		void CreateInstance();
@@ -129,11 +190,14 @@ namespace Chonps
 		void CreateSwapChain();
 		void CreateImageViews();
 		void CreateRenderPass();
-		void CreateGraphicsPipeline();
-		void CreateFramebuffers();
+		void CreateDescriptorPool();
 		void CreateCommandPool();
+		void CreateDepthResources();
+		void CreateFramebuffers();
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
+
+		void ThreadRender(uint32_t threadIndex, uint32_t cmdBufferIndex, VkCommandBufferInheritanceInfo inheritanceInfo);
 
 		void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, const uint32_t& count);
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
@@ -141,15 +205,54 @@ namespace Chonps
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		bool IsDeviceSuitable(VkPhysicalDevice device);
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-		
+		void CreateOrUpdateUniformBuffer(uint32_t currentImage, DrawCommand drawCommand);
+		void CreateOrUpdateTextureImage(uint32_t currentImage);
+
 		void RecreateSwapChain();
 		void CleanupSwapChain();
 
+
+		PFN_vkCmdSetVertexInputEXT CmdSetVertexInputEXT{};
+
+		DrawList m_DrawList;
+		ThreadPool m_ThreadPool;
+		std::vector<ThreadData> m_ThreadData;
 		std::shared_ptr<VulkanBackends> m_VulkanBackends;
 	};									  
 
 	void setCurrentWindowForVulkanWindowSurface(GLFWwindow* window);
 	VulkanBackends* getVulkanBackends();
+
+	namespace vkSpec
+	{
+		VkVertexInputBindingDescription2EXT getBindingDescription(uint32_t stride);
+
+		VkVertexInputAttributeDescription2EXT getAttributeDescriptions(uint32_t layout, VkFormat type, uint32_t stride, void* offset);
+
+		uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+
+		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+		VkCommandBuffer beginSingleTimeCommands();
+
+		void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+
+		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+		VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+
+		void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+
+		VulkanTextureData createSingleDataTexture(uint32_t width, uint32_t height, void* data);
+
+		void fillQueueCountIDs();
+
+		void vkImplPrepareDraw();
+	}
 }
 
 #endif

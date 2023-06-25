@@ -74,9 +74,9 @@ namespace Chonps
 	};
 	typedef FrameBuffer FBO;
 
-	std::shared_ptr<FrameBuffer> createFrameBuffer(FrameBufferSpecification frameBufferSpecification);
+	std::shared_ptr<FrameBuffer> createFrameBufferSp(FrameBufferSpecification frameBufferSpecification);
 
-	FrameBuffer* createFrameBufferRp(FrameBufferSpecification frameBufferSpecification);
+	FrameBuffer* createFrameBuffer(FrameBufferSpecification frameBufferSpecification);
 }
 
 #endif

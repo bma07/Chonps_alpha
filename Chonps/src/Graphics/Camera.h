@@ -1,7 +1,7 @@
 #ifndef CHONPS_CAMERA_H
 #define CHONPS_CAMERA_H
 
-#include "Core/Config.h"
+#include "Core/Math.h"
 #include "Core/Window.h"
 #include "Shader.h"
 
@@ -15,7 +15,6 @@ namespace Chonps
 		Camera() = default;
 		Camera(int width, int height);
 
-		void UploadMatrix(Shader* shader, const char* uniform);
 		void UpdateMatrix();
 
 		void SetUp(glm::vec3 _position, float _FOVdeg, float _nearPlane, float _farPlane);
@@ -40,7 +39,7 @@ namespace Chonps
 
 		// These variables are public and can be changed directly
 		glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
-		glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
+		glm::vec3 orientation = glm::vec3(0.0f, 0.0f, 0.0f);
 		glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 	
 		float FOVdeg = 45.0f;
@@ -60,8 +59,8 @@ namespace Chonps
 	typedef Camera Camera3D;
 
 	// Optional: This function is optional for creating a Camera class dynamically
-	std::shared_ptr<Camera> createCamera(int width, int height);
-	Camera* createCameraRp(int width, int height);
+	std::shared_ptr<Camera> createCameraSp(int width, int height);
+	Camera* createCamera(int width, int height);
 }
 
 #endif

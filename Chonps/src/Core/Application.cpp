@@ -15,9 +15,9 @@ namespace Chonps
 		CHONPS_CORE_ASSERT(!s_Instance, "Application already exists! Cannot create more than one Application!");
 		s_Instance = this;
 
-		if (getGraphicsContext() == RenderAPI::None) setRenderContext(RenderAPI::OpenGL);
+		if (getGraphicsAPI() == GraphicsAPI::None) setRenderContext(GraphicsAPI::OpenGL);
 
-		m_Window = createWindow(Title, width, height, fullScreen);
+		m_Window = createWindowSp(Title, width, height, fullScreen);
 		m_Window->SetEventCallback(std::bind(&Application::OnEvent, this, std::placeholders::_1));
 
 		imguiInit(&(*m_Window));

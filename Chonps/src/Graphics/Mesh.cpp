@@ -3,11 +3,10 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#define CHONPS_TEXTURE_WARN(t1, t2) CHONPS_CORE_WARN("WARNING: MESH: Material Texture with the same texture type included twice! ({0}) and ({1})", (int)t1, (int)t2);
+
 namespace Chonps
 {
-	const char* Mesh::s_MatrixUniform = "meshMatrix";
-	const char* Mesh::s_TexUnitName = "meshTex";
-
 	void computeTangents(std::vector<vertex>& vertices, const std::vector<uint32_t>& indices)
 	{
 		for (int i = 0; i < indices.size(); i += 3)
@@ -44,130 +43,117 @@ namespace Chonps
 		}
 	}
 
-	Mesh::Mesh(std::vector<vertex>& vertices, std::vector<uint32_t>& indices, std::vector<Texture*> textures /*= std::vector<Texture*>()*/)
-		: m_Vertices(vertices), m_Indices(indices)
+	void sortTexturesToMaterial(std::vector<Texture*>& textures, Material& material)
 	{
-		m_VAO = createVertexArray();
-		m_VAO->Bind();
-
-		computeTangents(vertices, indices);
-
-		std::shared_ptr<VertexBuffer> vbo = createVertexBuffer(vertices);
-		std::shared_ptr<IndexBuffer> ibo = createIndexBuffer(indices);
-
-		m_VAO->LinkIndexBuffer(&(*ibo));
-		m_VAO->LinkVertexBuffer(&(*vbo), 0, 3, SDT::Float, sizeof(vertex), (void*)0);
-		m_VAO->LinkVertexBuffer(&(*vbo), 1, 3, SDT::Float, sizeof(vertex), (void*)(3 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(&(*vbo), 2, 2, SDT::Float, sizeof(vertex), (void*)(6 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(&(*vbo), 3, 3, SDT::Float, sizeof(vertex), (void*)(8 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(&(*vbo), 4, 3, SDT::Float, sizeof(vertex), (void*)(11 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(&(*vbo), 5, 3, SDT::Float, sizeof(vertex), (void*)(14 * sizeof(float)));
-		m_VAO->Unbind();
-		vbo->Unbind();
-		ibo->Unbind();
-
-		for (auto tex : textures)
-			m_Textures.push_back(std::shared_ptr<Texture>(tex));
-	}
-
-	Mesh::Mesh(std::vector<vertex>& vertices, std::vector<uint32_t>& indices, std::vector<std::shared_ptr<Texture>> textures /*= std::vector<std::shared_ptr<Texture>>()*/)
-		: m_Vertices(vertices), m_Indices(indices), m_Textures(textures)
-	{
-		m_VAO = createVertexArray();
-		m_VAO->Bind();
-
-		computeTangents(vertices, indices);
-
-		std::shared_ptr<VertexBuffer> vbo = createVertexBuffer(vertices);
-		std::shared_ptr<IndexBuffer> ibo = createIndexBuffer(indices);
-
-		m_VAO->LinkIndexBuffer(&(*ibo));
-		m_VAO->LinkVertexBuffer(&(*vbo), 0, 3, SDT::Float, sizeof(vertex), (void*)0);
-		m_VAO->LinkVertexBuffer(&(*vbo), 1, 3, SDT::Float, sizeof(vertex), (void*)(3 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(&(*vbo), 2, 2, SDT::Float, sizeof(vertex), (void*)(6 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(&(*vbo), 3, 3, SDT::Float, sizeof(vertex), (void*)(8 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(&(*vbo), 4, 3, SDT::Float, sizeof(vertex), (void*)(11 * sizeof(float)));
-		m_VAO->LinkVertexBuffer(&(*vbo), 5, 3, SDT::Float, sizeof(vertex), (void*)(14 * sizeof(float)));
-		m_VAO->Unbind();
-		vbo->Unbind();
-		ibo->Unbind();
-	}
-
-	void Mesh::Draw(Shader* shader, glm::mat4 matrix /*= glm::mat4(1.0f)*/)
-	{
-		shader->Bind();
-		m_VAO->Bind();
-
-		for (auto texture : m_Textures)
-			texture->Bind();
-
-		uploadUniform4mfv(shader->GetID(), Mesh::s_MatrixUniform, 1, false, glm::value_ptr(matrix * m_MeshMatrix));
-
-		renderDraw(&(*m_VAO));
-
-		for (auto texture : m_Textures)
-			texture->Unbind();
-		m_VAO->Unbind();
-	}
-
-	void Mesh::AttachShader(Shader* shader)
-	{
-		shader->Bind();
-		uint32_t texSlot = 0;
-		for (auto texture : m_Textures)
+		for (auto& texture : textures)
 		{
 			switch (texture->GetTexType())
 			{
 				case TexType::Diffuse:
 				{
-					texture->TexUnit(shader, (std::string(Mesh::s_TexUnitName) + "Diffuse").c_str(), texSlot++);
+					if (material.diffuse != nullptr) CHONPS_TEXTURE_WARN(material.diffuse, texture);
+					material.diffuse = texture;
 					break;
 				}
 				case TexType::Specular:
 				{
-					texture->TexUnit(shader, (std::string(Mesh::s_TexUnitName) + "Specular").c_str(), texSlot++);
+					if (material.specular != nullptr) CHONPS_TEXTURE_WARN(material.specular, texture);
+					material.specular = texture;
 					break;
 				}
 				case TexType::Metallic:
 				{
-					texture->TexUnit(shader, (std::string(Mesh::s_TexUnitName) + "Metallic").c_str(), texSlot++);
+					if (material.metallic != nullptr) CHONPS_TEXTURE_WARN(material.metallic, texture);
+					material.metallic = texture;
 					break;
 				}
 				case TexType::Roughness:
 				{
-					texture->TexUnit(shader, (std::string(Mesh::s_TexUnitName) + "Roughness").c_str(), texSlot++);
+					if (material.roughness != nullptr) CHONPS_TEXTURE_WARN(material.roughness, texture);
+					material.roughness = texture;
 					break;
 				}
 				case TexType::MetallicRoughness:
 				{
-					texture->TexUnit(shader, (std::string(Mesh::s_TexUnitName) + "MetallicRoughness").c_str(), texSlot++);
-					break;
-				}
-				case TexType::Normal:
-				{
-					texture->TexUnit(shader, (std::string(Mesh::s_TexUnitName) + "Normal").c_str(), texSlot++);
+					if (material.metallicRoughness != nullptr) CHONPS_TEXTURE_WARN(material.metallicRoughness, texture);
+					material.metallicRoughness = texture;
 					break;
 				}
 				case TexType::Occlusion:
 				{
-					texture->TexUnit(shader, (std::string(Mesh::s_TexUnitName) + "Occlusion").c_str(), texSlot++);
+					if (material.ambientOcclusion != nullptr) CHONPS_TEXTURE_WARN(material.ambientOcclusion, texture);
+					material.ambientOcclusion = texture;
 					break;
 				}
 				case TexType::Emissive:
 				{
-					texture->TexUnit(shader, (std::string(Mesh::s_TexUnitName) + "Emissive").c_str(), texSlot++);
+					if (material.emission != nullptr) CHONPS_TEXTURE_WARN(material.emission, texture);
+					material.emission = texture;
 					break;
 				}
+				case TexType::Normal:
+				{
+					if (material.normal != nullptr) CHONPS_TEXTURE_WARN(material.normal, texture);
+					material.normal = texture;
+					break;
+				}
+				default:
+					break;
 			}
 		}
-		shader->Unbind();
+	}
+
+	Mesh::Mesh(std::vector<vertex>& _vertices, std::vector<uint32_t>& _indices, std::vector<Texture*> _textures /*= std::vector<Texture*>()*/)
+		: vertices(_vertices), indices(_indices), m_Textures(_textures)
+	{
+		vertexArray = createVertexArray();
+		vertexArray->Bind();
+
+		computeTangents(_vertices, _indices);
+
+		VertexBuffer* vbo = createVertexBuffer(_vertices);
+		IndexBuffer* ibo = createIndexBuffer(_indices);
+
+		vertexArray->LinkIndexBuffer(ibo);
+		vertexArray->LinkVertexBuffer(vbo, 0, 3, SDT::Float, sizeof(vertex), (void*)0);
+		vertexArray->LinkVertexBuffer(vbo, 1, 3, SDT::Float, sizeof(vertex), (void*)(3 * sizeof(float)));
+		vertexArray->LinkVertexBuffer(vbo, 2, 2, SDT::Float, sizeof(vertex), (void*)(6 * sizeof(float)));
+		vertexArray->LinkVertexBuffer(vbo, 3, 3, SDT::Float, sizeof(vertex), (void*)(8 * sizeof(float)));
+		vertexArray->LinkVertexBuffer(vbo, 4, 3, SDT::Float, sizeof(vertex), (void*)(11 * sizeof(float)));
+		vertexArray->LinkVertexBuffer(vbo, 5, 3, SDT::Float, sizeof(vertex), (void*)(14 * sizeof(float)));
+		vertexArray->Unbind();
+		vbo->Unbind();
+		ibo->Unbind();
+
+		vbo->Delete();
+		ibo->Delete();
+
+		sortTexturesToMaterial(_textures, material);
+	}
+
+	Mesh::Mesh(VertexArray* _vertexArray, std::vector<Texture*> _textures)
+		: m_Textures(_textures)
+	{
+		vertexArray = _vertexArray;
+		sortTexturesToMaterial(_textures, material);
+	}
+
+	Mesh::Mesh(VertexArray* _vertexArray, Material _material)
+	{
+		vertexArray = _vertexArray;
+		material = _material;
+	}
+
+	void Mesh::AttachMaterial(Material _material)
+	{
+		material = _material;
 	}
 
 	void Mesh::Delete()
 	{
-		m_VAO->Delete();
+		vertexArray->Delete();
 
-		for (auto i : m_Textures)
-			i->Delete();
+		for (auto& texture : m_Textures)
+			texture->Delete();
 	}
 }

@@ -4,31 +4,47 @@
 #include "RendererAPI.h"
 
 #include "Platform/OpenGL/OpenGLTexture.h"
+#include "Platform/Vulkan/VulkanTexture.h"
 
 namespace Chonps
 {
-	std::shared_ptr<Texture> createTexture(const std::string& filepath, TexType texType, TexFilterPair texFilter, TexWrap texWrap)
+	void textureBinding(uint32_t textureBinding, uint32_t samplerBinding)
 	{
-		switch (getGraphicsContext())
+		GraphicsAPI GraphicsAPI = getGraphicsAPI();
+
+		if (GraphicsAPI == GraphicsAPI::Vulkan)
+			vkSpec::vkImplTextureBinding(textureBinding, samplerBinding);
+	}
+
+	void Texture::Binding(uint32_t textureBinding, uint32_t samplerBinding)
+	{
+		GraphicsAPI GraphicsAPI = getGraphicsAPI();
+
+		if (GraphicsAPI == GraphicsAPI::Vulkan)
+			vkSpec::vkImplTextureBinding(textureBinding, samplerBinding);
+	}
+
+	std::shared_ptr<Texture> createTextureSp(const std::string& filepath, TexType texType, TexFormat texFormat, TexFilterPair texFilter, TexWrap texWrap)
+	{
+		switch (getGraphicsAPI())
 		{
-			case RenderAPI::None:
+			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: TEXTURE: createTexture(filepath, texType, texFilter, texWrap) - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: TEXTURE: createTextureSp(filepath, texType, texFilter, texWrap) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case RenderAPI::OpenGL:
+			case GraphicsAPI::OpenGL:
 			{
-				return std::make_shared<OpenGLTexture>(filepath, texType, texFilter, texWrap);
-				break;
+				return std::make_shared<OpenGLTexture>(filepath, texType, texFormat, texFilter, texWrap);
 			}
 
-			case RenderAPI::Vulkan:
+			case GraphicsAPI::Vulkan:
 			{
-				break;
+				return std::make_shared<VulkanTexture>(filepath, texType, texFormat, texFilter, texWrap);
 			}
 
-			case RenderAPI::DirectX:
+			case GraphicsAPI::DirectX:
 			{
 				break;
 			}
@@ -37,88 +53,85 @@ namespace Chonps
 		return nullptr;
 	}
 
-	std::shared_ptr<Texture> createTexture(uint32_t width, uint32_t height, void* data, uint32_t size)
+	std::shared_ptr<Texture> createTextureSp(uint32_t width, uint32_t height, void* data, uint32_t size)
 	{
-		switch (getGraphicsContext())
+		switch (getGraphicsAPI())
 		{
-			case RenderAPI::None:
+			case GraphicsAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: TEXTURE: createTextureSp(width, height, data, size) - No graphics API selected beforehand!");
+				break;
+			}
+
+			case GraphicsAPI::OpenGL:
+			{
+				return std::make_shared<OpenGLTexture>(width, height, data, size);
+			}
+
+			case GraphicsAPI::Vulkan:
+			{
+				return std::make_shared<VulkanTexture>(width, height, data, size);
+			}
+
+			case GraphicsAPI::DirectX:
+			{
+				break;
+			}
+		}
+		CHONPS_CORE_ERROR("ERROR: TEXTURE: Could not create Texture!");
+		return nullptr;
+	}
+
+	Texture* createTexture(const std::string& filepath, TexType texType, TexFormat texFormat, TexFilterPair texFilter, TexWrap texWrap)
+	{
+		switch (getGraphicsAPI())
+		{
+			case GraphicsAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: TEXTURE: createTexture(filepath) - No graphics API selected beforehand!");
+				break;
+			}
+
+			case GraphicsAPI::OpenGL:
+			{
+				return new OpenGLTexture(filepath, texType, texFormat, texFilter, texWrap);
+			}
+
+			case GraphicsAPI::Vulkan:
+			{
+				return new VulkanTexture(filepath, texType, texFormat, texFilter, texWrap);
+			}
+
+			case GraphicsAPI::DirectX:
+			{
+				break;
+			}
+		}
+		CHONPS_CORE_ERROR("ERROR: TEXTURE: Could not create Texture!");
+		return nullptr;
+	}
+
+	Texture* createTexture(uint32_t width, uint32_t height, void* data, uint32_t size)
+	{
+		switch (getGraphicsAPI())
+		{
+			case GraphicsAPI::None:
 			{
 				CHONPS_CORE_WARN("WANRING: TEXTURE: createTexture(width, height, data, size) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case RenderAPI::OpenGL:
-			{
-				return std::make_shared<OpenGLTexture>(width, height, data, size);
-				break;
-			}
-
-			case RenderAPI::Vulkan:
-			{
-				break;
-			}
-
-			case RenderAPI::DirectX:
-			{
-				break;
-			}
-		}
-		CHONPS_CORE_ERROR("ERROR: TEXTURE: Could not create Texture!");
-		return nullptr;
-	}
-
-	Texture* createTextureRp(const std::string& filepath, TexType texType /*= TexT::Diffuse*/, TexFilterPair texFilter /*= { TexFilter::Linear, TexFilter::Nearest }*/, TexWrap texWrap /*= TexW::Repeat*/)
-	{
-		switch (getGraphicsContext())
-		{
-			case RenderAPI::None:
-			{
-				CHONPS_CORE_WARN("WANRING: TEXTURE: createTextureRp(filepath) - No graphics API selected beforehand!");
-				break;
-			}
-
-			case RenderAPI::OpenGL:
-			{
-				return new OpenGLTexture(filepath, texType, texFilter, texWrap);
-				break;
-			}
-
-			case RenderAPI::Vulkan:
-			{
-				break;
-			}
-
-			case RenderAPI::DirectX:
-			{
-				break;
-			}
-		}
-		CHONPS_CORE_ERROR("ERROR: TEXTURE: Could not create Texture!");
-		return nullptr;
-	}
-
-	Texture* createTextureRp(uint32_t width, uint32_t height, void* data, uint32_t size)
-	{
-		switch (getGraphicsContext())
-		{
-			case RenderAPI::None:
-			{
-				CHONPS_CORE_WARN("WANRING: TEXTURE: createTextureRp(width, height, data, size) - No graphics API selected beforehand!");
-				break;
-			}
-
-			case RenderAPI::OpenGL:
+			case GraphicsAPI::OpenGL:
 			{
 				return new OpenGLTexture(width, height, data, size);
-				break;
 			}
 
-			case RenderAPI::Vulkan:
+			case GraphicsAPI::Vulkan:
 			{
-				break;
+				return new VulkanTexture(width, height, data, size);
 			}
 
-			case RenderAPI::DirectX:
+			case GraphicsAPI::DirectX:
 			{
 				break;
 			}

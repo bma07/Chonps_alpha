@@ -4,6 +4,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "RendererAPI.h"
+
 namespace Chonps
 {
 	// Use this constructor for the left, right, bottom and top farthest parts of the window
@@ -39,6 +41,6 @@ namespace Chonps
 
 	void OrthographicCamera::UploadMatrix(Shader* shader, const char* uniform)
 	{
-		uploadUniform4mfv(shader->GetID(), uniform, 1, false, glm::value_ptr(m_CameraMatrix));
+		oglSpec::uploadUniform4mfv(shader->GetID(), uniform, 1, false, glm::value_ptr(m_CameraMatrix));
 	}
 }

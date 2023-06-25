@@ -60,25 +60,16 @@ namespace Chonps
 	void VulkanVertexArray::LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, uint32_t numComponents, ShaderDataType type, uint32_t stride, void* offset)
 	{
 		VBO->Bind();
+
+		if (m_VertexBuffer != VBO)
+		{
+			VkDeviceSize bufferSize = getVulkanBackends()->vertexBufferSize;
+			vkSpec::createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VkVertexBuffer, m_VertexBufferMemory);
+			vkSpec::copyBuffer(getVulkanBackends()->stagingVertexBuffer, m_VkVertexBuffer, bufferSize);
+		}
+		
 		m_VertexCount = VBO->GetCount();
-
-		if (!m_FirstVertexInit)
-		{
-			VkDeviceSize bufferSize = getVulkanBackends()->vertexBufferSize;
-			vkSpec::createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VertexBuffer, m_VertexBufferMemory);
-			vkSpec::copyBuffer(getVulkanBackends()->stagingVertexBuffer, m_VertexBuffer, bufferSize);
-			m_FirstVertexInit = true;
-		}
-		else
-		{
-			VkDevice device = getVulkanBackends()->device;
-			vkDestroyBuffer(device, m_VertexBuffer, nullptr);
-			vkFreeMemory(device, m_VertexBufferMemory, nullptr);
-
-			VkDeviceSize bufferSize = getVulkanBackends()->vertexBufferSize;
-			vkSpec::createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VertexBuffer, m_VertexBufferMemory);
-			vkSpec::copyBuffer(getVulkanBackends()->stagingVertexBuffer, m_VertexBuffer, bufferSize);
-		}
+		m_VertexBuffer = VBO;
 
 		VkVertexInputAttributeDescription2EXT attributeDescrption = vkSpec::getAttributeDescriptions(layout, getShaderDataTypeConvertVulkan(type, numComponents), stride, offset);
 		m_AttributeDescriptions.push_back(attributeDescrption);
@@ -87,48 +78,41 @@ namespace Chonps
 	void VulkanVertexArray::LinkIndexBuffer(IndexBuffer* IBO)
 	{
 		IBO->Bind();
+
+		if (m_IndexBuffer != IBO)
+		{
+			VkDeviceSize bufferSize = getVulkanBackends()->indexBufferSize;
+			vkSpec::createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VkIndexBuffer, m_IndexBufferMemory);
+			vkSpec::copyBuffer(getVulkanBackends()->stagingIndexBuffer, m_VkIndexBuffer, bufferSize);
+		}
+		
 		m_IndexCount = IBO->GetCount();
-
-		if (!m_FirstIndexInit)
-		{
-			VkDeviceSize bufferSize = getVulkanBackends()->indexBufferSize;
-			vkSpec::createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_IndexBuffer, m_IndexBufferMemory);
-			vkSpec::copyBuffer(getVulkanBackends()->stagingIndexBuffer, m_IndexBuffer, bufferSize);
-			m_FirstIndexInit = true;
-		}
-		else
-		{
-			VkDevice device = getVulkanBackends()->device;
-			vkDestroyBuffer(device, m_IndexBuffer, nullptr);
-			vkFreeMemory(device, m_IndexBufferMemory, nullptr);
-
-			VkDeviceSize bufferSize = getVulkanBackends()->indexBufferSize;
-			vkSpec::createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_IndexBuffer, m_IndexBufferMemory);
-			vkSpec::copyBuffer(getVulkanBackends()->stagingIndexBuffer, m_IndexBuffer, bufferSize);
-		}
+		m_IndexBuffer = IBO;
 	}
 	
 	void VulkanVertexArray::Bind() const
 	{
-		getVulkanBackends()->vertexBuffer = m_VertexBuffer;
-		getVulkanBackends()->indexBuffer = m_IndexBuffer;
-		getVulkanBackends()->attributeDescriptions = m_AttributeDescriptions;
+		VulkanBackends* vkBackends = getVulkanBackends();
+		vkBackends->vertexBuffer = m_VkVertexBuffer;
+		vkBackends->indexBuffer = m_VkIndexBuffer;
+		vkBackends->attributeDescriptions = m_AttributeDescriptions;
 	}
 	
 	void VulkanVertexArray::Unbind() const
 	{
-		getVulkanBackends()->vertexBuffer = VK_NULL_HANDLE;
-		getVulkanBackends()->indexBuffer = VK_NULL_HANDLE;
-		getVulkanBackends()->attributeDescriptions = std::vector<VkVertexInputAttributeDescription2EXT>();
+		VulkanBackends* vkBackends = getVulkanBackends();
+		vkBackends->vertexBuffer = VK_NULL_HANDLE;
+		vkBackends->indexBuffer = VK_NULL_HANDLE;
+		vkBackends->attributeDescriptions.clear();
 	}
 	
 	void VulkanVertexArray::Delete()
 	{
-		VkDevice device = getVulkanBackends()->device;
+		VulkanBackends* vkBackends = getVulkanBackends();
 
-		vkDestroyBuffer(device, m_VertexBuffer, nullptr);
-		vkDestroyBuffer(device, m_IndexBuffer, nullptr);
-		vkFreeMemory(device, m_VertexBufferMemory, nullptr);
-		vkFreeMemory(device, m_IndexBufferMemory, nullptr);
+		vkDestroyBuffer(vkBackends->device, m_VkVertexBuffer, nullptr);
+		vkDestroyBuffer(vkBackends->device, m_VkIndexBuffer, nullptr);
+		vkFreeMemory(vkBackends->device, m_VertexBufferMemory, nullptr);
+		vkFreeMemory(vkBackends->device, m_IndexBufferMemory, nullptr);
 	}
 }

@@ -7,27 +7,27 @@
 
 namespace Chonps
 {
-	std::shared_ptr<FrameBuffer> createFrameBuffer(FrameBufferSpecification frameBufferSpecification)
+	std::shared_ptr<FrameBuffer> createFrameBufferSp(FrameBufferSpecification frameBufferSpecification)
 	{
-		switch (getGraphicsContext())
+		switch (getGraphicsAPI())
 		{
-			case RenderAPI::None:
+			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: FBO: createFrameBuffer() - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: FBO: createFrameBufferSp() - No graphics API selected beforehand!");
 				break;
 			}
 
-			case RenderAPI::OpenGL:
+			case GraphicsAPI::OpenGL:
 			{
 				return std::make_shared<OpenGLFrameBuffer>(frameBufferSpecification);
 			}
 
-			case RenderAPI::Vulkan:
+			case GraphicsAPI::Vulkan:
 			{
 				break;
 			}
 
-			case RenderAPI::DirectX:
+			case GraphicsAPI::DirectX:
 			{
 				break;
 			}
@@ -36,27 +36,27 @@ namespace Chonps
 		return nullptr;
 	}
 
-	FrameBuffer* createFrameBufferRp(FrameBufferSpecification frameBufferSpecification)
+	FrameBuffer* createFrameBuffer(FrameBufferSpecification frameBufferSpecification)
 	{
-		switch (getGraphicsContext())
+		switch (getGraphicsAPI())
 		{
-			case RenderAPI::None:
+			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: FBO: createFrameBufferRp() - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: FBO: createFrameBuffer() - No graphics API selected beforehand!");
 				break;
 			}
 
-			case RenderAPI::OpenGL:
+			case GraphicsAPI::OpenGL:
 			{
 				return new OpenGLFrameBuffer(frameBufferSpecification);
 			}
 
-			case RenderAPI::Vulkan:
+			case GraphicsAPI::Vulkan:
 			{
 				break;
 			}
 
-			case RenderAPI::DirectX:
+			case GraphicsAPI::DirectX:
 			{
 				break;
 			}

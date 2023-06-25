@@ -4,7 +4,7 @@
 namespace Chonps
 {
 	VulkanIndexBuffer::VulkanIndexBuffer(uint32_t* indices, uint32_t size)
-		: IndexBuffer(indices, size), m_Count(size / sizeof(uint32_t))
+		: IndexBuffer(indices, size), m_Count(size / sizeof(uint32_t)), m_Indices(indices)
 	{
 		VkDeviceSize bufferSize = size;
 		m_IndexBufferSize = bufferSize;
@@ -22,7 +22,7 @@ namespace Chonps
 	}
 
 	VulkanIndexBuffer::VulkanIndexBuffer(std::vector<uint32_t>& indices)
-		: IndexBuffer(indices), m_Count(indices.size())
+		: IndexBuffer(indices), m_Count(static_cast<uint32_t>(indices.size())), m_Indices(indices.data())
 	{
 		VkDeviceSize bufferSize = sizeof(uint32_t) * indices.size();
 		m_IndexBufferSize = bufferSize;

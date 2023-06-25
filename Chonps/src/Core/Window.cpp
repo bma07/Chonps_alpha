@@ -8,7 +8,7 @@ namespace Chonps
 {
 	static WindowAPI s_WindowAPI = WindowAPI::None;
 
-	bool setWindowContext(WindowAPI api /*= WindowAPI::Glfw*/)
+	bool setWindowContext(WindowAPI api)
 	{
 		s_WindowAPI = api;
 		
@@ -97,13 +97,13 @@ namespace Chonps
 		return "null";
 	}
 
-	std::shared_ptr<Window> createWindow(std::string title, unsigned int width, unsigned int height, bool fullScreen)
+	std::shared_ptr<Window> createWindowSp(std::string title, unsigned int width, unsigned int height, bool fullScreen)
 	{
 		switch (getWindowContext())
 		{
 			case WindowAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: WINDOW: createWindow() - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: WINDOW: createWindowSp() - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -123,7 +123,7 @@ namespace Chonps
 		return nullptr;
 	}
 
-	Window* createWindowRp(std::string title, unsigned int width, unsigned int height, bool fullScreen)
+	Window* createWindow(std::string title, unsigned int width, unsigned int height, bool fullScreen)
 	{
 		switch (getWindowContext())
 		{

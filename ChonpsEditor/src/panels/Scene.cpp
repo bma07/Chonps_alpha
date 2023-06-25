@@ -182,8 +182,8 @@ namespace Chonps
 			auto& meshComp = s_Scene->GetRegistry().get_component<MeshComponent>(entity);
 			auto& transComp = s_Scene->GetRegistry().get_component<TransformComponent>(entity);
 
-			for (auto mesh : meshComp.meshes)
-				mesh.Draw(meshComp.shader, transComp.transform());
+		//	for (auto mesh : meshComp.meshes)
+				//mesh.Draw(meshComp.shader, transComp.transform());
 		}
 	}
 }

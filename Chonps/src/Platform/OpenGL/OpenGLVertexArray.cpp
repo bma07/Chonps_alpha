@@ -34,11 +34,13 @@ namespace Chonps
 		glVertexAttribPointer(layout, numComponents, getShaderDataTypeConvertOpenGL(type), GL_FALSE, (GLsizei)stride, offset);
 		VBO->Unbind();
 		m_VertexCount = VBO->GetCount();
+		m_VertexBuffer = VBO;
 	}
 
 	void OpenGLVertexArray::LinkIndexBuffer(IndexBuffer* IBO)
 	{
 		m_IndexCount = IBO->GetCount();
+		m_IndexBuffer = IBO;
 	}
 
 	void OpenGLVertexArray::Bind() const

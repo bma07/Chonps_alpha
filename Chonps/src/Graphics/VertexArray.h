@@ -22,11 +22,13 @@ namespace Chonps
 		virtual uint32_t GetIndexCount() const = 0;
 		virtual uint32_t GetVertexCount() const = 0;
 
+		virtual VertexBuffer* GetVertexBuffer() = 0;
+		virtual IndexBuffer* GetIndexBuffer() = 0;
 	};
 	typedef VertexArray VAO;
 
-	std::shared_ptr<VertexArray> createVertexArray();
-	VertexArray* createVertexArrayRp();
+	std::shared_ptr<VertexArray> createVertexArraySp();
+	VertexArray* createVertexArray();
 }
 
 #endif

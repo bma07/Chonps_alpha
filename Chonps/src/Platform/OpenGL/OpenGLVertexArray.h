@@ -20,10 +20,16 @@ namespace Chonps
 		virtual uint32_t GetIndexCount() const override { return m_IndexCount; }
 		virtual uint32_t GetVertexCount() const override { return m_VertexCount; }
 
+		virtual VertexBuffer* GetVertexBuffer() override { return m_VertexBuffer; }
+		virtual IndexBuffer* GetIndexBuffer() override { return m_IndexBuffer; }
+
 	private:
 		uint32_t m_ID;
 		uint32_t m_IndexCount = 0;
 		uint32_t m_VertexCount = 0;
+
+		VertexBuffer* m_VertexBuffer;
+		IndexBuffer* m_IndexBuffer;
 	};
 }
 

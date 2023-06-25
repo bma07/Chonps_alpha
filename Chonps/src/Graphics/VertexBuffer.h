@@ -24,9 +24,7 @@ namespace Chonps
 	class VertexBuffer
 	{
 	public:
-		// VBO constructor for static arrays
 		VertexBuffer(float* vertices, uint32_t size) {}
-		// VBO constructor for dynamic array
 		VertexBuffer(std::vector<vertex>& vertices) {}
 
 		virtual void Bind() const = 0;
@@ -34,16 +32,16 @@ namespace Chonps
 		virtual void Delete() = 0;
 
 		virtual uint32_t GetCount() const = 0;
-
+		virtual float* GetVertices() const = 0;
+		virtual uint32_t GetSize() const = 0;
 	};
 	typedef VertexBuffer VBO;
 
-	std::shared_ptr<VertexBuffer> createVertexBuffer(float* vertices, uint32_t size);
-	std::shared_ptr<VertexBuffer> createVertexBuffer(std::vector<vertex>& vertices);
+	std::shared_ptr<VertexBuffer> createVertexBufferSp(float* vertices, uint32_t size);
+	std::shared_ptr<VertexBuffer> createVertexBufferSp(std::vector<vertex>& vertices);
 
-
-	VertexBuffer* createVertexBufferRp(float* vertices, uint32_t size);
-	VertexBuffer* createVertexBufferRp(std::vector<vertex>& vertices);
+	VertexBuffer* createVertexBuffer(float* vertices, uint32_t size);
+	VertexBuffer* createVertexBuffer(std::vector<vertex>& vertices);
 }
 
 #endif

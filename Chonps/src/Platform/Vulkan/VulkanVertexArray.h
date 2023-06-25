@@ -21,19 +21,22 @@ namespace Chonps
 		virtual uint32_t GetIndexCount() const override { return m_IndexCount; }
 		virtual uint32_t GetVertexCount() const override { return m_VertexCount; }
 
+		virtual VertexBuffer* GetVertexBuffer() override { return m_VertexBuffer; }
+		virtual IndexBuffer* GetIndexBuffer() override { return m_IndexBuffer; }
+
 	private:
 		uint32_t m_IndexCount = 0;
 		uint32_t m_VertexCount = 0;
 
+		VertexBuffer* m_VertexBuffer = nullptr;
+		IndexBuffer* m_IndexBuffer = nullptr;
+
 		std::vector<VkVertexInputAttributeDescription2EXT> m_AttributeDescriptions;
 
-		VkBuffer m_VertexBuffer = VK_NULL_HANDLE;
-		VkBuffer m_IndexBuffer = VK_NULL_HANDLE;
+		VkBuffer m_VkVertexBuffer = VK_NULL_HANDLE;
+		VkBuffer m_VkIndexBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory m_VertexBufferMemory = VK_NULL_HANDLE;
 		VkDeviceMemory m_IndexBufferMemory = VK_NULL_HANDLE;
-
-		bool m_FirstVertexInit = false;
-		bool m_FirstIndexInit = false;
 	};
 }
 

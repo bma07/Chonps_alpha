@@ -21,21 +21,6 @@ namespace Chonps
 		GetModelData(filepath, modelType);
 	}
 
-	void Model::Draw(Shader* shader, glm::mat4 Matrix /*= glm::mat4(1.0f)*/)
-	{
-		for (auto Mesh : m_Meshes)
-		{
-			Mesh.Draw(shader, Matrix);
-		}
-	}
-
-	void Model::AttachShader(Shader* shader)
-	{
-		shader->Bind();
-		for (auto mesh : m_Meshes)
-			mesh.AttachShader(shader);
-	}
-
 	void Model::GetModelData(const std::string& filepath, mt3d modelType)
 	{
 		if (modelType == mt3d::Obj || m_ModelType == "obj")
@@ -50,7 +35,7 @@ namespace Chonps
 
 	void Model::Delete()
 	{
-		for (auto Mesh : m_Meshes)
+		for (auto& Mesh : m_Meshes)
 			Mesh.Delete();
 	}
 

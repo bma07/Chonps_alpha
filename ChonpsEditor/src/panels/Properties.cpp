@@ -129,9 +129,9 @@ namespace Chonps
 					ImGui::DragFloat("##CamFOVdeg", &component->camera.FOVdeg, 1.0f, 1.0f, 120.0f, "%.3f deg");
 				else
 				{
-					float camFOVrad = radians(component->camera.FOVdeg);
+					float camFOVrad = (float)radians(component->camera.FOVdeg);
 					ImGui::DragFloat("##CamFOVrad", &camFOVrad, 0.01f, 0.0174533f, 2.0944f, "%.3f rad");
-					component->camera.FOVdeg = degrees(camFOVrad);
+					component->camera.FOVdeg = (float)degrees(camFOVrad);
 				}
 				const char* angleMeasureType[2] = { " degrees", " radians" };
 				ImGui::Combo("##CamAngleMeasureType", &s_CurrentSelectedAngleType, angleMeasureType, 2);

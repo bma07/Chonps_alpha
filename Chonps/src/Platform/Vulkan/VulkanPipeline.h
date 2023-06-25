@@ -7,12 +7,6 @@
 
 namespace Chonps
 {
-	struct VulkanPipeline
-	{
-		VkPipelineLayout pipelineLayout;
-		VkPipeline pipeline;
-	};
-
 	VulkanPipeline createVulkanPipeline(const vkSpec::PipelineSpecification& pipelineSpecification, VkPipelineShaderStageCreateInfo shaderStages[], VkPipelineVertexInputStateCreateInfo vertexInputInfo);
 
 	namespace vkSpec
@@ -25,7 +19,7 @@ namespace Chonps
 		void setStandardVulkanPipelineSpecification(const vkSpec::PipelineSpecification& pipelineSpecification);
 
 		// Get the standard Vulkan pipeline specification that can be reused for multiple pipelines
-		vkSpec::PipelineSpecification getStandardVulkanPipelineSpecification();
+		vkSpec::PipelineSpecification& getStandardVulkanPipelineSpecification();
 	}
 }
 

@@ -8,8 +8,8 @@
 
 namespace Chonps
 {
-	OpenGLTexture::OpenGLTexture(const std::string& filepath, TexType texType /*= TexT::Diffuse*/, TexFilterPair texFilter /*= { TexFilter::Linear, TexFilter::Nearest }*/, TexWrap texWrap /*= TexW::Repeat*/)
-		: Texture(filepath, texType, texFilter, texWrap), m_TexType(texType), m_TexFilter(texFilter), m_TexWrap(texWrap)
+	OpenGLTexture::OpenGLTexture(const std::string& filepath, TexType texType, TexFormat texFormat, TexFilterPair texFilter, TexWrap texWrap)
+		: Texture(filepath, texType, texFormat, texFilter, texWrap), m_TexType(texType), m_TexFormat(texFormat), m_TexFilter(texFilter), m_TexWrap(texWrap)
 	{
 		int channels;
 		stbi_set_flip_vertically_on_load(true);
@@ -21,22 +21,132 @@ namespace Chonps
 
 		// Get color channel format
 		GLenum internalFormat = 0, dataFormat = 0;
-		if (channels == 4)
+
+		switch (texFormat)
 		{
-			gammaCorrect && (m_TexType != TexT::Specular && m_TexType != TexT::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA8;
-			dataFormat = GL_RGBA;
+			case Chonps::TexFormat::None:
+			{
+				if (channels == 4)
+				{
+					gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA8;
+					dataFormat = GL_RGBA;
+				}
+				else if (channels == 3)
+				{
+					gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB8;
+					dataFormat = GL_RGB;
+				}
+				else if (channels == 1)
+				{
+					gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB8;
+					dataFormat = GL_RED;
+				}
+				break;
+			}
+			case Chonps::TexFormat::RGB8:
+			{
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB8;
+				dataFormat = GL_RGB;
+				break;
+			}
+			case Chonps::TexFormat::RGB16:
+			{
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB16;
+				dataFormat = GL_RGB;
+				break;
+			}
+			case Chonps::TexFormat::RGB32F:
+			{
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB32F;
+				dataFormat = GL_RGB;
+				break;
+			}
+			case Chonps::TexFormat::RGB32I:
+			{
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB32I;
+				dataFormat = GL_RGB;
+				break;
+			}
+			case Chonps::TexFormat::RGB32UI:
+			{
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB32UI;
+				dataFormat = GL_RGB;
+				break;
+			}
+			case Chonps::TexFormat::RGB64F:
+			{
+				CHONPS_CORE_WARN("WARNING: TEXTURE: RGB64F format is unsupported on OpenGL! Reverting texture to RGB8 format.");
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB8;
+				dataFormat = GL_RGB;
+				break;
+			}
+			case Chonps::TexFormat::RGB64I:
+			{
+				CHONPS_CORE_WARN("WARNING: TEXTURE: RGB64I format is unsupported on OpenGL! Reverting texture to RGB8 format.");
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB8;
+				dataFormat = GL_RGB;
+				break;
+			}
+			case Chonps::TexFormat::RGB64UI:
+			{
+				CHONPS_CORE_WARN("WARNING: TEXTURE: RGB64UI format is unsupported on OpenGL! Reverting texture to RGB8 format.");
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB8;
+				dataFormat = GL_RGB;
+				break;
+			}
+			case Chonps::TexFormat::RGBA8:
+			{
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA8;
+				dataFormat = GL_RGBA;
+				break;
+			}
+			case Chonps::TexFormat::RGBA16:
+			{
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA16;
+				dataFormat = GL_RGBA;
+				break;
+			}
+			case Chonps::TexFormat::RGBA32F:
+			{
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA32F;
+				dataFormat = GL_RGBA;
+				break;
+			}
+			case Chonps::TexFormat::RGBA32I:
+			{
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA32I;
+				dataFormat = GL_RGBA;
+				break;
+			}
+			case Chonps::TexFormat::RGBA32UI:
+			{
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA32UI;
+				dataFormat = GL_RGBA;
+				break;
+			}
+			case Chonps::TexFormat::RGBA64F:
+			{
+				CHONPS_CORE_WARN("WARNING: TEXTURE: RGBA64F format is unsupported on OpenGL! Reverting texture to RGBA8 format.");
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA8;
+				dataFormat = GL_RGBA;
+				break;
+			}
+			case Chonps::TexFormat::RGBA64I:
+			{
+				CHONPS_CORE_WARN("WARNING: TEXTURE: RGBA64I format is unsupported on OpenGL! Reverting texture to RGBA8 format.");
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA8;
+				dataFormat = GL_RGBA;
+				break;
+			}
+			case Chonps::TexFormat::RGBA64UI:
+			{
+				CHONPS_CORE_WARN("WARNING: TEXTURE: RGBA64UI format is unsupported on OpenGL! Reverting texture to RGBA8 format.");
+				gammaCorrect && (texType != TexT::Specular && texType != TexT::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA8;
+				dataFormat = GL_RGBA;
+				break;
+			}
 		}
-		else if (channels == 3)
-		{
-			gammaCorrect && (m_TexType != TexT::Specular && m_TexType != TexT::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB8;
-			dataFormat = GL_RGB;
-		}
-		else if (channels == 1)
-		{
-			gammaCorrect && (m_TexType != TexT::Specular && m_TexType != TexT::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB8;
-			dataFormat = GL_RED;
-		}
-		CHONPS_CORE_ASSERT(internalFormat && dataFormat, "Format not supported!");
+		CHONPS_CORE_ASSERT(internalFormat&& dataFormat, "Format not supported!");
 
 		// Get texture filter mode
 		GLenum magFilter = GL_NEAREST, minFilter = GL_LINEAR;
@@ -95,8 +205,8 @@ namespace Chonps
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
 		glTextureStorage2D(m_ID, 1, internalFormat, m_Width, m_Height);
 
-		glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -104,14 +214,9 @@ namespace Chonps
 		glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
 
 		m_TexType = TexType::Diffuse;
-		m_TexFilter = { TexFilter::Linear, TexFilter::Linear };
+		m_TexFilter = { TexFilter::Nearest, TexFilter::Nearest };
 		m_TexWrap = TexWrap::Repeat;
-	}
-
-	void OpenGLTexture::TexUnit(Shader* shader, const char* uniform, uint32_t unit)
-	{
-		glUniform1i(glGetUniformLocation(shader->GetID(), uniform), unit);
-		m_Unit = unit;
+		m_TexFormat = TexFormat::RGBA8;
 	}
 
 	void OpenGLTexture::Bind(uint32_t unit) const
@@ -135,5 +240,10 @@ namespace Chonps
 	void OpenGLTexture::Delete()
 	{
 		glDeleteTextures(1, &m_ID);
+	}
+
+	void OpenGLTexture::TexUnit(Shader* shader, const char* uniform, uint32_t unit)
+	{
+		glUniform1i(glGetUniformLocation(shader->GetID(), uniform), unit);
 	}
 }
