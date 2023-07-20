@@ -1,6 +1,6 @@
-#version 450
+#version 460
 
-const int MAX_TEXTURE_COUNT = 32;
+const int MAX_TEXTURE_COUNT = 4096;
 
 layout(location = 0) out vec4 outColor;
 
@@ -12,10 +12,10 @@ layout(set = 1, binding = 1) uniform sampler samp;
 
 layout(push_constant) uniform constants
 {
-	int texIndex;
-} pushConstant;
+	int texIndex[32];
+} pc;
 
 void main()
 {
-    outColor = vec4(fragColor, 1.0f);
+    outColor = texture(sampler2D(textures[pc.texIndex[0]], samp), fragTexCoord);
 }

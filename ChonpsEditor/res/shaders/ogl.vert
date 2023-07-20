@@ -9,7 +9,6 @@ out vec2 fragTexCoord;
 
 layout(std140, binding = 0) uniform inUniforms
 {
-    vec2 pos;
     mat4 camMatrix;
 };
 

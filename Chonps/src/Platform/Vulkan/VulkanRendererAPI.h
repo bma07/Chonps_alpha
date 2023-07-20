@@ -39,7 +39,7 @@ namespace Chonps
 
 	struct PushConstantTextureIndexData
 	{
-		int texIndex;
+		int texIndex[32];
 	};
 
 	struct VulkanPipeline
@@ -71,6 +71,7 @@ namespace Chonps
 		VkQueue presentQueue;
 		QueueFamilyIndices queueFamiliyIndices;
 		VkSurfaceKHR surface;
+		VkPhysicalDeviceProperties deviceProperties;
 
 		VkSwapchainKHR swapChain;
 		std::vector<VkImage> swapChainImages;
@@ -79,8 +80,8 @@ namespace Chonps
 		VkExtent2D swapChainExtent;
 		const uint32_t maxFramesInFlight = 3;
 		const uint32_t maxDescriptorCounts = 65536;
-		const uint32_t maxTextures = 4096;
-		const uint32_t maxObjectCount = 5000;
+		uint64_t maxObjects = 10000;
+		uint32_t maxTextures = 4096;
 		std::queue<uint32_t> shaderCountIDs;
 
 		VkRenderPass renderPass;
@@ -95,7 +96,6 @@ namespace Chonps
 		VkPushConstantRange pushConstantRange;
 		uint32_t pushConstantRangeCount = 0;
 		uint32_t imageIndex;
-		uint32_t indexCount;
 
 		VkBuffer bufferArray = VK_NULL_HANDLE;
 		VkDeviceMemory bufferArrayMemory = VK_NULL_HANDLE;
@@ -110,15 +110,13 @@ namespace Chonps
 		VkDeviceSize indexBufferSize;
 		std::vector<VkBuffer> uniformBuffers;
 		std::vector<void*> uniformBuffersMapped;
+		uint32_t dynamicAlignment;
+		uint32_t maxUniformBuffers = 4096;
 		VkDescriptorPool descriptorPool;
 		uint32_t currentDescriptorSetBinding;
-		std::vector<std::vector<VkBuffer>> submitUniformBuffers;
-		std::vector<std::vector<VkDeviceMemory>> submitUniformBuffersMemory;
-		std::vector<std::vector<void*>> submitUniformBuffersMapped;
 		std::vector<VkDescriptorSet> descriptorSets;
-		std::vector<std::vector<VkDescriptorSet>> submitDescriptorSets;
 		VkDescriptorSetLayout descriptorSetLayout;
-		std::vector<std::vector<VkDescriptorSet>> samplerDescriptorSets;
+		std::vector<VkDescriptorSet> samplerDescriptorSet;
 		VkDescriptorSetLayout samplerDescriptorSetsLayout;
 		std::vector<VkDescriptorSet> nullSamplerDescriptorSets;
 		uint32_t drawCallCount = 0, drawCallCountTotal = 0;
@@ -130,6 +128,7 @@ namespace Chonps
 
 		uint32_t textureBinding, samplerBinding;
 		std::queue<uint32_t> textureCountIDs;
+		std::vector<std::queue<uint32_t>> texturesQueue;
 		std::unordered_map<uint32_t, VulkanTextureData> textureImages;
 		std::vector<VkDescriptorImageInfo> imageInfos;
 		std::unordered_set<uint32_t> currentBindedTextureImages;
@@ -205,7 +204,7 @@ namespace Chonps
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		bool IsDeviceSuitable(VkPhysicalDevice device);
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-		void CreateOrUpdateUniformBuffer(uint32_t currentImage, DrawCommand drawCommand);
+		void CreateOrUpdateUniformBuffer(uint32_t currentImage, uint32_t currentDrawCall);
 		void CreateOrUpdateTextureImage(uint32_t currentImage);
 
 		void RecreateSwapChain();

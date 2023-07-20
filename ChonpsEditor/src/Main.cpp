@@ -34,8 +34,7 @@ std::vector<uint32_t> indices2 =
 
 struct UniformBufferObject
 {
-	glm::vec2 pos;
-	alignas(16) glm::mat4 camMatrix;
+	glm::mat4 camMatrix;
 };
 
 
@@ -81,7 +80,7 @@ int main()
 	Chonps::Texture* texture = Chonps::createTexture("D:/Dev/Chonps/Sandbox/res/textures/brick.png", Chonps::TexType::Diffuse, Chonps::TexFormat::RGBA8);
 	texture->TexUnit(0);
 	Chonps::Texture* texture2 = Chonps::createTexture("D:/Dev/Chonps/Sandbox/res/textures/Checkerboard.png", Chonps::TexType::Diffuse, Chonps::TexFormat::RGBA8);
-	texture->TexUnit(0);
+	texture2->TexUnit(0);
 
 	Chonps::UniformBuffer* ubo = Chonps::createUniformBuffer(0, sizeof(UniformBufferObject));
 
@@ -158,6 +157,10 @@ int main()
 		vao->Bind();
 		texture->Bind();
 
+		UBO.camMatrix = camera.GetCameraMatrix() * model * glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
+		ubo->Bind(&UBO, sizeof(UBO), 0);
+		Chonps::renderDraw(vao->GetIndexCount());
+
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 		
 		for (int i = 0; i < 10; i++)
@@ -181,7 +184,6 @@ int main()
 		
 		//Chonps::gui::DrawLine(0, 0, 200, 200);
 
-		timer.Begin();
 		Chonps::renderDrawSubmit();
 		CHONPS_TRACE("{0}", timer.ElapsedMilli());
 
@@ -203,6 +205,7 @@ int main()
 	window->Delete();
 	shader->Delete();
 	shader2->Delete();
+	windowShader->Delete();
 	vao->Delete();
 	vao2->Delete();
 	ubo->Delete();

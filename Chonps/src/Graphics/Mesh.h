@@ -30,8 +30,11 @@ namespace Chonps
 		Material				material;
 		glm::mat4				matrix = glm::mat4(1.0f);
 
+		uint32_t id() { return m_ID; }
+
 	private:
 		std::vector<Texture*> m_Textures;
+		uint32_t m_ID;
 	};
 }
 

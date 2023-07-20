@@ -289,7 +289,7 @@ namespace Chonps
 			bool skip = false;
 			for (unsigned int i = 0; i < m_TexIndex.size(); i++)
 			{
-				if (m_TexIndex[i] == texInd)
+				if (m_TexIndex[i] == texSource)
 				{
 					textures.emplace_back(m_Textures[i]);
 					skip = true;
@@ -323,7 +323,7 @@ namespace Chonps
 			bool skip = false;
 			for (unsigned int i = 0; i < m_TexIndex.size(); i++)
 			{
-				if (m_TexIndex[i] == texInd)
+				if (m_TexIndex[i] == texSource)
 				{
 					textures.emplace_back(m_Textures[i]);
 					skip = true;
@@ -351,7 +351,7 @@ namespace Chonps
 			bool skip = false;
 			for (unsigned int i = 0; i < m_TexIndex.size(); i++)
 			{
-				if (m_TexIndex[i] == texInd)
+				if (m_TexIndex[i] == texSource)
 				{
 					textures.emplace_back(m_Textures[i]);
 					skip = true;
@@ -379,7 +379,7 @@ namespace Chonps
 			bool skip = false;
 			for (unsigned int i = 0; i < m_TexIndex.size(); i++)
 			{
-				if (m_TexIndex[i] == texInd)
+				if (m_TexIndex[i] == texSource)
 				{
 					textures.emplace_back(m_Textures[i]);
 					skip = true;
@@ -407,7 +407,7 @@ namespace Chonps
 			bool skip = false;
 			for (unsigned int i = 0; i < m_TexIndex.size(); i++)
 			{
-				if (m_TexIndex[i] == texInd)
+				if (m_TexIndex[i] == texSource)
 				{
 					textures.emplace_back(m_Textures[i]);
 					skip = true;

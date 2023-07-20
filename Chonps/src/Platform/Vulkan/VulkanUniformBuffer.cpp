@@ -8,13 +8,13 @@ namespace Chonps
 	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t binding, uint32_t size)
 		: UniformBuffer(binding, size), m_Binding(binding)
 	{
-		VkDeviceSize bufferSize = size;
 		VulkanBackends* vkBackends = getVulkanBackends();
+		VkDeviceSize bufferSize = size * vkBackends->maxObjects;
 
 		// Create Descriptor Layout
 		VkDescriptorSetLayoutBinding uboLayoutBinding{};
 		uboLayoutBinding.binding = binding;
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		uboLayoutBinding.descriptorCount = 1;
 		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_ALL;
 		uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
@@ -34,7 +34,7 @@ namespace Chonps
 
 		for (size_t i = 0; i < vkBackends->maxFramesInFlight; i++)
 		{
-			vkSpec::createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffers[i], m_UniformBuffersMemory[i]);
+			vkSpec::createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffers[i], m_UniformBuffersMemory[i]);
 			vkMapMemory(vkBackends->device, m_UniformBuffersMemory[i], 0, bufferSize, 0, &m_UniformBuffersMapped[i]);
 		}
 
@@ -61,7 +61,7 @@ namespace Chonps
 			descriptorWrites.dstSet = m_DescriptorSets[i];
 			descriptorWrites.dstBinding = binding;
 			descriptorWrites.dstArrayElement = 0;
-			descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			descriptorWrites.descriptorCount = 1;
 			descriptorWrites.pBufferInfo = &bufferInfo;
 

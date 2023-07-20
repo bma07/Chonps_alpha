@@ -39,6 +39,8 @@ namespace Chonps
 		VkDeviceMemory m_TextureImageMemory;
 		VkImageView m_TextureImageView;
 		VkSampler m_TextureSampler;
+
+		bool m_Deleted = false;
 	};
 
 	namespace vkSpec

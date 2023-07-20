@@ -277,6 +277,9 @@ namespace Chonps
 		vulkanTexData.textureSampler = m_TextureSampler;
 
 		vkBackends->textureImages[m_ID] = vulkanTexData;
+		
+		for (auto& queue : vkBackends->texturesQueue)
+			queue.push(m_ID);
 	}
 
 	VulkanTexture::VulkanTexture(uint32_t width, uint32_t height, void* data, uint32_t size)
@@ -369,6 +372,9 @@ namespace Chonps
 		texData.textureSampler = m_TextureSampler;
 
 		vkBackends->textureImages[m_ID] = texData;
+		
+		for (auto& queue : vkBackends->texturesQueue)
+			queue.push(m_ID);
 
 		m_TexType = TexType::Diffuse;
 		m_TexFilter = { TexFilter::Linear, TexFilter::Linear };
@@ -382,6 +388,9 @@ namespace Chonps
 		if (vkBackends->allowClearBindedTextures) vkBackends->currentBindedTextureImages.clear();
 		vkBackends->currentBindedTextureImages.insert(m_ID);
 		vkBackends->textureImages[m_ID].unit = unit;
+
+		vkBackends->textureIndexConstant.texIndex[unit] = m_ID;
+
 		vkBackends->allowClearBindedTextures = false;
 	}
 
@@ -391,6 +400,9 @@ namespace Chonps
 		if (vkBackends->allowClearBindedTextures) vkBackends->currentBindedTextureImages.clear();
 		vkBackends->currentBindedTextureImages.insert(m_ID);
 		vkBackends->textureImages[m_ID].unit = m_Unit;
+
+		vkBackends->textureIndexConstant.texIndex[m_Unit] = m_ID;
+
 		vkBackends->allowClearBindedTextures = false;
 	}
 
@@ -402,15 +414,19 @@ namespace Chonps
 
 	void VulkanTexture::Delete()
 	{
-		VulkanBackends* vkBackends = getVulkanBackends();
+		if (!m_Deleted)
+		{
+			VulkanBackends* vkBackends = getVulkanBackends();
 
-		vkDestroySampler(vkBackends->device, m_TextureSampler, nullptr);
-		vkDestroyImageView(vkBackends->device, m_TextureImageView, nullptr);
-		vkDestroyImage(vkBackends->device, m_TextureImage, nullptr);
-		vkFreeMemory(vkBackends->device, m_TextureImageMemory, nullptr);
+			vkDestroySampler(vkBackends->device, m_TextureSampler, nullptr);
+			vkDestroyImageView(vkBackends->device, m_TextureImageView, nullptr);
+			vkDestroyImage(vkBackends->device, m_TextureImage, nullptr);
+			vkFreeMemory(vkBackends->device, m_TextureImageMemory, nullptr);
 
-		vkBackends->textureImages.erase(m_ID);
-		vkBackends->textureCountIDs.push(m_ID);
+			vkBackends->textureImages.erase(m_ID);
+			vkBackends->textureCountIDs.push(m_ID);
+			m_Deleted = true;
+		}
 	}
 
 	void VulkanTexture::TexUnit(Shader* shader, const char* uniform, uint32_t unit)
