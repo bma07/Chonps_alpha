@@ -41,6 +41,30 @@ namespace Chonps
 
 	};
 
+	class WindowFramebufferResizeEvent : public Event
+	{
+	public:
+		WindowFramebufferResizeEvent(int width, int height)
+			: m_Width(width), m_Height(height) {}
+
+		virtual int GetCategoryFlags() const override { return (EventCategoryInput | EventCategoryWindow); }
+
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "WindowFramebufferResizeEvent: (" << m_Width << ", " << m_Height << ")";
+			return ss.str();
+		}
+
+		static EventType GetStaticType() { return EventType::WindowFramebufferResize; }
+		virtual EventType GetEventType() const override { return GetStaticType(); }
+		virtual const char* GetName() const override { return "WindowFramebufferResize"; }
+
+	private:
+		int m_Width, m_Height;
+
+	};
+
 	class WindowFocusEvent : public Event
 	{
 	public:

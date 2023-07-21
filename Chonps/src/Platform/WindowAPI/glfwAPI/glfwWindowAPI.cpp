@@ -129,6 +129,13 @@ namespace Chonps
 
 		glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data.Width = width;
+			data.Height = height;
+			
+			WindowFramebufferResizeEvent eventType(width, height);
+			data.EventCallback(eventType);
+
 			if (getGraphicsAPI() == GraphicsAPI::Vulkan) getVulkanBackends()->framebufferResized = true;
 		});
 

@@ -18,15 +18,15 @@ namespace Chonps
 		void UpdateMatrix();
 
 		void SetUp(glm::vec3 _position, float _FOVdeg, float _nearPlane, float _farPlane);
-		void SetDimensions(unsigned int width, unsigned int height) { m_Width = width; m_Height = height; }
+		void SetDimensions(int width, int height) { m_Width = width < 0 ? -width : width; m_Height = height < 0 ? -height : height; }
 		void SetPosition(glm::vec3 _Position) { position = _Position; }
 		void SetOrientation(glm::vec3 _Orientation) { orientation = _Orientation; }
 		void SetUpVector(glm::vec3 Up) { upVector = Up; }
 		void SetFOV(float _FOVdeg, float _nearPlane, float _farPlane);
 
-		const glm::mat4& GetCameraMatrix() const { return m_CameraMatrix; }
-		const glm::mat4& GetCameraProjectionMatrix() const { return m_ProjectionMatrix; }
-		const glm::mat4& GetCameraViewMatrix() const { return m_ViewMatrix; }
+		const glm::mat4& GetViewProjectionMatrix() const { return m_CameraMatrix; }
+		const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
+		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		const glm::vec3& GetPosition() const { return position; }
 		const glm::vec3& GetOrientation() const { return orientation; }
 		const glm::vec3& GetUpVector() const { return upVector; }

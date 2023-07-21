@@ -47,6 +47,13 @@ void CameraMovment(Chonps::Window* window, Chonps::Camera* camera)
 	camera->position = glm::vec3(camX, camera->position.y, camZ);
 }
 
+void onEvent(Chonps::Event& e)
+{
+	if (e.GetEventType() == Chonps::EventType::WindowResize)
+	{
+		CHONPS_TRACE("{0}", e.GetName());
+	}
+}
 
 int main()
 {
@@ -71,6 +78,8 @@ int main()
 	app.Run();*/
 
 	Chonps::Window* window = Chonps::createWindow("Window", 800, 600);
+
+	window->SetEventCallback(std::bind(&onEvent, std::placeholders::_1));
 
 	Chonps::gui::SetCurrentWindow(window);
 
@@ -121,9 +130,9 @@ int main()
 
 	std::vector<Chonps::Mesh> mesh = Chonps::loadModel("D:/Dev/Chonps/Sandbox/res/models/gltf/Flivver/Flivver.gltf");
 
-	Chonps::Camera camera(window->GetWidth(), window->GetHeight());
-	camera.SetUp(glm::vec3(2.0f, 2.0f, 2.0f), 60.0f, 0.01f, 100.0f);
-	camera.SetOrientation(glm::vec3(0.0f, 0.0f, 0.0f));
+	Chonps::OrthographicCamera camera(window->GetWidth(), window->GetHeight(), 0.01f);
+	camera.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+	camera.SetRotation(0.0f);
 
 	Chonps::renderPrepareDraw();
 
@@ -138,12 +147,8 @@ int main()
 		Chonps::renderClear();
 		Chonps::renderClearColor(0.08f, 0.08f, 0.08f, 1.0f);
 
-		static auto startTime = std::chrono::high_resolution_clock::now();
-
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-		camera.SetDimensions(window->GetWidth(), window->GetHeight());
+		camera.SetDimensions(window->GetWidth(), window->GetHeight(), 0.01f);
+		
 		//CameraMovment(window, &camera);
 		camera.UpdateMatrix();
 
@@ -151,35 +156,14 @@ int main()
 
 		UniformBufferObject UBO{};
 
-		glm::mat4 model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		
 		shader->Bind();
 		vao->Bind();
 		texture->Bind();
 
-		UBO.camMatrix = camera.GetCameraMatrix() * model * glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
+		UBO.camMatrix = camera.GetViewProjectionMatrix();
 		ubo->Bind(&UBO, sizeof(UBO), 0);
-		Chonps::renderDraw(vao->GetIndexCount());
-
-		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
-		
-		for (int i = 0; i < 10; i++)
-		{
-			glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, -(float)i * 2));
-			UBO.camMatrix = camera.GetCameraMatrix() * model * scale * translate;
-			ubo->Bind(&UBO, sizeof(UBO), 0);
-			for (auto& meshes : mesh)
-			{
-				Chonps::renderDraw(meshes.vertexArray);
-			}
-		}
-
-		shader2->Bind();
-		vao2->Bind();
-		texture2->Bind();
-		UBO.camMatrix = camera.GetCameraMatrix() * model * glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 1.0f));
-		ubo->Bind(&UBO, sizeof(UBO), 0);
-		Chonps::renderDraw(vao2);
+		Chonps::renderDraw(vao);
 
 		
 		//Chonps::gui::DrawLine(0, 0, 200, 200);

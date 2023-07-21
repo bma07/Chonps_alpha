@@ -39,7 +39,7 @@ namespace Chonps
 		shader->Bind();
 		glm::vec3 camPos = camera.GetPosition();
 		Chonps::oglSpec::uploadUniform3f(shader->GetID(), "camPos", camPos.x, camPos.y, camPos.z);
-		Chonps::oglSpec::uploadUniform4mfv(shader->GetID(), "camMatrix", 1, false, glm::value_ptr(camera.GetCameraMatrix()));
+		Chonps::oglSpec::uploadUniform4mfv(shader->GetID(), "camMatrix", 1, false, glm::value_ptr(camera.GetViewProjectionMatrix()));
 	}
 
 	// Call after scene has finished
@@ -88,7 +88,7 @@ namespace Chonps
 		shader->Bind();
 		glm::vec3 camPos = camera.GetPosition();
 		Chonps::oglSpec::uploadUniform3f(shader->GetID(), "camPos", camPos.x, camPos.y, camPos.z);
-		Chonps::oglSpec::uploadUniform4mfv(shader->GetID(), "camMatrix", 1, false, glm::value_ptr(camera.GetCameraMatrix()));
+		Chonps::oglSpec::uploadUniform4mfv(shader->GetID(), "camMatrix", 1, false, glm::value_ptr(camera.GetViewProjectionMatrix()));
 	}
 
 	// Call after scene has finished
