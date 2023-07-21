@@ -8,7 +8,7 @@ namespace Chonps
 	enum class TexFormat
 	{
 		None = 0,
-		NA = None,
+		Auto = None,
 		RGB8, RGBA8, 
 		RGB16, RGBA16,
 		RGB32F, RGBA32F, RGB32I, RGBA32I, RGB32UI, RGBA32UI,
@@ -73,11 +73,13 @@ namespace Chonps
 
 	void textureBinding(uint32_t textureBinding, uint32_t samplerBinding);
 
-	std::shared_ptr<Texture> createTextureSp(const std::string& filepath, TexType texType, TexFormat texFormat , TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, TexWrap texWrap = TexWrap::Repeat);
-	std::shared_ptr<Texture> createTextureSp(uint32_t width, uint32_t height, void* data, uint32_t size);
-
+	// Note: Textures format may vary between render APIs due to different support of formats. The TexFormat::Auto
+	// indicator is recommended so that the format can be automatically chosen based on the texture
 	Texture* createTexture(const std::string& filepath, TexType texType, TexFormat texFormat, TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, TexWrap texWrap = TexWrap::Repeat);
 	Texture* createTexture(uint32_t width, uint32_t height, void* data, uint32_t size);
+
+	std::shared_ptr<Texture> createTextureSp(const std::string& filepath, TexType texType, TexFormat texFormat , TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, TexWrap texWrap = TexWrap::Repeat);
+	std::shared_ptr<Texture> createTextureSp(uint32_t width, uint32_t height, void* data, uint32_t size);
 }
 
 #endif

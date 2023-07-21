@@ -16,6 +16,7 @@ const std::vector<const char*> validationLayers =
 const std::vector<const char*> deviceExtensions =
 {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+	VK_KHR_MAINTENANCE1_EXTENSION_NAME,
 	VK_KHR_MAINTENANCE3_EXTENSION_NAME,
 	VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
 	VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME,
@@ -1145,9 +1146,9 @@ namespace Chonps
 
 		VkViewport viewport{};
 		viewport.x = 0.0f;
-		viewport.y = 0.0f;
+		viewport.y = static_cast<float>(m_VulkanBackends->swapChainExtent.height);
 		viewport.width = static_cast<float>(m_VulkanBackends->swapChainExtent.width);
-		viewport.height = static_cast<float>(m_VulkanBackends->swapChainExtent.height);
+		viewport.height = -static_cast<float>(m_VulkanBackends->swapChainExtent.height);
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], 0, 1, &viewport);

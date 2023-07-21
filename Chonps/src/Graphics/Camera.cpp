@@ -23,10 +23,6 @@ namespace Chonps
 
 		if (m_Width > 0 && m_Height > 0)
 			m_ProjectionMatrix = glm::perspective(glm::radians(FOVdeg), (float)m_Width / (float)m_Height, nearPlane, farPlane);
-
-		// Vulkan's y-coordinate is flipped which is why we flip the proj matrix
-		if (getGraphicsAPI() == GraphicsAPI::Vulkan)
-			m_ProjectionMatrix[1][1] *= -1;
 		
 		m_CameraMatrix = m_ProjectionMatrix * m_ViewMatrix;
 	}

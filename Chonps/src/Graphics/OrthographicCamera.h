@@ -10,6 +10,7 @@ namespace Chonps
 	class OrthographicCamera
 	{
 	public:
+		OrthographicCamera() = default;
 		OrthographicCamera(float left, float right, float bottom, float top);
 		OrthographicCamera(int width, int height, float scale);
 

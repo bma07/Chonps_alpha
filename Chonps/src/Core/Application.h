@@ -24,22 +24,26 @@ namespace Chonps
 		void Run();
 		void OnEvent(Event& e);
 
+		void Terminate();
+
 		// Layers
-		void add_layer(Layer* layer);
-		void add_overlay(Layer* layer);
-		void insert_layer(Layer* layer, unsigned int index);
-		void remove_layer(Layer* layer);
-		void delete_layer(Layer* layer);
+		void push(Layer* layer);
+		void push_back(Layer* layer);
+		void pop();
+		void pop_back();
+		void insert(Layer* layer, unsigned int index);
+		void remove(Layer* layer);
+		void destroy(Layer* layer);
 
 		inline static Application& GetApp() { return *s_Instance; }
-		inline Window& GetWindow() { return *m_Window; }
+		inline Window* GetWindow() { return m_Window; }
 		inline float GetTimestep() { return m_Timestep; }
 		inline void UpdateWindowRender(bool update) { m_UpdateWindowRender = update; }
 		inline bool Running() { return m_Running; }
 		inline void SetRun(bool run) { m_Running = run; }
 
 	private:
-		std::shared_ptr<Window> m_Window;
+		Window* m_Window;
 		LayerStack m_LayerStack;
 		float m_Timestep = 0.0f;
 		bool m_Running = true;
@@ -53,12 +57,12 @@ namespace Chonps
 
 	static unsigned int getAppWindowWidth()
 	{
-		return Application::GetApp().GetWindow().GetWidth();
+		return Application::GetApp().GetWindow()->GetWidth();
 	}
 
 	static unsigned int getAppWindowHeight()
 	{
-		return Application::GetApp().GetWindow().GetHeight();
+		return Application::GetApp().GetWindow()->GetHeight();
 	}
 }
 

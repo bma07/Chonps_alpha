@@ -302,7 +302,7 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Diffuse, TexFormat::NA, GetTexFilter(magFilter, minFilter));
+				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Diffuse, TexFormat::Auto, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
 				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);
@@ -336,7 +336,7 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::MetallicRoughness, TexFormat::NA, GetTexFilter(magFilter, minFilter));
+				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::MetallicRoughness, TexFormat::Auto, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
 				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);
@@ -364,7 +364,7 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Normal, TexFormat::NA, GetTexFilter(magFilter, minFilter));
+				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Normal, TexFormat::Auto, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
 				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);
@@ -392,7 +392,7 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Occlusion, TexFormat::NA, GetTexFilter(magFilter, minFilter));
+				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Occlusion, TexFormat::Auto, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
 				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);
@@ -420,7 +420,7 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Emissive, TexFormat::NA, GetTexFilter(magFilter, minFilter));
+				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Emissive, TexFormat::Auto, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
 				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);

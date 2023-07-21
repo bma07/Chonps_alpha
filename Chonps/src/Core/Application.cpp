@@ -17,10 +17,10 @@ namespace Chonps
 
 		if (getGraphicsAPI() == GraphicsAPI::None) setRenderContext(GraphicsAPI::OpenGL);
 
-		m_Window = createWindowSp(Title, width, height, fullScreen);
+		m_Window = createWindow(Title, width, height, fullScreen);
 		m_Window->SetEventCallback(std::bind(&Application::OnEvent, this, std::placeholders::_1));
 
-		imguiInit(&(*m_Window));
+		renderInit();
 	}
 
 	void Application::Run()
@@ -36,10 +36,8 @@ namespace Chonps
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
 
-			imguiNewFrame();
 			for (Layer* layer : m_LayerStack)
-				layer->OnImGuiRender();
-			imguiRender();
+				layer->OnGuiRender();
 
 			if (m_UpdateWindowRender)
 			{
@@ -47,9 +45,6 @@ namespace Chonps
 				renderClear();
 			}
 		}
-
-		m_Window->Delete();
-		imguiShutdown();
 	}
 
 	void Application::OnEvent(Event& e)
@@ -65,30 +60,46 @@ namespace Chonps
 		}
 	}
 
+	void Application::Terminate()
+	{
+		m_Window->Delete();
+		m_LayerStack.clear();
+	}
+
 	// Layers
-	void Application::add_layer(Layer* layer)
+	void Application::push(Layer* layer)
 	{
-		m_LayerStack.add(layer);
+		m_LayerStack.push(layer);
 	}
 
-	void Application::add_overlay(Layer* layer)
+	void Application::push_back(Layer* layer)
 	{
-		m_LayerStack.add_overlay(layer);
+		m_LayerStack.push_back(layer);
 	}
 
-	void Application::insert_layer(Layer* layer, unsigned int index)
+	void Application::pop()
+	{
+		m_LayerStack.pop();
+	}
+
+	void Application::pop_back()
+	{
+		m_LayerStack.pop_back();
+	}
+
+	void Application::insert(Layer* layer, unsigned int index)
 	{
 		m_LayerStack.insert(layer, index);
 	}
 
-	void Application::remove_layer(Layer* layer)
+	void Application::remove(Layer* layer)
 	{
 		m_LayerStack.remove(layer);
 	}
 
-	void Application::delete_layer(Layer* layer)
+	void Application::destroy(Layer* layer)
 	{
-		m_LayerStack.delete_layer(layer);
+		m_LayerStack.destroy(layer);
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)

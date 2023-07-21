@@ -118,7 +118,9 @@ namespace Chonps
 		vkBackends->textureCountIDs.pop();
 
 		int channels;
+		stbi_set_flip_vertically_on_load(true);
 		stbi_uc* texData = stbi_load(filepath.c_str(), &m_Width, &m_Height, &channels, STBI_rgb_alpha);
+		stbi_set_flip_vertically_on_load(false);
 		VkDeviceSize imageSize = m_Width * m_Height * 4;
 
 		if (!texData)

@@ -13,7 +13,7 @@ namespace Chonps
 	// or height to center along the origin (ex. Window of 800px by 600px should be (-400, 400, -300, 300))
 	// Note: Ortho camera is scaled to the pixel width and height of the screen, recommend using single digit numbers to scale up the vertices 
 	// drawn in camera matrix (ex. Window of 800px by 600px should be scaled down to (-4.0, 4.0, -3.0, 3.0))
-	// Note: In other Rendering APIs such as Vulkan, the y-coords may be flipped. In this case the bottom and top params need to be switched as well
+	// Note: In other Rendering APIs such as Vulkan, the y-coords may be flipped. In this case the bottom and top params will be switched
 	OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top)
 		: m_ProjectionMatrix(glm::ortho(left, right, bottom, top, -1.0f, 1.0f)), m_ViewMatrix(1.0f)
 	{
@@ -32,23 +32,16 @@ namespace Chonps
 		float halfWidth = width / 2;
 		float halfHeight = height / 2;
 
-		if (getGraphicsAPI() == GraphicsAPI::Vulkan) // Since the y-coord in Vulkan are flipped the top and bottom params need to be switched in ortho
-			m_ProjectionMatrix = glm::mat4(glm::ortho(-halfWidth * scale, halfWidth * scale, halfHeight * scale, -halfHeight * scale, -1.0f, 1.0f));
-		else
-			m_ProjectionMatrix = glm::mat4(glm::ortho(-halfWidth * scale, halfWidth * scale, -halfHeight * scale, halfHeight * scale, -1.0f, 1.0f));
-
+		m_ProjectionMatrix = glm::mat4(glm::ortho(-halfWidth * scale, halfWidth * scale, -halfHeight * scale, halfHeight * scale, -1.0f, 1.0f));
 		m_CameraMatrix = m_ProjectionMatrix * m_ViewMatrix;
 	}
 
 	void OrthographicCamera::UpdateMatrix()
 	{
-		if (getGraphicsAPI() == GraphicsAPI::Vulkan) // Since the y-coord in Vulkan are flipped the top and bottom params need to be switched in ortho
-			m_ProjectionMatrix = glm::mat4(glm::ortho(-m_Width * 0.5f * m_Scale, m_Width * 0.5f * m_Scale, m_Height * 0.5f * m_Scale, -m_Height * 0.5f * m_Scale, -1.0f, 1.0f));
-		else
-			m_ProjectionMatrix = glm::mat4(glm::ortho(-m_Width * 0.5f * m_Scale, m_Width * 0.5f * m_Scale, -m_Height * 0.5f * m_Scale, m_Height * 0.5f * m_Scale, -1.0f, 1.0f));
-
+		m_ProjectionMatrix = glm::mat4(glm::ortho(-m_Width * 0.5f * m_Scale, m_Width * 0.5f * m_Scale, -m_Height * 0.5f * m_Scale, m_Height * 0.5f * m_Scale, -1.0f, 1.0f));
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_Position) * glm::rotate(glm::mat4(1.0f), glm::radians(m_Rotation), glm::vec3(0, 0, 1));
 		m_ViewMatrix = glm::inverse(transform);
+
 		m_CameraMatrix = m_ProjectionMatrix * m_ViewMatrix;
 	}
 }

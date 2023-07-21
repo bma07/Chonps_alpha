@@ -123,6 +123,7 @@ namespace Chonps
 				case GraphicsAPI::Vulkan:
 				{
 					getVulkanBackends()->framebufferResized = true;
+					break;
 				}
 			}
 		});
@@ -136,7 +137,19 @@ namespace Chonps
 			WindowFramebufferResizeEvent eventType(width, height);
 			data.EventCallback(eventType);
 
-			if (getGraphicsAPI() == GraphicsAPI::Vulkan) getVulkanBackends()->framebufferResized = true;
+			switch (getGraphicsAPI())
+			{
+				case GraphicsAPI::OpenGL:
+				{
+					gladUpdateViewPort(window, width, height);
+					break;
+				}
+				case GraphicsAPI::Vulkan:
+				{
+					getVulkanBackends()->framebufferResized = true;
+					break;
+				}
+			}
 		});
 
 		glfwSetWindowPosCallback(m_Window, [](GLFWwindow* window, int x, int y)

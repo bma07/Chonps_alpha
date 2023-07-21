@@ -17,50 +17,38 @@ namespace Chonps
 		virtual void OnDetach() override;
 		virtual void OnUpdate() override;
 		virtual void OnEvent(Event& e) override;
-		virtual void OnImGuiRender() override;
+		virtual void OnGuiRender() override;
 
 	private:
+		// Layer Info
 		std::string m_Name;
 		bool m_UseLayer = true;
 
-		Chonps::Camera m_Camera;
-		Chonps::Shared<Chonps::Shader> m_Shader;
-		Chonps::Shared<Chonps::Shader> m_LightShader;
-		Chonps::Shared<Chonps::Shader> m_FrameBufferShader;
-		Chonps::Shared<Chonps::Shader> m_CubemapShader;
-		Chonps::Shared<Chonps::Shader> m_PlaneShader;
+		Window* m_Window;
 
-		Chonps::Shared<Chonps::Cubemap> m_Cubemap;
+		OrthographicCamera m_Camera;
 
-		Chonps::Shared<Chonps::FBO> m_FBO;
-		Chonps::Shared<Chonps::FBO> m_MsaaFBO;
-		Chonps::Shared<Chonps::FBO> m_ImguiFBO;
-		Chonps::Shared<Chonps::FBO> m_ShadowFBO;
+		UniformBuffer* m_UniformBuffer;
 
+		Shader* m_Shader;
+		Shader* m_Shader2;
 
-		glm::vec2 m_ViewportSize = glm::vec2(1.0f);
-		glm::vec2 m_LastViewportSize = glm::vec2(1.0f);
-		glm::vec2 m_ViewportMousePos = glm::vec2(0.0f);
-		bool m_ViewportFocused = false;
-		bool m_ViewportPlay = false;
+		VertexArray* m_VAO;
+		VertexArray* m_VAO2;
 
-		Chonps::Shared<Chonps::VAO> m_VAO;
-		Chonps::Shared<Chonps::VAO> m_LightVAO;
-		Chonps::Shared<Chonps::VAO> m_FrameBufferVAO;
-		Chonps::Shared<Chonps::VAO> m_PlaneVAO;
+		std::vector<Mesh> m_Meshes;
 
-		Chonps::Window* m_Window = &Chonps::Application::GetApp().GetWindow();
+		Texture* m_Texture;
+		Texture* m_Texture2;
 
-		Chonps::Shared<Chonps::Texture> m_SunTexture;
-
+		// Entity Component System
 		Chonps::Shared<Scene> m_Scene;
 		SceneHierarchyPanel m_SceneHierarchy;
 		PropertiesPanel m_Properties;
 
-		glm::vec3 m_lightPos = glm::vec3(0.5f, 1.5f, 1.5f);
 
+		// Render stats & fps
 		Chonps::RendererStatistics m_Stats;
-
 		float m_PreviousFrame = 0.0f;
 		int m_FrameCount = 0;
 		int m_FPS = 0;

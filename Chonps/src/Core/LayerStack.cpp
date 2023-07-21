@@ -3,17 +3,35 @@
 
 namespace Chonps
 {
-	void LayerStack::add(Layer* layer)
+	void LayerStack::push(Layer* layer)
 	{
-		Layers.emplace(Layers.begin() + m_LayerInsertIndex, layer);
+		layers.emplace(layers.begin() + m_LayerInsertIndex, layer);
 		layer->OnAttach();
 	}
 
-	void LayerStack::add_overlay(Layer* layer)
+	void LayerStack::push_back(Layer* layer)
 	{
-		Layers.emplace_back(layer);
+		layers.emplace_back(layer);
 		layer->OnAttach();
 		m_LayerInsertIndex++;
+	}
+
+	void LayerStack::pop()
+	{
+		if (!layers.empty())
+		{
+			layers.front()->OnDetach();
+			layers.erase(layers.begin());
+		}
+	}
+
+	void LayerStack::pop_back()
+	{
+		if (!layers.empty())
+		{
+			layers.back()->OnDetach();
+			layers.erase(layers.end());
+		}
 	}
 
 	void LayerStack::insert(Layer* layer, unsigned int index)
@@ -24,38 +42,38 @@ namespace Chonps
 			return;
 		}
 
-		Layers.emplace(Layers.begin() + index, layer);
+		layers.emplace(layers.begin() + index, layer);
 		m_LayerInsertIndex++;
 	}
 
 	void LayerStack::remove(Layer* layer)
 	{
-		auto it = std::find(Layers.begin(), Layers.end(), layer);
-		if (it != Layers.end())
+		auto it = std::find(layers.begin(), layers.end(), layer);
+		if (it != layers.end())
 		{
 			layer->OnDetach();
-			Layers.erase(it);
+			layers.erase(it);
 			m_LayerInsertIndex--;
 		}
 	}
 
-	void LayerStack::delete_layer(Layer* layer)
+	void LayerStack::destroy(Layer* layer)
 	{
-		auto it = std::find(Layers.begin(), Layers.end(), layer);
-		if (it != Layers.end())
+		auto it = std::find(layers.begin(), layers.end(), layer);
+		if (it != layers.end())
 		{
-			Layers.erase(it);
+			layer->OnDetach();
+			layers.erase(it);
 			layer->~Layer();
-			delete layer;
 			m_LayerInsertIndex--;
 		}
 	}
 
-	void LayerStack::delete_all()
+	void LayerStack::clear()
 	{
-		for (Layer* layer : Layers)
-		{
-			delete layer;
-		}
+		for (Layer* layer : layers)
+			layer->OnDetach();
+
+		layers.clear();
 	}
 }

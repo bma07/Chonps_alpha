@@ -14,7 +14,7 @@ namespace Chonps
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnUpdate() {}
-		virtual void OnImGuiRender() {}
+		virtual void OnGuiRender() {}
 		virtual void OnEvent(Event& e) {}
 		virtual bool LayerStatus() { return true; }
 	};

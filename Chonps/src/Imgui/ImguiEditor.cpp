@@ -103,7 +103,7 @@ namespace Chonps
 		}
 	}
 
-	void ImguiEditor::OnImGuiRender()
+	void ImguiEditor::OnGuiRender()
 	{
 		ImGui::ShowDemoWindow();
 	}

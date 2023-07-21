@@ -14,7 +14,7 @@ namespace Chonps
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		virtual void OnImGuiRender() override;
+		virtual void OnGuiRender() override;
 
 		void NewFrame();
 		void Render();

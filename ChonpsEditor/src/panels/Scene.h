@@ -47,7 +47,7 @@ namespace Chonps
 		
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 
-		Chonps::Window* m_Window = &Chonps::Application::GetApp().GetWindow();
+		Chonps::Window* m_Window = Chonps::Application::GetApp().GetWindow();
 
 		// WASD movement for Camera Editor
 		void CameraInputs(Camera& camera, float dt = 1.0f);
