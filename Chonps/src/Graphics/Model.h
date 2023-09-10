@@ -1,5 +1,5 @@
-#ifndef CHONPS_MODEL_H
-#define CHONPS_MODEL_H
+#ifndef HG_CHONPS_MODEL_H
+#define HG_CHONPS_MODEL_H
 
 #include "Mesh.h"
 
@@ -10,7 +10,7 @@ namespace Chonps
 {
 	enum class ModelType3D
 	{
-		NA = 0,
+		None = 0,
 		Obj,
 		Blend,
 		Gltf,
@@ -30,7 +30,7 @@ namespace Chonps
 	{
 	public:
 		Model() = default;
-		Model(const std::string& filepath, mt3d modelType = mt3d::NA);
+		Model(const std::string& filepath, mt3d modelType = mt3d::None);
 
 		std::vector<Mesh> GetMeshes() { return m_Meshes; }
 		Mesh GetMesh(uint32_t index = 0) { return m_Meshes[index]; }
@@ -57,7 +57,8 @@ namespace Chonps
 		void GetModelData(const std::string& filepath, mt3d modelType);
 	};
 
-	std::vector<Mesh> loadModel(const std::string& filepath, mt3d modelType = mt3d::NA);
+	std::vector<Mesh> loadModel(const std::string& filepath, mt3d modelType = mt3d::None);
+	Mesh loadModelBatched(const std::string& filepath, mt3d modelType = mt3d::None);
 }
 
 #endif

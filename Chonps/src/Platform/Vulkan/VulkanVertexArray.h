@@ -1,8 +1,10 @@
-#ifndef VULKAN_VERTEX_ARRAY_H
-#define VULKAN_VERTEX_ARRAY_H
+#ifndef HG_CHONPS_VULKAN_VERTEX_ARRAY_H
+#define HG_CHONPS_VULKAN_VERTEX_ARRAY_H
 
 #include "Graphics/VertexArray.h"
-#include <vulkan/vulkan.h>
+#include "VulkanVertexBuffer.h"
+#include "VulkanIndexBuffer.h"
+#include "VulkanRendererAPI.h"
 
 namespace Chonps
 {
@@ -10,34 +12,36 @@ namespace Chonps
 	{
 	public:
 		VulkanVertexArray();
+		
+		virtual void LinkBuffers(VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, VertexLayoutLinkInfo* vertexLayouts) override;
+		virtual void LinkBuffers(VertexArrayCreateInfo* createInfo) override;
 
-		virtual void LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, uint32_t numComponents, ShaderDataType type, uint32_t stride, void* offset) override;
-		virtual void LinkIndexBuffer(IndexBuffer* IBO) override;
-
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
+		virtual void Bind() override;
+		virtual void Unbind() override;
 		virtual void Delete() override;
 
 		virtual uint32_t GetIndexCount() const override { return m_IndexCount; }
 		virtual uint32_t GetVertexCount() const override { return m_VertexCount; }
 
-		virtual VertexBuffer* GetVertexBuffer() override { return m_VertexBuffer; }
-		virtual IndexBuffer* GetIndexBuffer() override { return m_IndexBuffer; }
+		virtual uint32_t id() const override { return m_ID; }
 
 	private:
-		uint32_t m_IndexCount = 0;
-		uint32_t m_VertexCount = 0;
+		uint32_t m_ID;
+		bool m_StateStatic = true;
 
-		VertexBuffer* m_VertexBuffer = nullptr;
-		IndexBuffer* m_IndexBuffer = nullptr;
+		uint32_t m_IndexCount = 0, m_VertexCount = 0;
+		VkDeviceSize m_VertexBufferSize = 0, m_IndexBufferSize = 0, m_VertexArrayBufferSize = 0;
+		std::vector<VkVertexInputAttributeDescription> m_AttributeDescriptions;
 
-		std::vector<VkVertexInputAttributeDescription2EXT> m_AttributeDescriptions;
-
-		VkBuffer m_VkVertexBuffer = VK_NULL_HANDLE;
-		VkBuffer m_VkIndexBuffer = VK_NULL_HANDLE;
-		VkDeviceMemory m_VertexBufferMemory = VK_NULL_HANDLE;
-		VkDeviceMemory m_IndexBufferMemory = VK_NULL_HANDLE;
+		VkBuffer m_VertexBuffer = VK_NULL_HANDLE, m_IndexBuffer = VK_NULL_HANDLE;
+		VkBuffer m_VertexArrayBuffer = VK_NULL_HANDLE;
+		VmaAllocation m_VertexArrayBufferMemory = VK_NULL_HANDLE;
 	};
+
+	namespace vks
+	{
+		VkFormat getShaderDataTypeConvertVulkan(ShaderDataType type, uint32_t numComponents);
+	}
 }
 
 #endif

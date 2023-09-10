@@ -4,6 +4,8 @@
 #include "Platform/WindowAPI/glfwAPI/glfwWindowAPI.h"
 #include "Input.h"
 
+#include <stb_image.h>
+
 namespace Chonps
 {
 	static WindowAPI s_WindowAPI = WindowAPI::None;
@@ -97,7 +99,41 @@ namespace Chonps
 		return "null";
 	}
 
-	std::shared_ptr<Window> createWindowSp(std::string title, unsigned int width, unsigned int height, bool fullScreen)
+	void setWindowContextRenderTarget(Window* window)
+	{
+		switch (getWindowContext())
+		{
+			case WindowAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: WINDOW: setWindowContextRenderTarget() - No graphics API selected beforehand!");
+				break;
+			}
+			case WindowAPI::Glfw:
+			{
+				glfwImplSetWindowContextRenderTarget(window);
+				break;
+			}
+			case WindowAPI::Win32:
+			{
+				break;
+			}
+		}
+	}
+
+	WindowIconData getWindowIconImageData(const std::string& filepath)
+	{
+		int width, height, channels;
+		unsigned char* pixels = stbi_load(filepath.c_str(), &width, &height, &channels, 0);
+		
+		WindowIconData icon{};
+		icon.image = pixels;
+		icon.width = width;
+		icon.height = height;
+
+		return icon;
+	}
+
+	std::shared_ptr<Window> createWindowSp(WindowData winCreateInfo)
 	{
 		switch (getWindowContext())
 		{
@@ -107,11 +143,7 @@ namespace Chonps
 				break;
 			}
 
-			case WindowAPI::Glfw:
-			{
-				return std::make_shared<glfwWindowAPI>(title, width, height, fullScreen);
-				break;
-			}
+			case WindowAPI::Glfw: { return std::make_shared<glfwWindowAPI>(winCreateInfo); }
 
 			case WindowAPI::Win32:
 			{
@@ -123,7 +155,7 @@ namespace Chonps
 		return nullptr;
 	}
 
-	Window* createWindow(std::string title, unsigned int width, unsigned int height, bool fullScreen)
+	Window* createWindow(WindowData winCreateInfo)
 	{
 		switch (getWindowContext())
 		{
@@ -133,11 +165,51 @@ namespace Chonps
 				break;
 			}
 
-			case WindowAPI::Glfw:
+			case WindowAPI::Glfw: { return new glfwWindowAPI(winCreateInfo); }
+
+			case WindowAPI::Win32:
 			{
-				return new glfwWindowAPI(title, width, height, fullScreen);
 				break;
 			}
+		}
+
+		CHONPS_CORE_ERROR("ERROR: WINDOW: Could not create Window!");
+		return nullptr;
+	}
+
+	std::shared_ptr<Window> createWindowSp(uint32_t width, uint32_t height, std::string title, bool fullscreen, bool resizable, int minWidth, int minHeight)
+	{
+		switch (getWindowContext())
+		{
+			case WindowAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: WINDOW: createWindowSp() - No graphics API selected beforehand!");
+				break;
+			}
+
+			case WindowAPI::Glfw: { return std::make_shared<glfwWindowAPI>(width, height, title, fullscreen, resizable, minWidth, minHeight); }
+
+			case WindowAPI::Win32:
+			{
+				break;
+			}
+		}
+
+		CHONPS_CORE_ERROR("ERROR: WINDOW: Could not create Window!");
+		return nullptr;
+	}
+
+	Window* createWindow(uint32_t width, uint32_t height, std::string title, bool fullscreen, bool resizable, int minWidth, int minHeight)
+	{
+		switch (getWindowContext())
+		{
+			case WindowAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: WINDOW: createWindow() - No graphics API selected beforehand!");
+				break;
+			}
+
+			case WindowAPI::Glfw: { return new glfwWindowAPI(width, height, title, fullscreen, resizable, minWidth, minHeight); }
 
 			case WindowAPI::Win32:
 			{

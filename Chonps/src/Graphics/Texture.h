@@ -1,7 +1,5 @@
-#ifndef CHONPS_TEXTURE_H
-#define CHONPS_TEXTURE_H
-
-#include "Shader.h"
+#ifndef HG_CHONPS_TEXTURE_H
+#define HG_CHONPS_TEXTURE_H
 
 namespace Chonps
 {
@@ -17,8 +15,9 @@ namespace Chonps
 
 	enum class TexType
 	{
-		NA = 0, 
-		Diffuse, Specular, Metallic, Roughness, Normal, Emissive, Occlusion,
+		None = 0, 
+		Albedo, Diffuse, Specular, Metallic, Roughness, Normal, Emissive, Occlusion,
+		Displacement, Bump,
 		MetallicRoughness
 	};
 
@@ -31,13 +30,8 @@ namespace Chonps
 
 	enum class TexWrap
 	{
-		Default = 0, Repeat, MirroredRepeat, ClampEdge
+		Default = 0, Repeat, MirroredRepeat, ClampToEdge
 	};
-
-	typedef TexFormat TexFr;
-	typedef TexType TexT;
-	typedef TexFilter TexFl;
-	typedef TexWrap TexW;
 
 	struct TexFilterPair
 	{
@@ -45,41 +39,55 @@ namespace Chonps
 		TexFilter mag;
 	};
 
-	typedef TexFilterPair TexFP;
-
 	class Texture
 	{
 	public:
-		Texture(const std::string& filepath, TexType texType, TexFormat texFormat, TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, TexWrap texWrap = TexWrap::Repeat) {}
-		Texture(uint32_t width, uint32_t height, void* data, uint32_t size) {}
+		Texture(const std::string& filepath, 
+			TexType texType, 
+			TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, 
+			TexWrap texWrap = TexWrap::Repeat) {}
+
+		Texture(uint32_t width, uint32_t height, const void* data, 
+			TexType texType = TexType::Diffuse, 
+			TexFilterPair texFilter = { TexFilter::Nearest, TexFilter::Nearest }, 
+			TexWrap texWrap = TexWrap::Repeat) {}
 
 		virtual void Bind(uint32_t unit) const = 0;
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 		virtual void Delete() = 0;
 
-		virtual void TexUnit(Shader* shader, const char* uniform, uint32_t unit) = 0;
 		virtual void TexUnit(uint32_t unit) = 0;
 
 		virtual int GetWidth() const = 0;
 		virtual int GetHeight() const = 0;
 
-		virtual uint32_t GetID() const = 0;
-		virtual uint32_t GetUnit() const = 0;
+		virtual uint32_t id() const = 0;
+		virtual uint32_t unit() const = 0;
 		virtual TexType GetTexType() const = 0;
-
-		static void Binding(uint32_t textureBinding, uint32_t samplerBinding);
 	};
 
-	void textureBinding(uint32_t textureBinding, uint32_t samplerBinding);
-
-	// Note: Textures format may vary between render APIs due to different support of formats. The TexFormat::Auto
+	// Note: Textures format may vary between Render APIs due to different support of formats. The TexFormat::Auto
 	// indicator is recommended so that the format can be automatically chosen based on the texture
-	Texture* createTexture(const std::string& filepath, TexType texType, TexFormat texFormat, TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, TexWrap texWrap = TexWrap::Repeat);
-	Texture* createTexture(uint32_t width, uint32_t height, void* data, uint32_t size);
+	Texture* createTexture(const std::string& filepath, 
+		TexType texType, 
+		TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, 
+		TexWrap texWrap = TexWrap::Repeat);
+	
+	Texture* createTexture(uint32_t width, uint32_t height, const void* data, 
+		TexType texType = TexType::Diffuse, 
+		TexFilterPair texFilter = { TexFilter::Nearest, TexFilter::Nearest }, 
+		TexWrap texWrap = TexWrap::Repeat);
 
-	std::shared_ptr<Texture> createTextureSp(const std::string& filepath, TexType texType, TexFormat texFormat , TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, TexWrap texWrap = TexWrap::Repeat);
-	std::shared_ptr<Texture> createTextureSp(uint32_t width, uint32_t height, void* data, uint32_t size);
+	std::shared_ptr<Texture> createTextureSp(const std::string& filepath, 
+		TexType texType, 
+		TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, 
+		TexWrap texWrap = TexWrap::Repeat);
+	
+	std::shared_ptr<Texture> createTextureSp(uint32_t width, uint32_t height, const void* data, 
+		TexType texType = TexType::Diffuse, 
+		TexFilterPair texFilter = { TexFilter::Nearest, TexFilter::Nearest }, 
+		TexWrap texWrap = TexWrap::Repeat);
 }
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef CHONPS_LIGHTING_H
-#define CHONPS_LIGHTING_H
+#ifndef HG_CHONPS_LIGHTING_H
+#define HG_CHONPS_LIGHTING_H
 
 #include "Core/DataTypes.h"
 

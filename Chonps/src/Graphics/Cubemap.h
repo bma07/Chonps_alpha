@@ -1,19 +1,26 @@
-#ifndef CHONPS_CUBEMAP_H
-#define CHONPS_CUBEMAP_H
+#ifndef HG_CHONPS_CUBEMAP_H
+#define HG_CHONPS_CUBEMAP_H
 
 #include "Shader.h"
 #include "Camera.h"
 
 namespace Chonps
 {
+	struct CubemapCreateInfo
+	{
+		std::string posx, negx, posy, negy, posz, negz;
+		Shader** pShaders;
+		uint32_t shaderCount;
+	};
+
 	class Cubemap
 	{
 	public:
 		// Note: Order of cubemap texture must be in this index order: right, left, top, bottom, front, back
-		Cubemap(const std::string cubeMapFaces[6]) {}
-		Cubemap(const std::string& posx, const std::string& negx, const std::string& posy, const std::string& negy, const std::string& posz, const std::string& negz) {}
+		Cubemap(CubemapCreateInfo cubemapInfo) {}
 
-		virtual void Use(Shader* shader, Camera camera) = 0;
+		virtual void Draw() = 0;
+		virtual void Delete() = 0;
 
 		static void ChangeCubemapProjectionUniformName(const char* name) { m_CubemapProjectionUniformName = name; }
 		static void ChangeCubeMapViewUniformName(const char* name) { m_CubemapViewUniformName = name; }
@@ -23,11 +30,8 @@ namespace Chonps
 		static const char* m_CubemapViewUniformName;
 	};
 
-	std::shared_ptr<Cubemap> createCubemapSp(const std::string cubeMapFaces[6]);
-	std::shared_ptr<Cubemap> createCubemapSp(const std::string& posx, const std::string& negx, const std::string& posy, const std::string& negy, const std::string& posz, const std::string& negz);
-
-	Cubemap* createCubemap(const std::string cubeMapFaces[6]);
-	Cubemap* createCubemap(const std::string& posx, const std::string& negx, const std::string& posy, const std::string& negy, const std::string& posz, const std::string& negz);
+	std::shared_ptr<Cubemap> createCubemapSp(CubemapCreateInfo createInfo);
+	Cubemap* createCubemap(CubemapCreateInfo createInfo);
 }
 
 #endif

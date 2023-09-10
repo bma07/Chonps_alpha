@@ -1,29 +1,48 @@
-#ifndef CHONPS_VERTEX_ARRAY_H
-#define CHONPS_VERTEX_ARRAY_H
+#ifndef HG_CHONPS_VERTEX_ARRAY_H
+#define HG_CHONPS_VERTEX_ARRAY_H
 
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 
 namespace Chonps
 {
+	struct VertexLayout
+	{
+		uint32_t layout, numComponents;
+		ShaderDataType type;
+		uint32_t stride;
+		void* offset;
+	};
+
+	struct VertexLayoutLinkInfo
+	{
+		VertexLayout* pLayouts;
+		uint32_t layoutCount;
+	};
+
+	struct VertexArrayCreateInfo
+	{
+		VertexBuffer* vertexBuffer;
+		VertexLayoutLinkInfo* vertexLayouts;
+		IndexBuffer* indexBuffer;
+	};
+
 	class VertexArray
 	{
 	public:
 		VertexArray() {}
 
-		virtual void LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, uint32_t numComponents, ShaderDataType type, uint32_t stride, void* offset) = 0;
-		
-		virtual void LinkIndexBuffer(IndexBuffer* IBO) = 0;
+		virtual void LinkBuffers(VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, VertexLayoutLinkInfo* vertexLayouts) = 0;
+		virtual void LinkBuffers(VertexArrayCreateInfo* createInfo) = 0;
 
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
+		virtual void Bind() = 0;
+		virtual void Unbind() = 0;
 		virtual void Delete() = 0;
 
 		virtual uint32_t GetIndexCount() const = 0;
 		virtual uint32_t GetVertexCount() const = 0;
 
-		virtual VertexBuffer* GetVertexBuffer() = 0;
-		virtual IndexBuffer* GetIndexBuffer() = 0;
+		virtual uint32_t id() const = 0;
 	};
 	typedef VertexArray VAO;
 

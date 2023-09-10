@@ -1,5 +1,5 @@
-#ifndef CHONPS_RENDERER_H
-#define CHONPS_RENDERER_H
+#ifndef HG_CHONPS_RENDERER_H
+#define HG_CHONPS_RENDERER_H
 
 #include "RendererCommand.h"
 #include "VertexArray.h"
@@ -40,9 +40,6 @@ namespace Chonps
 		static RendererData s_Data;
 	};
 
-	void renderDraw(VertexArray* vertexArray);
-	void renderDraw(const uint32_t& count);
-	void renderDrawLine(VertexArray* vertexArray);
 	void renderBeginScene(Camera& camera, Shader* shader, const char* uniform = "camMatrix");
 	void renderEndScene();
 }

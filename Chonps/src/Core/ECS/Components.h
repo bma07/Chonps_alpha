@@ -1,5 +1,5 @@
-#ifndef CHONPS_COMPONENTS_H
-#define CHONPS_COMPONENTS_H
+#ifndef HG_CHONPS_COMPONENTS_H
+#define HG_CHONPS_COMPONENTS_H
 
 #include "Core/DataTypes.h"
 #include "Graphics/Mesh.h"
@@ -68,11 +68,10 @@ namespace Chonps
 	struct CameraComponent
 	{
 		CameraComponent() = default;
-		CameraComponent(glm::vec3 position, glm::vec3 orientation,unsigned int width, unsigned int height, float FOVdeg, float nearPlane, float farPlane)
+		CameraComponent(glm::vec3 position, glm::vec3 orientation, unsigned int width, unsigned int height, float FOVdeg, float nearPlane, float farPlane)
 			: camera(width, height)
 		{
-			camera.SetUp(position, FOVdeg, nearPlane, farPlane);
-			camera.SetOrientation(orientation);
+			camera.SetFormat(position, orientation, FOVdeg, nearPlane, farPlane);
 		}
 		CameraComponent(Camera cam)
 			: camera(cam) {}

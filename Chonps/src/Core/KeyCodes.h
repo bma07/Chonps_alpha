@@ -1,5 +1,5 @@
-#ifndef CHONPS_KEY_CODES_H
-#define CHONPS_KEY_CODES_H
+#ifndef HG_CHONPS_KEY_CODES_H
+#define HG_CHONPS_KEY_CODES_H
 
 
 // From glfw3.h

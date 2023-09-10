@@ -2,23 +2,48 @@
 #include "Application.h"
 
 #include "Graphics/Graphics.h"
-#include "Imgui/ImguiWindow.h"
 
 #include "Timer.h"
+#include "GUI/ChonpsGui.h"
 
 namespace Chonps
 {
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(std::string Title, unsigned int width, unsigned int height, bool fullScreen /* = false */)
+	Application::Application(uint32_t width, uint32_t height, std::string title, bool fullscreen, bool resizable, uint32_t minWidth, uint32_t minHeight)
 	{
 		CHONPS_CORE_ASSERT(!s_Instance, "Application already exists! Cannot create more than one Application!");
 		s_Instance = this;
 
-		if (getGraphicsAPI() == GraphicsAPI::None) setRenderContext(GraphicsAPI::OpenGL);
+		if (getGraphicsAPI() == GraphicsAPI::None)
+		{
+			CHONPS_CORE_WARN("WARNING: APPLICATION: Graphics API was not set before hand! Automatically setting up API...");
+			setRenderContext(GraphicsAPI::OpenGL);
+		}
 
-		m_Window = createWindow(Title, width, height, fullScreen);
+		m_Window = createWindow(width, height, title, fullscreen, resizable, minWidth, minHeight);
 		m_Window->SetEventCallback(std::bind(&Application::OnEvent, this, std::placeholders::_1));
+
+		setWindowContextRenderTarget(m_Window);
+
+		renderInit();
+	}
+
+	Application::Application(WindowData winCreateInfo)
+	{
+		CHONPS_CORE_ASSERT(!s_Instance, "Application already exists! Cannot create more than one Application!");
+		s_Instance = this;
+
+		if (getGraphicsAPI() == GraphicsAPI::None)
+		{
+			CHONPS_CORE_WARN("WARNING: APPLICATION: Graphics API was not set before hand! Automatically setting up API...");
+			setRenderContext(GraphicsAPI::OpenGL);
+		}
+
+		m_Window = createWindow(winCreateInfo);
+		m_Window->SetEventCallback(std::bind(&Application::OnEvent, this, std::placeholders::_1));
+
+		setWindowContextRenderTarget(m_Window);
 
 		renderInit();
 	}

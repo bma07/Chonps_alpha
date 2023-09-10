@@ -1,5 +1,5 @@
-#ifndef CHONPS_ORTHOGRAPHIC_CAMERA_H
-#define CHONPS_ORTHOGRAPHIC_CAMERA_H
+#ifndef HG_CHONPS_ORTHOGRAPHIC_CAMERA_H
+#define HG_CHONPS_ORTHOGRAPHIC_CAMERA_H
 
 #include "Shader.h"
 
@@ -11,33 +11,33 @@ namespace Chonps
 	{
 	public:
 		OrthographicCamera() = default;
-		OrthographicCamera(float left, float right, float bottom, float top);
-		OrthographicCamera(int width, int height, float scale);
+		OrthographicCamera(float left, float right, float bottom, float top, float zNear, float zFar);
 
-		void SetPosition(const glm::vec3& position) { m_Position = position; UpdateMatrix(); }
-		void SetRotation(float rotation) { m_Rotation = rotation; UpdateMatrix(); }
-		void SetDimensions(int width, int height, float scale) { m_Width = width < 0 ? -width : width; m_Height = height < 0 ? -height : height; m_Scale = scale; }
+		void SetPosition(glm::vec3 inPosition) { position = inPosition; UpdateMatrix(); }
+		void SetRotation(float inRotation) { rotation = inRotation; UpdateMatrix(); }
+		void SetDimensions(float left, float right, float bottom, float top, float zNear, float zFar)
+		{
+			m_Left = left; m_Right = right; m_Top = top; m_Bottom = bottom; m_ZNear = zNear; m_ZFar = zFar;
+		}
 
-		const glm::vec3& GetPositon() const { return m_Position; }
-		float GetRotation() const { return m_Rotation; }
+		const glm::vec3 GetPositon() const { return position; }
+		float GetRotation() const { return rotation; }
 
-		const glm::mat4& GetViewProjectionMatrix() const { return m_CameraMatrix; }
+		const glm::mat4& GetProjectionViewMatrix() const { return m_CameraMatrix; }
 		const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 
 		void UpdateMatrix();
 
+		glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+		float rotation = 0.0f;
+
 	private:
-		glm::mat4 m_CameraMatrix;
-		glm::mat4 m_ProjectionMatrix;
-		glm::mat4 m_ViewMatrix;
+		glm::mat4 m_CameraMatrix = glm::mat4(1.0f);
+		glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
+		glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
 
-		int m_Width;
-		int m_Height;
-		float m_Scale;
-
-		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
-		float m_Rotation = 0.0f;
+		float m_Left, m_Right, m_Top, m_Bottom, m_ZNear, m_ZFar;
 	};
 
 	typedef OrthographicCamera Camera2D;

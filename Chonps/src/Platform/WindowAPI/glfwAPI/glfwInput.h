@@ -1,5 +1,5 @@
-#ifndef CHONPS_GLFW_INPUT_H
-#define CHONPS_GLFW_INPUT_H
+#ifndef HG_CHONPS_GLFW_INPUT_H
+#define HG_CHONPS_GLFW_INPUT_H
 
 #include "Core/Input.h"
 

@@ -25,30 +25,49 @@ namespace Chonps
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
 		glGenVertexArrays(1, &m_ID);
+		glBindVertexArray(m_ID);
 	}
 
-	void OpenGLVertexArray::LinkVertexBuffer(VertexBuffer* VBO, uint32_t layout, uint32_t numComponents, ShaderDataType type, uint32_t stride, void* offset)
+	void OpenGLVertexArray::LinkBuffers(VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, VertexLayoutLinkInfo* vertexLayouts)
 	{
-		VBO->Bind();
-		glEnableVertexAttribArray(layout);
-		glVertexAttribPointer(layout, numComponents, getShaderDataTypeConvertOpenGL(type), GL_FALSE, (GLsizei)stride, offset);
-		VBO->Unbind();
-		m_VertexCount = VBO->GetCount();
-		m_VertexBuffer = VBO;
+		glBindVertexArray(m_ID);
+		vertexBuffer->Bind();
+		for (uint32_t i = 0; i < vertexLayouts->layoutCount; i++)
+		{
+			VertexLayout vertLayout = vertexLayouts->pLayouts[i];
+			CHONPS_CORE_ASSERT(&vertLayout != nullptr, "Vertex Layout was nullptr!");
+			glEnableVertexAttribArray(vertLayout.layout);
+			glVertexAttribPointer(vertLayout.layout, vertLayout.numComponents, getShaderDataTypeConvertOpenGL(vertLayout.type), GL_FALSE, (GLsizei)vertLayout.stride, vertLayout.offset);
+		}
+		glBindVertexArray(0);
+		vertexBuffer->Unbind();
+		m_VertexCount = vertexBuffer->GetCount();
+		m_IndexCount = indexBuffer->GetCount();
 	}
 
-	void OpenGLVertexArray::LinkIndexBuffer(IndexBuffer* IBO)
+	void OpenGLVertexArray::LinkBuffers(VertexArrayCreateInfo* createInfo)
 	{
-		m_IndexCount = IBO->GetCount();
-		m_IndexBuffer = IBO;
+		glBindVertexArray(m_ID);
+		createInfo->vertexBuffer->Bind();
+		for (uint32_t i = 0; i < createInfo->vertexLayouts->layoutCount; i++)
+		{
+			VertexLayout vertLayout = createInfo->vertexLayouts->pLayouts[i];
+			CHONPS_CORE_ASSERT(&vertLayout != nullptr, "Vertex Layout was nullptr!");
+			glEnableVertexAttribArray(vertLayout.layout);
+			glVertexAttribPointer(vertLayout.layout, vertLayout.numComponents, getShaderDataTypeConvertOpenGL(vertLayout.type), GL_FALSE, (GLsizei)vertLayout.stride, vertLayout.offset);
+		}
+		glBindVertexArray(0);
+		createInfo->vertexBuffer->Unbind();
+		m_VertexCount = createInfo->vertexBuffer->GetCount();
+		m_IndexCount = createInfo->indexBuffer->GetCount();
 	}
 
-	void OpenGLVertexArray::Bind() const
+	void OpenGLVertexArray::Bind()
 	{
 		glBindVertexArray(m_ID);
 	}
 
-	void OpenGLVertexArray::Unbind() const
+	void OpenGLVertexArray::Unbind()
 	{
 		glBindVertexArray(0);
 	}

@@ -1,0 +1,145 @@
+set(MSDFGEN_SOURCE
+	include/msdfgen-ext.h
+	include/msdfgen.h
+
+	# artery-font
+	include/artery-font/artery-font.h
+	include/artery-font/crc32.h
+	include/artery-font/crc32.hpp
+	include/artery-font/enums.h
+	include/artery-font/serialization.h
+	include/artery-font/serialization.hpp
+	include/artery-font/std-artery-font.h
+	include/artery-font/stdio-serialization.h
+	include/artery-font/stdio-serialization.hpp
+	include/artery-font/structures.h
+	include/artery-font/types.h
+
+	# core
+	include/core/arithmetics.hpp
+	include/core/bitmap-interpolation.hpp
+	include/core/Bitmap.h
+	include/core/Bitmap.hpp
+	include/core/BitmapRef.hpp
+	include/core/contour-combiners.cpp
+	include/core/contour-combiners.h
+	include/core/Contour.cpp
+	include/core/Contour.h
+	include/core/edge-coloring.cpp
+	include/core/edge-coloring.h
+	include/core/edge-segments.cpp
+	include/core/edge-segments.h
+	include/core/edge-selectors.cpp
+	include/core/edge-selectors.h
+	include/core/EdgeColor.h
+	include/core/EdgeHolder.cpp
+	include/core/EdgeHolder.h
+	include/core/equation-solver.cpp
+	include/core/equation-solver.h
+	include/core/generator-config.h
+	include/core/msdf-error-correction.cpp
+	include/core/msdf-error-correction.h
+	include/core/MSDFErrorCorrection.cpp
+	include/core/MSDFErrorCorrection.h
+	include/core/msdfgen.cpp
+	include/core/pixel-conversion.hpp
+	include/core/Projection.cpp
+	include/core/Projection.h
+	include/core/rasterization.cpp
+	include/core/rasterization.h
+	include/core/render-sdf.cpp
+	include/core/render-sdf.h
+	include/core/save-bmp.cpp
+	include/core/save-bmp.h
+	include/core/save-tiff.cpp
+	include/core/save-tiff.h
+	include/core/Scanline.cpp
+	include/core/Scanline.h
+	include/core/sdf-error-estimation.cpp
+	include/core/sdf-error-estimation.h
+	include/core/shape-description.cpp
+	include/core/shape-description.h
+	include/core/Shape.cpp
+	include/core/Shape.h
+	include/core/ShapeDistanceFinder.h
+	include/core/ShapeDistanceFinder.hpp
+	include/core/SignedDistance.cpp
+	include/core/SignedDistance.h
+	include/core/Vector2.cpp
+	include/core/Vector2.h
+
+	# ext
+	include/ext/import-font.cpp
+	include/ext/import-font.h
+	include/ext/import-svg.cpp
+	include/ext/import-svg.h
+	include/ext/resolve-shape-geometry.cpp
+	include/ext/resolve-shape-geometry.h
+	include/ext/save-png.cpp
+	include/ext/save-png.h
+
+	# msdf-atlas-gen
+	include/msdf-atlas-gen/artery-font-export.cpp
+	include/msdf-atlas-gen/artery-font-export.h
+	include/msdf-atlas-gen/AtlasGenerator.h
+	include/msdf-atlas-gen/AtlasStorage.h
+	include/msdf-atlas-gen/bitmap-blit.cpp
+	include/msdf-atlas-gen/bitmap-blit.h
+	include/msdf-atlas-gen/BitmapAtlasStorage.h
+	include/msdf-atlas-gen/BitmapAtlasStorage.hpp
+	include/msdf-atlas-gen/charset-parser.cpp
+	include/msdf-atlas-gen/Charset.cpp
+	include/msdf-atlas-gen/Charset.h
+	include/msdf-atlas-gen/csv-export.cpp
+	include/msdf-atlas-gen/csv-export.h
+	include/msdf-atlas-gen/DynamicAtlas.h
+	include/msdf-atlas-gen/DynamicAtlas.hpp
+	include/msdf-atlas-gen/FontGeometry.cpp
+	include/msdf-atlas-gen/FontGeometry.h
+	include/msdf-atlas-gen/glyph-generators.cpp
+	include/msdf-atlas-gen/glyph-generators.h
+	include/msdf-atlas-gen/GlyphBox.h
+	include/msdf-atlas-gen/GlyphGeometry.cpp
+	include/msdf-atlas-gen/GlyphGeometry.h
+	include/msdf-atlas-gen/image-encode.cpp
+	include/msdf-atlas-gen/image-encode.h
+	include/msdf-atlas-gen/image-save.h
+	include/msdf-atlas-gen/image-save.hpp
+	include/msdf-atlas-gen/ImmediateAtlasGenerator.h
+	include/msdf-atlas-gen/ImmediateAtlasGenerator.hpp
+	include/msdf-atlas-gen/json-export.cpp
+	include/msdf-atlas-gen/json-export.h
+	include/msdf-atlas-gen/msdf-atlas-gen.h
+	include/msdf-atlas-gen/rectangle-packing.h
+	include/msdf-atlas-gen/rectangle-packing.hpp
+	include/msdf-atlas-gen/Rectangle.h
+	include/msdf-atlas-gen/RectanglePacker.cpp
+	include/msdf-atlas-gen/RectanglePacker.h
+	include/msdf-atlas-gen/Remap.h
+	include/msdf-atlas-gen/shadron-preview-generator.cpp
+	include/msdf-atlas-gen/shadron-preview-generator.h
+	include/msdf-atlas-gen/size-selectors.cpp
+	include/msdf-atlas-gen/size-selectors.h
+	include/msdf-atlas-gen/TightAtlasPacker.cpp
+	include/msdf-atlas-gen/TightAtlasPacker.h
+	include/msdf-atlas-gen/types.h
+	include/msdf-atlas-gen/utf8.cpp
+	include/msdf-atlas-gen/utf8.h
+	include/msdf-atlas-gen/Workload.cpp
+	include/msdf-atlas-gen/Workload.h
+)
+
+add_compile_definitions(
+	MSDFGEN_USE_LIBPNG
+	_CRT_SECURE_NO_WARNINGS
+)
+
+add_library(msdfgen STATIC ${MSDFGEN_SOURCE})
+
+target_include_directories(msdfgen 
+	PRIVATE
+	${PROJECT_SOURCE_DIR}/Chonps/Dependencies/freetype/include
+	${PROJECT_SOURCE_DIR}/Chonps/Dependencies/tinyxml2/include
+	${PROJECT_SOURCE_DIR}/Chonps/Dependencies/libpng/include
+	${PROJECT_SOURCE_DIR}/Chonps/Dependencies/msdfgen/include
+)

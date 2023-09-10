@@ -1,5 +1,5 @@
-#ifndef CHONPS_APPLICATION_H
-#define CHONPS_APPLICATION_H
+#ifndef HG_CHONPS_APPLICATION_H
+#define HG_CHONPS_APPLICATION_H
 
 #include "Config.h"
 
@@ -19,8 +19,8 @@ namespace Chonps
 	class Application
 	{
 	public:
-		Application(std::string Title, unsigned int width, unsigned int height, bool fullScreen = false);
-
+		Application(uint32_t width, uint32_t height, std::string title, bool fullscreen = false, bool resizable = true, uint32_t minWidth = 0, uint32_t minHeight = 0);
+		Application(WindowData winCreateInfo);
 		void Run();
 		void OnEvent(Event& e);
 
@@ -55,12 +55,12 @@ namespace Chonps
 		static Application* s_Instance;
 	};
 
-	static unsigned int getAppWindowWidth()
+	static unsigned int GetAppWindowWidth()
 	{
 		return Application::GetApp().GetWindow()->GetWidth();
 	}
 
-	static unsigned int getAppWindowHeight()
+	static unsigned int GetAppWindowHeight()
 	{
 		return Application::GetApp().GetWindow()->GetHeight();
 	}

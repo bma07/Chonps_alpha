@@ -1,5 +1,5 @@
-#ifndef CHONPS_REGISTRY_H
-#define CHONPS_REGISTRY_H
+#ifndef HG_CHONPS_REGISTRY_H
+#define HG_CHONPS_REGISTRY_H
 
 #include "Entity.h"
 #include "ComponentManager.h"

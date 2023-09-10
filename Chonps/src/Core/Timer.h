@@ -1,5 +1,5 @@
-#ifndef CHONPS_TIMER_H
-#define CHONPS_TIMER_H
+#ifndef HG_CHONPS_TIMER_H
+#define HG_CHONPS_TIMER_H
 
 #include <chrono>
 

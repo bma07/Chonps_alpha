@@ -1,5 +1,5 @@
-#ifndef CHONPS_INPUT_H
-#define CHONPS_INPUT_H
+#ifndef HG_CHONPS_INPUT_H
+#define HG_CHONPS_INPUT_H
 
 #include "Window.h"
 #include "DataTypes.h"

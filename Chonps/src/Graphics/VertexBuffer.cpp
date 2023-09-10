@@ -39,7 +39,7 @@ namespace Chonps
 		return 0;
 	}
 
-	std::shared_ptr<VertexBuffer> createVertexBufferSp(float* vertices, uint32_t size)
+	std::shared_ptr<VertexBuffer> createVertexBufferSp(float* vertices, uint32_t size, BufferState bufferState)
 	{
 		switch (getGraphicsAPI())
 		{
@@ -49,15 +49,9 @@ namespace Chonps
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
-			{
-				return std::make_shared<OpenGLVertexBuffer>(vertices, size);
-			}
+			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLVertexBuffer>(vertices, size, bufferState); }
 
-			case GraphicsAPI::Vulkan:
-			{
-				return std::make_shared<VulkanVertexBuffer>(vertices, size);
-			}
+			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanVertexBuffer>(vertices, size, bufferState); }
 
 			case GraphicsAPI::DirectX:
 			{
@@ -68,7 +62,7 @@ namespace Chonps
 		return nullptr;
 	}
 
-	std::shared_ptr<VertexBuffer> createVertexBufferSp(std::vector<vertex>& vertices)
+	std::shared_ptr<VertexBuffer> createVertexBufferSp(std::vector<vertex>& vertices, BufferState bufferState)
 	{
 		switch (getGraphicsAPI())
 		{
@@ -78,15 +72,9 @@ namespace Chonps
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
-			{
-				return std::make_shared<OpenGLVertexBuffer>(vertices);
-			}
+			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLVertexBuffer>(vertices, bufferState); }
 
-			case GraphicsAPI::Vulkan:
-			{
-				return std::make_shared<VulkanVertexBuffer>(vertices);
-			}
+			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanVertexBuffer>(vertices, bufferState); }
 
 			case GraphicsAPI::DirectX:
 			{
@@ -97,7 +85,7 @@ namespace Chonps
 		return nullptr;
 	}
 
-	VertexBuffer* createVertexBuffer(float* vertices, uint32_t size)
+	VertexBuffer* createVertexBuffer(float* vertices, uint32_t size, BufferState bufferState)
 	{
 		switch (getGraphicsAPI())
 		{
@@ -107,15 +95,9 @@ namespace Chonps
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
-			{
-				return new OpenGLVertexBuffer(vertices, size);
-			}
+			case GraphicsAPI::OpenGL: { return new OpenGLVertexBuffer(vertices, size, bufferState); }
 
-			case GraphicsAPI::Vulkan:
-			{
-				return new VulkanVertexBuffer(vertices, size);
-			}
+			case GraphicsAPI::Vulkan: { return new VulkanVertexBuffer(vertices, size, bufferState); }
 
 			case GraphicsAPI::DirectX:
 			{
@@ -126,7 +108,7 @@ namespace Chonps
 		return nullptr;
 	}
 
-	VertexBuffer* createVertexBuffer(std::vector<vertex>& vertices)
+	VertexBuffer* createVertexBuffer(std::vector<vertex>& vertices, BufferState bufferState)
 	{
 		switch (getGraphicsAPI())
 		{
@@ -136,15 +118,9 @@ namespace Chonps
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
-			{
-				return new OpenGLVertexBuffer(vertices);
-			}
+			case GraphicsAPI::OpenGL: { return new OpenGLVertexBuffer(vertices, bufferState); }
 
-			case GraphicsAPI::Vulkan:
-			{
-				return new VulkanVertexBuffer(vertices);
-			}
+			case GraphicsAPI::Vulkan: { return new VulkanVertexBuffer(vertices, bufferState); }
 
 			case GraphicsAPI::DirectX:
 			{

@@ -4,6 +4,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "OpenGLRendererAPI.h"
+
 namespace Chonps
 {
 	static bool s_GladInit = false;
@@ -25,6 +27,8 @@ namespace Chonps
 			s_GladInit = true;
 		}
 		glViewport(0, 0, width, height);
+
+		setOglCurrentWindow(window);
 	}
 
 	void gladUpdateViewPort(GLFWwindow* window, unsigned int width, unsigned int height)

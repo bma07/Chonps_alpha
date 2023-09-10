@@ -63,4 +63,24 @@ namespace Chonps
 
 		return meshes;
 	}
+
+	Mesh loadModelBatched(const std::string& filepath, mt3d modelType)
+	{
+		size_t fileLength = filepath.length();
+		size_t lastDot = filepath.rfind('.') + 1;
+		auto count = fileLength - lastDot;
+		std::string modelTypeName = filepath.substr(lastDot, count);
+
+		if (modelType == mt3d::Obj || modelTypeName == "obj")
+		{
+			// return loadOBJModel(filepath);
+		}
+		else if (modelType == mt3d::Gltf || modelTypeName == "gltf")
+		{
+			return loadgltfModelBatched(filepath);
+		}
+		else CHONPS_CORE_ERROR("ERROR: MODEL: Could not load model! Model file type not supported: {0}", modelTypeName);
+
+		return Mesh();
+	}
 }

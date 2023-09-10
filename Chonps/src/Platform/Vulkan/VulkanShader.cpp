@@ -3,18 +3,18 @@
 
 #include "VulkanRendererAPI.h"
 #include "VulkanVertexBuffer.h"
+#include "VulkanVertexArray.h"
 
 namespace Chonps
 {
-	VulkanShader::VulkanShader(const std::string& name, const std::string& vertexFile, const std::string& fragmentFile)
-		: Shader(name, vertexFile, fragmentFile), m_Name(name)
+	VulkanShader::VulkanShader(const std::string& vertexFile, const std::string& fragmentFile)
+		: Shader(vertexFile, fragmentFile)
 	{
 		VulkanBackends* vkBackends = getVulkanBackends();
 
 		CHONPS_CORE_ASSERT(!vkBackends->shaderCountIDs.empty(), "Reached max Shader count IDs!");
 
-		m_ID = vkBackends->shaderCountIDs.front();
-		vkBackends->shaderCountIDs.pop();
+		m_ID = vkBackends->shaderCountIDs.take_next();
 
 		// Vertex File Loading
 		std::vector<char> vertRaw = get_file_bin(vertexFile);
@@ -48,14 +48,6 @@ namespace Chonps
 
 		m_ShaderStages.vertexShaderStage = vertShaderStageInfo;
 		m_ShaderStages.fragementShaderStage = fragShaderStageInfo;
-
-		vkBackends->pipelineShaderStages[m_ID] = m_ShaderStages;
-	}
-
-	VulkanShader::VulkanShader(const std::string& filepath)
-		: Shader(filepath)
-	{
-
 	}
 
 	VulkanShader::~VulkanShader()
@@ -65,11 +57,29 @@ namespace Chonps
 
 	void VulkanShader::Bind() const
 	{
-		getVulkanBackends()->currentBindedGraphicsPipeline = m_ID;
+		VulkanBackends* vkBackends = getVulkanBackends();
+		glfwGetFramebufferSize(vkBackends->currentWindow, &vkBackends->windowWidth, &vkBackends->windowHeight);
+		if (vkBackends->windowWidth == 0 || vkBackends->windowHeight == 0)
+			return;
+
+		vkCmdBindPipeline(vkBackends->commandBuffers[vkBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline.pipeline);
+		vkBackends->currentBindedGraphicsPipeline = m_ID;
+
+		if (m_TextureArray)
+			vkCmdBindDescriptorSets(vkBackends->commandBuffers[vkBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline.pipelineLayout, m_TextureArrayIndex, 1, &vkBackends->samplerDescriptorSet[vkBackends->currentFrame], 0, nullptr);
+
+		if (m_FrameBuffer)
+			vkCmdBindDescriptorSets(vkBackends->commandBuffers[vkBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline.pipelineLayout, m_FrameBufferIndex, 1, &vkBackends->pipelineFrameBufferImagesDescriptors[m_ID][vkBackends->currentFrame], 0, nullptr);
+
+		if (m_Cubemap)
+			vkCmdBindDescriptorSets(vkBackends->commandBuffers[vkBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline.pipelineLayout, m_CubemapIndex, 1, &vkBackends->pipelineCubemapImagesDescriptors[m_ID][vkBackends->currentFrame], 0, nullptr);
 	}
 
 	void VulkanShader::Unbind() const
 	{
+		VulkanBackends* vkBackends = getVulkanBackends();
+
+		vkCmdBindPipeline(vkBackends->commandBuffers[vkBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, VK_NULL_HANDLE);
 		getVulkanBackends()->currentBindedGraphicsPipeline = 0;
 	}
 
@@ -80,7 +90,118 @@ namespace Chonps
 		vkDestroyShaderModule(vkBackends->device, m_VertexShaderModule, nullptr);
 		vkDestroyShaderModule(vkBackends->device, m_FragmentShaderModule, nullptr);
 
-		vkBackends->pipelineShaderStages.erase(m_ID);
+		vkDestroyPipeline(vkBackends->device, m_Pipeline.pipeline, nullptr);
+		vkDestroyPipelineLayout(vkBackends->device, m_Pipeline.pipelineLayout, nullptr);
+		
 		vkBackends->shaderCountIDs.push(m_ID);
+	}
+
+	void VulkanShader::BindPipeline(PipelineLayoutInfo* pipelineLayout)
+	{
+		m_LayoutInfo = *pipelineLayout;
+
+		VulkanBackends* vkBackends = getVulkanBackends();
+
+		// Pipeline Spec
+		PipelineSpecification pipelineSpec;
+		if (pipelineLayout->pipelineSpecification == nullptr)
+			pipelineSpec = vks::vkImplGetStandardVulkanPipelineSpecification();
+		else
+			pipelineSpec = *pipelineLayout->pipelineSpecification;
+
+		// Vertex Input Binding Description
+		std::vector<VkVertexInputAttributeDescription> attributeDescrption;
+		for (uint32_t j = 0; j < pipelineLayout->vertexLayoutLinkInfo.layoutCount; j++)
+		{
+			VertexLayout vertLayout = pipelineLayout->vertexLayoutLinkInfo.pLayouts[j];
+			attributeDescrption.push_back(vks::getAttributeDescriptions(vertLayout.layout, vks::getShaderDataTypeConvertVulkan(vertLayout.type, vertLayout.numComponents), vertLayout.stride, vertLayout.offset));
+		}
+
+		VkVertexInputBindingDescription bindingDescription = vks::getBindingDescription(pipelineLayout->bindingDescription);
+
+		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescrption.size());
+		vertexInputInfo.pVertexAttributeDescriptions = attributeDescrption.data();
+
+		// Pipeline Descriptor Sets and push constants
+		VulkanPipelineLayoutData pipelineLayoutData{};
+		uint32_t descriptorLayoutCount = pipelineLayout->bufferLayoutsCount + pipelineLayout->layoutIncludeCount;
+		pipelineLayoutData.descriptorSetLayoutCount = descriptorLayoutCount;
+
+		// Check Descriptor Layout index
+		std::vector<uint32_t> setIndices;
+		for (uint32_t j = 0; j < pipelineLayout->bufferLayoutsCount; j++)
+			setIndices.push_back(pipelineLayout->pBufferLayouts[j].setIndex);
+		for (uint32_t j = 0; j < pipelineLayout->layoutIncludeCount; j++)
+			setIndices.push_back(pipelineLayout->pLayoutIncludes[j].setIndex);
+
+		std::sort(setIndices.begin(), setIndices.end());
+		for (uint32_t i = 0; i < setIndices.size() - 1; i++)
+		{
+			CHONPS_CORE_ASSERT(setIndices[i] != setIndices[i + 1], "vkImplCreatePipelines() - Descriptor layout index has the same set index to another layout! Two Descriptor layouts cannot have the same set Index!");
+		}
+
+		// Sort Descriptor Layouts
+		std::vector<VkDescriptorSetLayout> descriptorSetLayouts; descriptorSetLayouts.resize(descriptorLayoutCount);
+		for (uint32_t j = 0; j < pipelineLayout->bufferLayoutsCount; j++)
+		{
+			CHONPS_CORE_ASSERT(pipelineLayout->pBufferLayouts[j].setIndex < descriptorSetLayouts.size(), "vkImplCreatePipelines() - Buffer layout index must be less than the total number of layouts included!");
+			descriptorSetLayouts[pipelineLayout->pBufferLayouts[j].setIndex] = static_cast<VkDescriptorSetLayout>(pipelineLayout->pBufferLayouts[j].layoutData);
+		}
+		for (uint32_t j = 0; j < pipelineLayout->layoutIncludeCount; j++)
+		{
+			if (pipelineLayout->pLayoutIncludes[j].layoutOption == DescriptorLayoutOption::TextureArray)
+			{
+				CHONPS_CORE_ASSERT(pipelineLayout->pLayoutIncludes[j].setIndex < descriptorSetLayouts.size(), "vkImplCreatePipelines() - Texture set index must be less than the total number of descriptor layouts binded to this pipeline starting from index 0.");
+				descriptorSetLayouts[pipelineLayout->pLayoutIncludes[j].setIndex] = vkBackends->textureArrayDescriptorSetLayout;
+				vkBackends->pipelineTextureArrayRequired[m_ID] = true;
+				vkBackends->pipelineTextureSetIndex[m_ID] = pipelineLayout->pLayoutIncludes[j].setIndex;
+				m_TextureArray = true;
+				m_TextureArrayIndex = pipelineLayout->pLayoutIncludes[j].setIndex;
+			}
+			if (pipelineLayout->pLayoutIncludes[j].layoutOption == DescriptorLayoutOption::FrameBufferImages)
+			{
+				CHONPS_CORE_ASSERT(pipelineLayout->pLayoutIncludes[j].setIndex < descriptorSetLayouts.size(), "vkImplCreatePipelines() - FrameBuffer set index must be less than the total number of descriptor layouts binded to this pipeline starting from index 0.");
+				descriptorSetLayouts[pipelineLayout->pLayoutIncludes[j].setIndex] = vkBackends->frameBufferDescriptorSetLayout;
+				vkBackends->pipelineFrameBufferImagesRequired[m_ID] = true;
+				vkBackends->pipelineFrameBufferImagesSetIndex[m_ID] = pipelineLayout->pLayoutIncludes[j].setIndex;
+				m_FrameBuffer = true;
+				m_FrameBufferIndex = pipelineLayout->pLayoutIncludes[j].setIndex;
+			}
+			if (pipelineLayout->pLayoutIncludes[j].layoutOption == DescriptorLayoutOption::CubemapImages)
+			{
+				CHONPS_CORE_ASSERT(pipelineLayout->pLayoutIncludes[j].setIndex < descriptorSetLayouts.size(), "vkImplCreatePipelines() - Cubemap set index must be less than the total number of descriptor layouts binded to this pipeline starting from index 0.");
+				descriptorSetLayouts[pipelineLayout->pLayoutIncludes[j].setIndex] = vkBackends->cubemapDescriptorSetLayout;
+				vkBackends->pipelineCubemapImagesRequired[m_ID] = true;
+				vkBackends->pipelineCubemapImagesSetIndex[m_ID] = pipelineLayout->pLayoutIncludes[j].setIndex;
+				m_Cubemap = true;
+				m_CubemapIndex = pipelineLayout->pLayoutIncludes[j].setIndex;
+			}
+		}
+
+		pipelineLayoutData.pDescrptorSetLayouts = descriptorSetLayouts.data();
+
+		// Push Constants
+		pipelineLayoutData.pushConstantCount = pipelineLayout->pushConstantCount;
+		std::vector<VkPushConstantRange> pushConstants;
+		for (uint32_t j = 0; j < pipelineLayout->pushConstantCount; j++)
+			pushConstants.push_back(*static_cast<VkPushConstantRange*>(pipelineLayout->pPushConstants[j].pcData));
+
+		pipelineLayoutData.pPushConstants = pushConstants.data();
+
+		// Render Pass
+		if (pipelineLayout->renderPass != nullptr)
+			pipelineLayoutData.renderPass = static_cast<VkRenderPass>(*pipelineLayout->renderPass);
+		else
+			pipelineLayoutData.renderPass = vkBackends->renderPass;
+
+		// Get Shader and Shader stages
+		VkPipelineShaderStageCreateInfo pipelineShaderStageInfo[] = { m_ShaderStages.vertexShaderStage, m_ShaderStages.fragementShaderStage };
+
+		m_Pipeline = createVulkanPipeline(pipelineSpec, pipelineShaderStageInfo, vertexInputInfo, pipelineLayoutData);
+		vkBackends->graphicsPipeline[m_ID] = m_Pipeline;
 	}
 }

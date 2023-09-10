@@ -1,5 +1,5 @@
-#ifndef CHONPS_LAYER_H
-#define CHONPS_LAYER_H
+#ifndef HG_CHONPS_LAYER_H
+#define HG_CHONPS_LAYER_H
 
 #include "Events/Event.h"
 

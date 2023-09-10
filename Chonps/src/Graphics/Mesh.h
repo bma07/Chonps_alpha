@@ -1,5 +1,5 @@
-#ifndef CHONPS_MESH_H
-#define CHONPS_MESH_H
+#ifndef HG_CHONPS_MESH_H
+#define HG_CHONPS_MESH_H
 
 #include "Shader.h"
 #include "Camera.h"
@@ -17,9 +17,9 @@ namespace Chonps
 	{
 		Mesh() = default;
 
-		Mesh(std::vector<vertex>& _vertices, std::vector<uint32_t>& _indices, std::vector<Texture*> _textures = std::vector<Texture*>());
-		Mesh(VertexArray* _vertexArray, std::vector<Texture*> _textures);
-		Mesh(VertexArray* _vertexArray, Material _material);
+		Mesh(std::vector<vertex>& p_vertices, std::vector<uint32_t>& p_indices, std::vector<Texture*> p_textures = std::vector<Texture*>());
+		Mesh(VertexArray* p_vertexArray, std::vector<Texture*> p_textures);
+		Mesh(VertexArray* p_vertexArray, Material p_material);
 
 		void AttachMaterial(Material material);
 		void Delete();
@@ -34,6 +34,9 @@ namespace Chonps
 
 	private:
 		std::vector<Texture*> m_Textures;
+		VertexBuffer* m_VertexBuffer;
+		IndexBuffer* m_IndexBuffer;
+
 		uint32_t m_ID;
 	};
 }

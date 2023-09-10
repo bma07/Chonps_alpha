@@ -1,5 +1,5 @@
-#ifndef CHONPS_GLFT_MODEL_LOADER_H
-#define CHONPS_GLFT_MODEL_LOADER_H
+#ifndef HG_CHONPS_GLFT_MODEL_LOADER_H
+#define HG_CHONPS_GLFT_MODEL_LOADER_H
 
 #include "Graphics/Mesh.h"
 #include "Core/DataTypes.h"
@@ -9,11 +9,12 @@ using json = nlohmann::json;
 namespace Chonps
 {
 	std::vector<Mesh> loadgltfModel(const std::string& filepath);
+	Mesh loadgltfModelBatched(const std::string& filepath);
 
 	class gltfModel
 	{
 	public:
-		gltfModel(const std::string& filepath);
+		gltfModel(const std::string& filepath, bool batched);
 
 		std::vector<Mesh> GetMeshes() { return m_Meshes; }
 
@@ -21,6 +22,7 @@ namespace Chonps
 		const char* m_File;
 		std::vector<unsigned char> m_Data;
 		json JSON;
+		bool m_Batched = false;
 
 		std::vector<Mesh> m_Meshes;
 		std::vector<glm::mat4> m_MatricesMeshes;

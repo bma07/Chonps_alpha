@@ -6,7 +6,6 @@
 
 namespace Chonps
 {
-
 	RendererData Renderer::s_Data;
 
 	// Sets and init specific render function calls before drawing vertices
@@ -38,8 +37,8 @@ namespace Chonps
 	{
 		shader->Bind();
 		glm::vec3 camPos = camera.GetPosition();
-		Chonps::oglSpec::uploadUniform3f(shader->GetID(), "camPos", camPos.x, camPos.y, camPos.z);
-		Chonps::oglSpec::uploadUniform4mfv(shader->GetID(), "camMatrix", 1, false, glm::value_ptr(camera.GetViewProjectionMatrix()));
+		Chonps::ogls::uploadUniform3f(shader->id(), "camPos", camPos.x, camPos.y, camPos.z);
+		Chonps::ogls::uploadUniform4mfv(shader->id(), "camMatrix", 1, false, glm::value_ptr(camera.GetProjectionViewMatrix()));
 	}
 
 	// Call after scene has finished
@@ -61,34 +60,13 @@ namespace Chonps
 
 	// Render Functions
 
-	// Draw vertices through the VertexArray. Draw type is in Triangles
-	void renderDraw(VertexArray* vertexArray)
-	{
-		getRendererAPI()->Draw(vertexArray);
-
-		Renderer::GetStats().vertices += vertexArray->GetVertexCount();
-		Renderer::GetStats().triangles += vertexArray->GetIndexCount() / 3;
-		Renderer::GetStats().indices += vertexArray->GetIndexCount();
-		Renderer::GetStats().drawCalls += 1;
-	}
-
-	void renderDraw(const uint32_t& count)
-	{
-		getRendererAPI()->Draw(count);
-	}
-
-	void renderDrawLine(VertexArray* vertexArray)
-	{
-		getRendererAPI()->DrawLine(vertexArray);
-	}
-
 	// Call before renderering or drawing
 	void renderBeginScene(Camera& camera, Shader* shader, const char* uniform /*= "camMatrix"*/)
 	{
 		shader->Bind();
 		glm::vec3 camPos = camera.GetPosition();
-		Chonps::oglSpec::uploadUniform3f(shader->GetID(), "camPos", camPos.x, camPos.y, camPos.z);
-		Chonps::oglSpec::uploadUniform4mfv(shader->GetID(), "camMatrix", 1, false, glm::value_ptr(camera.GetViewProjectionMatrix()));
+		Chonps::ogls::uploadUniform3f(shader->id(), "camPos", camPos.x, camPos.y, camPos.z);
+		Chonps::ogls::uploadUniform4mfv(shader->id(), "camMatrix", 1, false, glm::value_ptr(camera.GetProjectionViewMatrix()));
 	}
 
 	// Call after scene has finished

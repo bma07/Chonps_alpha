@@ -1,5 +1,5 @@
-#ifndef CHONPS_MATH_H
-#define CHONPS_MATH_H
+#ifndef HG_CHONPS_MATH_H
+#define HG_CHONPS_MATH_H
 
 #include "DataTypes.h"
 
@@ -38,8 +38,6 @@ namespace Chonps
 	// Find leg of right triangle using pythagoras theorem given the hypotenuse and one of the legs
 	double hleg(double leg, double hyp);
 
-	double volume(double x, double y, double z);
-
 	double circle_area(double radius);
 
 	double circle_circumference(double radius);
@@ -64,6 +62,13 @@ namespace Chonps
 	// x is the value given to func
 	// delta is the step value of precision
 	double derivative(std::function<double(double)> func, double x, double delta = 0.0001);
+
+	// Checks if a number is within the range of another number by an amount
+	template<typename T>
+	bool within(T num, T within, T range)
+	{
+		return num <= (within + range) && num >= (within - range);
+	}
 
 	template <typename T>
 	constexpr T min(T num1, T num2)

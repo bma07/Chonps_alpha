@@ -17,15 +17,9 @@ namespace Chonps
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
-			{
-				return std::make_shared<OpenGLVertexArray>();
-			}
+			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLVertexArray>(); }
 
-			case GraphicsAPI::Vulkan:
-			{
-				return std::make_shared<VulkanVertexArray>();
-			}
+			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanVertexArray>(); }
 
 			case GraphicsAPI::DirectX:
 			{
@@ -46,15 +40,9 @@ namespace Chonps
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
-			{
-				return new OpenGLVertexArray();
-			}
+			case GraphicsAPI::OpenGL: { return new OpenGLVertexArray(); }
 
-			case GraphicsAPI::Vulkan:
-			{
-				return new VulkanVertexArray();
-			}
+			case GraphicsAPI::Vulkan: { return new VulkanVertexArray(); }
 
 			case GraphicsAPI::DirectX:
 			{

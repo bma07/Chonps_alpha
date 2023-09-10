@@ -1,0 +1,22 @@
+#version 430 core
+
+layout(location = 0) in vec3 aPos;
+
+out vec3 nearPoint;
+out vec3 farPoint;
+
+uniform mat4 camMatrix;
+
+vec3 UnprojectPoint(float x, float y, float z, mat4 camMat) 
+{
+    vec4 unprojectedPoint = inverse(camMat) * vec4(x, y, z, 1.0);
+    return unprojectedPoint.xyz / unprojectedPoint.w;
+}
+
+void main()
+{
+	nearPoint = UnprojectPoint(aPos.x, aPos.y, 0.0, camMatrix).xyz;
+	farPoint = UnprojectPoint(aPos.x, aPos.y, 1.0, camMatrix).xyz;
+
+	gl_Position = vec4(aPos, 1.0f);
+}

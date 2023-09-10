@@ -1,5 +1,5 @@
-#ifndef CHONPS_THREAD_POOL_H
-#define CHONPS_THREAD_POOL_H
+#ifndef HG_CHONPS_THREAD_POOL_H
+#define HG_CHONPS_THREAD_POOL_H
 
 #include <vector>
 #include <thread>

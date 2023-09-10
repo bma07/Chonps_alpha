@@ -1,10 +1,115 @@
 #include "cepch.h"
 #include "OpenGLShader.h"
 
+#include "OpenGLRendererAPI.h"
+
 #include <glad/glad.h>
 
 namespace Chonps
 {
+	static PipelineSpecification s_StandardPipelineSpecification;
+
+	GLenum getBlendFactorType(ColorBlendFactor blendFactor)
+	{
+		switch (blendFactor)
+		{
+			case Chonps::ColorBlendFactor::Zero: { return GL_ZERO; }
+			case Chonps::ColorBlendFactor::One: { return GL_ONE; }
+			case Chonps::ColorBlendFactor::SrcColor: { return GL_SRC_COLOR; }
+			case Chonps::ColorBlendFactor::OneMinusSrcColor: { return GL_ONE_MINUS_SRC_COLOR; }
+			case Chonps::ColorBlendFactor::DstColor: { return GL_DST_COLOR; }
+			case Chonps::ColorBlendFactor::OneMinusDstColor: { return GL_ONE_MINUS_DST_COLOR; }
+			case Chonps::ColorBlendFactor::SrcAlpha: { return GL_SRC_ALPHA; }
+			case Chonps::ColorBlendFactor::OneMinusSrcAlpha: { return GL_ONE_MINUS_SRC_ALPHA; }
+			case Chonps::ColorBlendFactor::DstAlpha: { return GL_DST_ALPHA; }
+			case Chonps::ColorBlendFactor::OneMinusDstAlpha: { return GL_ONE_MINUS_DST_ALPHA; }
+			case Chonps::ColorBlendFactor::ConstantColor: { return GL_CONSTANT_COLOR; }
+			case Chonps::ColorBlendFactor::OneMinusConstantColor: { return GL_ONE_MINUS_CONSTANT_COLOR; }
+			case Chonps::ColorBlendFactor::ConstantAlpha: { return GL_CONSTANT_ALPHA; }
+			case Chonps::ColorBlendFactor::OneMinusConstantAlpha: { return GL_ONE_MINUS_CONSTANT_ALPHA; }
+			case Chonps::ColorBlendFactor::SrcAlphaSaturate: { return GL_SRC_ALPHA_SATURATE; }
+			case Chonps::ColorBlendFactor::Src1Color: { return GL_SRC1_COLOR; }
+			case Chonps::ColorBlendFactor::OneMinusSrc1Color: { return GL_ONE_MINUS_SRC1_COLOR; }
+			case Chonps::ColorBlendFactor::Src1_Alpha: { return GL_SRC1_ALPHA; }
+			case Chonps::ColorBlendFactor::OneMinusSrc1Alpha: { return GL_ONE_MINUS_SRC1_ALPHA; }
+			default:
+			{
+				CHONPS_CORE_ERROR("ERROR: Could not find matching color blend factor!");
+				return GL_ZERO;
+			}
+		}
+	}
+
+	GLenum getPipelineCullFaceMode(CullFaceMode cullFaceMode)
+	{
+		switch (cullFaceMode)
+		{
+			case CullFaceMode::Disable: { return GL_NONE; }
+			case CullFaceMode::Front: { return GL_FRONT; }
+			case CullFaceMode::Back: { return GL_BACK; }
+			case CullFaceMode::Both: { return GL_FRONT_AND_BACK; }
+			default:
+			{
+				CHONPS_CORE_ERROR("ERROR: Cannot find matching cull face mode!");
+				return GL_NONE;
+			}
+		}
+	}
+
+	GLenum getPipelineFrontFace(CullFrontFace frontFace)
+	{
+		switch (frontFace)
+		{
+			case CullFrontFace::Clockwise: { return GL_CW; }
+			case CullFrontFace::CounterClockwise: { return GL_CCW; }
+			default:
+			{
+				CHONPS_CORE_ERROR("ERROR: Cannot find matching cull face front mode!");
+				return GL_CW;
+			}
+		}
+	}
+
+	GLenum getPipelineCompareOp(CompareOperation compare)
+	{
+		switch (compare)
+		{
+			case CompareOperation::Never: { return GL_NEVER; }
+			case CompareOperation::Less: { return GL_LESS; }
+			case CompareOperation::Equal: { return GL_EQUAL; }
+			case CompareOperation::LessOrEqual: { return GL_LEQUAL; }
+			case CompareOperation::Greater: { return GL_GREATER; }
+			case CompareOperation::NotEqual: { return GL_NOTEQUAL; }
+			case CompareOperation::GreaterOrEqual: { return GL_GEQUAL; }
+			case CompareOperation::Always: { return GL_ALWAYS; }
+			default:
+			{
+				CHONPS_CORE_ERROR("ERROR: Cannot find matching compare operation!");
+				return GL_NEVER;
+			}
+		}
+	}
+
+	GLenum getPipelineStencilOp(StencilOperation stencilOp)
+	{
+		switch (stencilOp)
+		{
+			case StencilOperation::Keep: { return GL_KEEP; }
+			case StencilOperation::Zero: { return GL_ZERO; }
+			case StencilOperation::Replace: { return GL_REPLACE; }
+			case StencilOperation::IncrementAndClamp: { return GL_INCR_WRAP; }
+			case StencilOperation::DecrementAndClamp: { return GL_DECR_WRAP; }
+			case StencilOperation::Invert: { return GL_INVERT; }
+			case StencilOperation::IncrementAndWrap: { return GL_INCR_WRAP; }
+			case StencilOperation::DecrementAndWrap: { return GL_DECR_WRAP; }
+			default:
+			{
+				CHONPS_CORE_ERROR("ERROR: Cannot find matching stencil operation!");
+				return GL_KEEP;
+			}
+		}
+	}
+
 	GLenum get_shader_type(std::string type)
 	{
 		std::transform(type.begin(), type.end(), type.begin(), [](unsigned char c) { return std::tolower(c); });
@@ -13,6 +118,81 @@ namespace Chonps
 
 		CHONPS_CORE_ERROR("ERROR: SHADER: Unkown shader type: {0}", type);
 		return 0;
+	}
+
+	ColorBlendAttachment getColorBlendAttachment()
+	{
+		ColorBlendAttachment colorAttachment{};
+		colorAttachment.blendEnable = true;
+		colorAttachment.colorWriteMask = { true, true, true, true };
+		colorAttachment.colorBlendOp = ColorBlendOperation::Add;
+		colorAttachment.srcColorBlendFactor = ColorBlendFactor::SrcAlpha;
+		colorAttachment.dstColorBlendFactor = ColorBlendFactor::OneMinusSrcAlpha;
+		colorAttachment.alphaBlendOp = ColorBlendOperation::Add;
+		colorAttachment.srcAlphaBlendFactor = ColorBlendFactor::SrcAlpha;
+		colorAttachment.dstAlphaBlendFactor = ColorBlendFactor::OneMinusSrcAlpha;
+
+		return colorAttachment;
+	}
+
+	void ogls::initStandardOglPipelineSpecification()
+	{
+		// Input Assembly
+		s_StandardPipelineSpecification.inputAssembly.topology = RenderTopologyType::Triangle;
+		s_StandardPipelineSpecification.inputAssembly.primitiveRestartEnable = false;
+
+		// Viewport
+		s_StandardPipelineSpecification.viewport.x = 0.0f;
+		s_StandardPipelineSpecification.viewport.y = 0.0f;
+		s_StandardPipelineSpecification.viewport.width = 0.0f;
+		s_StandardPipelineSpecification.viewport.height = 0.0f;
+		s_StandardPipelineSpecification.viewport.minDepth = 0.0f;
+		s_StandardPipelineSpecification.viewport.maxDepth = 1.0f;
+
+		// Scissor
+		s_StandardPipelineSpecification.viewport.scissorsOffset = { 0, 0 };
+
+		// Rasterizer
+		s_StandardPipelineSpecification.rasterizer.depthClampEnable = false;
+		s_StandardPipelineSpecification.rasterizer.rasterizerDiscardEnable = false;
+		s_StandardPipelineSpecification.rasterizer.lineWidth = 1.0f;
+		s_StandardPipelineSpecification.rasterizer.cullMode = RenderCullFaceMode::Back;
+		s_StandardPipelineSpecification.rasterizer.frontFace = RenderCullFrontFace::CounterClockwise;
+		s_StandardPipelineSpecification.rasterizer.depthBiasEnable = false;
+		s_StandardPipelineSpecification.rasterizer.depthBiasConstantFactor = 0.0f; // Optional
+		s_StandardPipelineSpecification.rasterizer.depthBiasClamp = 0.0f; // Optional
+		s_StandardPipelineSpecification.rasterizer.depthBiasSlopeFactor = 0.0f; // Optional
+
+		// MultiSampling
+		s_StandardPipelineSpecification.multisampling.sampleShadingEnable = false;
+		s_StandardPipelineSpecification.multisampling.rasterizationSamples = Sample::SampleCount_1_Bit;
+		s_StandardPipelineSpecification.multisampling.minSampleShading = 1.0f; // Optional
+		s_StandardPipelineSpecification.multisampling.sampleMask = nullptr; // Optional
+		s_StandardPipelineSpecification.multisampling.alphaToCoverageEnable = false; // Optional
+		s_StandardPipelineSpecification.multisampling.alphaToOneEnable = false; // Optional
+
+		// Color Attachments
+		s_StandardPipelineSpecification.colorBlend.colorBlendAttachmentCount = 0;
+		s_StandardPipelineSpecification.colorBlend.pColorBlendAttachments = nullptr;
+
+		// Color Blend
+		s_StandardPipelineSpecification.colorBlend.logicOpEnable = false;
+		s_StandardPipelineSpecification.colorBlend.blendConstants[0] = 0.0f; // Optional
+		s_StandardPipelineSpecification.colorBlend.blendConstants[1] = 0.0f; // Optional
+		s_StandardPipelineSpecification.colorBlend.blendConstants[2] = 0.0f; // Optional
+		s_StandardPipelineSpecification.colorBlend.blendConstants[3] = 0.0f; // Optional
+
+		// Depth Stencil
+		s_StandardPipelineSpecification.depthstencil.enableDepth = false;
+		s_StandardPipelineSpecification.depthstencil.depthOpCompare = CompareOperation::Never;
+		s_StandardPipelineSpecification.depthstencil.enableStencil = false;
+		s_StandardPipelineSpecification.depthstencil.stencil.compareMask = 0x00;
+		s_StandardPipelineSpecification.depthstencil.stencil.writeMask = 0x00;
+		s_StandardPipelineSpecification.depthstencil.stencil.reference = 0;
+		s_StandardPipelineSpecification.depthstencil.stencil.compareOp = CompareOperation::Never;
+		s_StandardPipelineSpecification.depthstencil.stencil.depthFailOp = StencilOperation::Keep;
+		s_StandardPipelineSpecification.depthstencil.stencil.failOp = StencilOperation::Keep;
+		s_StandardPipelineSpecification.depthstencil.stencil.passOp = StencilOperation::Keep;
 	}
 
 	void compileErrors(unsigned int shader, GLenum type, const char* shaderFile = " ")
@@ -46,8 +226,8 @@ namespace Chonps
 		}
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexFile, const std::string& fragmentFile)
-		: Shader(name, vertexFile, fragmentFile), m_Name(name)
+	OpenGLShader::OpenGLShader(const std::string& vertexFile, const std::string& fragmentFile)
+		: Shader(vertexFile, fragmentFile)
 	{
 		std::string vertexCode = get_file_contents(vertexFile.c_str());
 		std::string fragmentCode = get_file_contents(fragmentFile.c_str());
@@ -82,86 +262,46 @@ namespace Chonps
 		glDeleteShader(fragmentShader);
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& filepath)
-		: Shader(filepath)
-	{
-		m_ID = glCreateProgram();
-		std::string source;
-		
-		if (get_file_contents(filepath.c_str(), &source))
-		{
-			std::unordered_map<GLenum, std::string> shaders;
-
-			// Gets shaders from single file, shader token needed to define shader type
-			// Finds '#shader' token in the file with the corresponding shader type
-			const char* shaderToken = "#shader";
-			size_t shaderTokenLength = strlen(shaderToken);
-			size_t shaderTokenPos = source.find(shaderToken, 0);
-			while (shaderTokenPos != std::string::npos)
-			{
-				size_t eol = source.find_first_of("\r\n", shaderTokenPos);
-				CHONPS_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-				std::string findWS = source.substr(shaderTokenPos + shaderTokenLength);
-				int WhiteSpace = 0;
-				for (auto ws : findWS) // Searches for whitespace between token and shader type
-				{
-					if (ws != ' ') break;
-					WhiteSpace++;
-				}
-				size_t begin = shaderTokenPos + shaderTokenLength + WhiteSpace;
-				std::string type = source.substr(begin, eol - begin); // type of shader
-				CHONPS_CORE_ASSERT(get_shader_type(type), "Invalid shader type specification!");
-
-				// Gets the source of the shader type
-				// This will create a substring from the shader token until the next shader token is found
-				size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-				shaderTokenPos = source.find(shaderToken, nextLinePos);
-				std::string shaderSource = source.substr(nextLinePos, shaderTokenPos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
-
-				shaders[get_shader_type(type)] = shaderSource;
-			}
-
-			std::vector<GLuint> shaderID;
-
-			for (auto& st : shaders)
-			{
-				GLenum type = st.first;
-				const std::string& shaderSource = st.second;
-
-				// Create Shaders
-				GLuint shader = glCreateShader(type);
-				const char* shaderSourceCstr = shaderSource.c_str();
-				glShaderSource(shader, 1, &shaderSourceCstr, 0);
-				glCompileShader(shader);
-				compileErrors(shader, type, filepath.c_str());
-				glAttachShader(m_ID, shader);
-				shaderID.push_back(shader); // Store shaders to be deleted later
-			}
-
-			// Link shaders to program
-			glLinkProgram(m_ID);
-			compileErrors(m_ID, GL_PROGRAM, filepath.c_str());
-
-			// Detach shaders from program
-			for (auto id : shaderID)
-			{
-				glDetachShader(m_ID, id);
-				glDeleteShader(id);
-			}
-
-			// Sets name of the shader to the name of the file
-			auto lastSlash = filepath.find_last_of("/\\");
-			lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-			auto lastDot = filepath.rfind('.');
-			auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
-			m_Name = filepath.substr(lastSlash, count);
-		}
-		else
-			CHONPS_CORE_ERROR("ERROR: SHADER: Could not create shader with specified path: {0}", filepath);
-	}
-
 	void OpenGLShader::Bind() const
 	{
+		if (m_Pipeline.enableCullMode)
+		{
+			glEnable(GL_CULL_FACE);
+			glCullFace(m_Pipeline.cullmode);
+			glFrontFace(m_Pipeline.cullModeFrontFace);
+		}
+		else
+			glDisable(GL_CULL_FACE);
+
+		if (m_Pipeline.enableBlending)
+		{
+			glEnable(GL_BLEND);
+			glBlendFunc(m_Pipeline.srcBlendFactor, m_Pipeline.dstBlendFactor);
+		}
+		else
+			glDisable(GL_BLEND);
+
+		if (m_Pipeline.enableDepthTest)
+		{
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc(m_Pipeline.depthCompare);
+		}
+		else
+			glDisable(GL_DEPTH_TEST);
+
+		if (m_Pipeline.enableStencilTest)
+		{
+			glEnable(GL_STENCIL_TEST);
+			glStencilFunc(m_Pipeline.stencilCompareOp, m_Pipeline.stencilReference, m_Pipeline.stencilCompareMask);
+			glStencilOp(m_Pipeline.stencilFailOp, m_Pipeline.stencilDepthFailOp, m_Pipeline.stencilPassOp);
+			glStencilMask(m_Pipeline.stencilWriteMask);
+		}
+		else
+		{
+			glDisable(GL_STENCIL_TEST);
+			glStencilMask(0x00);
+		}
+
 		glUseProgram(m_ID);
 	}
 
@@ -173,5 +313,229 @@ namespace Chonps
 	void OpenGLShader::Delete() const
 	{
 		glDeleteProgram(m_ID);
+	}
+
+	void OpenGLShader::BindPipeline(PipelineLayoutInfo* pipelineLayout)
+	{
+		m_LayoutInfo = *pipelineLayout;
+
+		PipelineSpecification pipelineSpec;
+		if (pipelineLayout->pipelineSpecification == nullptr)
+			pipelineSpec = s_StandardPipelineSpecification;
+		else
+			pipelineSpec = *pipelineLayout->pipelineSpecification;
+
+		// Blending
+		if (pipelineSpec.colorBlend.colorBlendAttachmentCount > 0)
+		{
+			ColorBlendAttachment colorBlendAttachment = pipelineSpec.colorBlend.pColorBlendAttachments[0];
+			m_Pipeline.enableBlending = true;
+			m_Pipeline.srcBlendFactor = getBlendFactorType(colorBlendAttachment.srcColorBlendFactor);
+			m_Pipeline.dstBlendFactor = getBlendFactorType(colorBlendAttachment.dstColorBlendFactor);
+		}
+		else if(getRendererBackends()->enableColorBlend)
+		{
+			ColorBlendAttachment colorBlendAttachment = getColorBlendAttachment();
+			m_Pipeline.enableBlending = true;
+			m_Pipeline.srcBlendFactor = getBlendFactorType(colorBlendAttachment.srcColorBlendFactor);
+			m_Pipeline.dstBlendFactor = getBlendFactorType(colorBlendAttachment.dstColorBlendFactor);
+		}
+
+		// Cull Face
+		m_Pipeline.cullmode = getPipelineCullFaceMode(pipelineSpec.rasterizer.cullMode);
+		if (pipelineSpec.rasterizer.cullMode != CullFaceMode::Disable)
+			m_Pipeline.enableCullMode = true;
+
+		m_Pipeline.cullModeFrontFace = getPipelineFrontFace(pipelineSpec.rasterizer.frontFace);
+
+		// Depth Stencil
+		m_Pipeline.enableDepthTest = pipelineSpec.depthstencil.enableDepth;
+		m_Pipeline.depthCompare = getPipelineCompareOp(pipelineSpec.depthstencil.depthOpCompare);
+		m_Pipeline.enableStencilTest = pipelineSpec.depthstencil.enableStencil;
+		m_Pipeline.stencilCompareOp = getPipelineCompareOp(pipelineSpec.depthstencil.stencil.compareOp);
+		m_Pipeline.stencilCompareMask = pipelineSpec.depthstencil.stencil.compareMask;
+		m_Pipeline.stencilWriteMask = pipelineSpec.depthstencil.stencil.writeMask;
+		m_Pipeline.stencilReference = pipelineSpec.depthstencil.stencil.reference;
+		m_Pipeline.stencilPassOp = getPipelineStencilOp(pipelineSpec.depthstencil.stencil.passOp);
+		m_Pipeline.stencilFailOp = getPipelineStencilOp(pipelineSpec.depthstencil.stencil.failOp);
+		m_Pipeline.stencilDepthFailOp = getPipelineStencilOp(pipelineSpec.depthstencil.stencil.depthFailOp);
+	}
+
+	namespace ogls
+	{
+		PipelineSpecification getStandardOglPipelineSpecification()
+		{
+			return s_StandardPipelineSpecification;
+		}
+
+		void setStandardOglPipelineSpecification(PipelineSpecification pipelineSpecification)
+		{
+			s_StandardPipelineSpecification = pipelineSpecification;
+		}
+
+		void oglImplUploadUniform1f(uint32_t shader, const char* uniform, float x)
+		{
+			glUniform1f(glGetUniformLocation(shader, uniform), x);
+		}
+
+		void oglImplUploadUniform2f(uint32_t shader, const char* uniform, float x, float y)
+		{
+			glUniform2f(glGetUniformLocation(shader, uniform), x, y);
+		}
+
+		void oglImplUploadUniform3f(uint32_t shader, const char* uniform, float x, float y, float z)
+		{
+			glUniform3f(glGetUniformLocation(shader, uniform), x, y, z);
+		}
+
+		void oglImplUploadUniform4f(uint32_t shader, const char* uniform, float x, float y, float z, float w)
+		{
+			glUniform4f(glGetUniformLocation(shader, uniform), x, y, z, w);
+		}
+
+		void oglImplUploadUniform1i(uint32_t shader, const char* uniform, int x)
+		{
+			glUniform1i(glGetUniformLocation(shader, uniform), x);
+		}
+
+		void oglImplUploadUniform2i(uint32_t shader, const char* uniform, int x, int y)
+		{
+			glUniform2i(glGetUniformLocation(shader, uniform), x, y);
+		}
+
+		void oglImplUploadUniform3i(uint32_t shader, const char* uniform, int x, int y, int z)
+		{
+			glUniform3i(glGetUniformLocation(shader, uniform), x, y, z);
+		}
+
+		void oglImplUploadUniform4i(uint32_t shader, const char* uniform, int x, int y, int z, int w)
+		{
+			glUniform4i(glGetUniformLocation(shader, uniform), x, y, z, w);
+		}
+
+		void oglImplUploadUniform1ui(uint32_t shader, const char* uniform, unsigned int x)
+		{
+			glUniform1ui(glGetUniformLocation(shader, uniform), x);
+		}
+
+		void oglImplUploadUniform2ui(uint32_t shader, const char* uniform, unsigned int x, unsigned int y)
+		{
+			glUniform2ui(glGetUniformLocation(shader, uniform), x, y);
+		}
+
+		void oglImplUploadUniform3ui(uint32_t shader, const char* uniform, unsigned int x, unsigned int y, unsigned int z)
+		{
+			glUniform3ui(glGetUniformLocation(shader, uniform), x, y, z);
+		}
+
+		void oglImplUploadUniform4ui(uint32_t shader, const char* uniform, unsigned int x, unsigned int y, unsigned int z, unsigned int w)
+		{
+			glUniform4ui(glGetUniformLocation(shader, uniform), x, y, z, w);
+		}
+
+		void oglImplUploadUniform1fv(uint32_t shader, const char* uniform, unsigned int count, const float* v)
+		{
+			glUniform1fv(glGetUniformLocation(shader, uniform), count, v);
+		}
+
+		void oglImplUploadUniform2fv(uint32_t shader, const char* uniform, unsigned int count, const float* v)
+		{
+			glUniform2fv(glGetUniformLocation(shader, uniform), count, v);
+		}
+
+		void oglImplUploadUniform3fv(uint32_t shader, const char* uniform, unsigned int count, const float* v)
+		{
+			glUniform3fv(glGetUniformLocation(shader, uniform), count, v);
+		}
+
+		void oglImplUploadUniform4fv(uint32_t shader, const char* uniform, unsigned int count, const float* v)
+		{
+			glUniform4fv(glGetUniformLocation(shader, uniform), count, v);
+		}
+
+		void oglImplUploadUniform1iv(uint32_t shader, const char* uniform, unsigned int count, const int* v)
+		{
+			glUniform1iv(glGetUniformLocation(shader, uniform), count, v);
+		}
+
+		void oglImplUploadUniform2iv(uint32_t shader, const char* uniform, unsigned int count, const int* v)
+		{
+			glUniform2iv(glGetUniformLocation(shader, uniform), count, v);
+		}
+
+		void oglImplUploadUniform3iv(uint32_t shader, const char* uniform, unsigned int count, const int* v)
+		{
+			glUniform3iv(glGetUniformLocation(shader, uniform), count, v);
+		}
+
+		void oglImplUploadUniform4iv(uint32_t shader, const char* uniform, unsigned int count, const int* v)
+		{
+			glUniform4iv(glGetUniformLocation(shader, uniform), count, v);
+		}
+
+		void oglImplUploadUniform1uiv(uint32_t shader, const char* uniform, unsigned int count, const unsigned int* v)
+		{
+			glUniform1uiv(glGetUniformLocation(shader, uniform), count, v);
+		}
+
+		void oglImplUploadUniform2uiv(uint32_t shader, const char* uniform, unsigned int count, const unsigned int* v)
+		{
+			glUniform2uiv(glGetUniformLocation(shader, uniform), count, v);
+		}
+
+		void oglImplUploadUniform3uiv(uint32_t shader, const char* uniform, unsigned int count, const unsigned int* v)
+		{
+			glUniform3uiv(glGetUniformLocation(shader, uniform), count, v);
+		}
+
+		void oglImplUploadUniform4uiv(uint32_t shader, const char* uniform, unsigned int count, const unsigned int* v)
+		{
+			glUniform4uiv(glGetUniformLocation(shader, uniform), count, v);
+		}
+
+		void oglImplUploadUniform2mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v)
+		{
+			glUniformMatrix2fv(glGetUniformLocation(shader, uniform), count, transpose, v);
+		}
+
+		void oglImplUploadUniform3mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v)
+		{
+			glUniformMatrix3fv(glGetUniformLocation(shader, uniform), count, transpose, v);
+		}
+
+		void oglImplUploadUniform4mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v)
+		{
+			glUniformMatrix4fv(glGetUniformLocation(shader, uniform), count, transpose, v);
+		}
+
+		void oglImplUploadUniform2x3mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v)
+		{
+			glUniformMatrix2x3fv(glGetUniformLocation(shader, uniform), count, transpose, v);
+		}
+
+		void oglImplUploadUniform3x2mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v)
+		{
+			glUniformMatrix3x2fv(glGetUniformLocation(shader, uniform), count, transpose, v);
+		}
+
+		void oglImplUploadUniform2x4mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v)
+		{
+			glUniformMatrix2x4fv(glGetUniformLocation(shader, uniform), count, transpose, v);
+		}
+
+		void oglImplUploadUniform4x2mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v)
+		{
+			glUniformMatrix4x2fv(glGetUniformLocation(shader, uniform), count, transpose, v);
+		}
+
+		void oglImplUploadUniform3x4mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v)
+		{
+			glUniformMatrix3x4fv(glGetUniformLocation(shader, uniform), count, transpose, v);
+		}
+
+		void oglImplUploadUniform4x3mfv(uint32_t shader, const char* uniform, unsigned int count, bool transpose, const float* v)
+		{
+			glUniformMatrix4x3fv(glGetUniformLocation(shader, uniform), count, transpose, v);
+		}
 	}
 }

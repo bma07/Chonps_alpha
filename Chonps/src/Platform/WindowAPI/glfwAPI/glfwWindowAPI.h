@@ -1,5 +1,5 @@
-#ifndef CHONPS_GLFW_API_H
-#define CHONPS_GLFW_API_H
+#ifndef HG_CHONPS_GLFW_API_H
+#define HG_CHONPS_GLFW_API_H
 
 #include "Core/Core.h"
 #include "Core/Window.h"
@@ -13,19 +13,20 @@ namespace Chonps
 	void glfwInitWindowContext();
 	void glfwTerminateWindowContext();
 
+	void glfwImplSetWindowContextRenderTarget(Window* window);
+
 	class glfwWindowAPI : public Window
 	{
 	public:
-		glfwWindowAPI(std::string Title, int Width, int Height, bool fullScreen = false);
-
-		using EventCallbackFn = std::function<void(Event&)>;
+		glfwWindowAPI(uint32_t width, uint32_t height, std::string title, bool fullscreen, bool resizable, int minWidth, int minHeight);
+		glfwWindowAPI(WindowData winCreateInfo);
 
 		virtual void OnUpdate() override;
 		virtual void OnEvent(Event& e) override;
 		virtual bool WindowIsOpen() override;
 
-		virtual unsigned int GetWidth() const override { return m_Data.Width; }
-		virtual unsigned int GetHeight() const { return m_Data.Height; }
+		virtual unsigned int GetWidth() const override { return m_Data.width; }
+		virtual unsigned int GetHeight() const { return m_Data.height; }
 
 
 		// Window attributes
@@ -33,7 +34,7 @@ namespace Chonps
 		virtual void LogEvents(bool enable) override { m_LogEvents = enable; }
 
 		virtual void SetVSync(bool enabled) override;
-		virtual bool GetVSync() const override { return m_Data.VSync; }
+		virtual bool GetVSync() const override { return m_Data.vSync; }
 
 		virtual void* GetNativeWindow() const override { return m_Window; }
 		virtual void SetContextCurrent() override;
@@ -43,20 +44,8 @@ namespace Chonps
 	private:
 		void Create();
 
-		struct WindowData
-		{
-			std::string Title;
-			int Width, Height;
-			bool FullScreen;
-			bool VSync;
-
-			EventCallbackFn EventCallback;
-		};
-
 		WindowData m_Data;
-
 		GLFWwindow* m_Window;
-
 		bool m_LogEvents = false;
 	};
 }

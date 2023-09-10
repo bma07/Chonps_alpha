@@ -1,5 +1,5 @@
-#ifndef	CHONPS_MATERIAL_H
-#define CHONPS_MATERIAL_H
+#ifndef	HG_CHONPS_MATERIAL_H
+#define HG_CHONPS_MATERIAL_H
 
 #include "Shader.h"
 #include "Texture.h"

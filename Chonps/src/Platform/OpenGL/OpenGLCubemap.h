@@ -1,5 +1,5 @@
-#ifndef OPENGL_CUBEMAP_H
-#define OPENGL_CUBEMAP_H
+#ifndef HG_CHONPS_OPENGL_CUBEMAP_H
+#define HG_CHONPS_OPENGL_CUBEMAP_H
 
 #include "Graphics/Cubemap.h"
 
@@ -9,10 +9,10 @@ namespace Chonps
 	{
 	public:
 		// Note: Order of cubemap texture must be in this index order: posx, negx, posy, negy, posz, negz
-		OpenGLCubemap(const std::string cubeMapFaces[6]);
-		OpenGLCubemap(const std::string& posx, const std::string& negx, const std::string& posy, const std::string& negy, const std::string& posz, const std::string& negz);
+		OpenGLCubemap(CubemapCreateInfo cubemapInfo);
 
-		virtual void Use(Shader* shader, Camera camera) override;
+		virtual void Draw() override;
+		virtual void Delete() override;
 
 	private:
 		uint32_t m_CubemapTexture;

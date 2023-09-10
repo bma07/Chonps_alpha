@@ -1,5 +1,5 @@
-#ifndef KEY_EVENTS_H
-#define KEY_EVENTS_H
+#ifndef HG_CHONPS_KEY_EVENTS_H
+#define HG_CHONPS_KEY_EVENTS_H
 
 #include "Event.h"
 

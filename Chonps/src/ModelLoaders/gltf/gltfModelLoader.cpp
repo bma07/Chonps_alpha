@@ -11,13 +11,30 @@ namespace Chonps
 	{
 		std::vector<Mesh> Meshes;
 
-		gltfModel gltf(filepath);
+		gltfModel gltf(filepath, false);
 		Meshes = gltf.GetMeshes();
 
 		return Meshes;
 	}
 
-	gltfModel::gltfModel(const std::string& filepath)
+	Mesh loadgltfModelBatched(const std::string& filepath)
+	{
+		gltfModel gltf(filepath, true);
+
+		std::vector<vertex> vertices;
+		std::vector<vertex> indices;
+
+		std::vector<Mesh> meshes = gltf.GetMeshes();
+		for (auto& mesh : meshes)
+		{
+
+		}
+
+		return gltf.GetMeshes().front();
+	}
+
+	gltfModel::gltfModel(const std::string& filepath, bool batched)
+		: m_Batched(batched)
 	{
 		std::string text = get_file_contents(filepath.c_str());
 		JSON = json::parse(text);
@@ -33,16 +50,16 @@ namespace Chonps
 	{
 		json node = JSON["nodes"][nextNode];
 
-		glm::vec3 translationDefault = glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::vec3 nodeTranslation = glm::vec3(0.0f, 0.0f, 0.0f);
 		if (node.find("translation") != node.end())
 		{
 			float transValues[3];
 			for (unsigned int i = 0; i < node["translation"].size(); i++)
 				transValues[i] = (node["translation"][i]);
-			translationDefault = glm::make_vec3(transValues);
+			nodeTranslation = glm::make_vec3(transValues);
 		}
 
-		glm::quat rotationDefault = glm::quat(1.0f, 0.0f, 0.0f, 0.0f); // glm::quat has order (w, x, y, z)
+		glm::quat nodeRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f); // glm::quat has order (w, x, y, z)
 		if (node.find("rotation") != node.end())
 		{
 			float rotValues[4] =
@@ -52,36 +69,36 @@ namespace Chonps
 				node["rotation"][1], // y
 				node["rotation"][2]  // z
 			};
-			rotationDefault = glm::make_quat(rotValues);
+			nodeRotation = glm::make_quat(rotValues);
 		}
 
-		glm::vec3 scaleDefault = glm::vec3(1.0f, 1.0f, 1.0f);
+		glm::vec3 nodeScale = glm::vec3(1.0f, 1.0f, 1.0f);
 		if (node.find("scale") != node.end())
 		{
 			float scaleValues[3];
 			for (unsigned int i = 0; i < node["scale"].size(); i++)
 				scaleValues[i] = (node["scale"][i]);
-			scaleDefault = glm::make_vec3(scaleValues);
+			nodeScale = glm::make_vec3(scaleValues);
 		}
 
-		glm::mat4 matNodeDefault = glm::mat4(1.0f);
+		glm::mat4 matThisNode = glm::mat4(1.0f);
 		if (node.find("matrix") != node.end())
 		{
 			float matValues[16];
 			for (unsigned int i = 0; i < node["matrix"].size(); i++)
 				matValues[i] = (node["matrix"][i]);
-			matNodeDefault = glm::make_mat4(matValues);
+			matThisNode = glm::make_mat4(matValues);
 		}
 
 		glm::mat4 translation = glm::mat4(1.0f);
 		glm::mat4 rotate = glm::mat4(1.0f);
 		glm::mat4 scale = glm::mat4(1.0f);
 
-		translation = glm::translate(translation, translationDefault);
-		rotate = glm::mat4_cast(rotationDefault);
-		scale = glm::scale(scale, scaleDefault);
+		translation = glm::translate(translation, nodeTranslation);
+		rotate = glm::mat4_cast(nodeRotation);
+		scale = glm::scale(scale, nodeScale);
 
-		glm::mat4 matNextNode = matrix * matNodeDefault * translation * rotate * scale;
+		glm::mat4 matNextNode = matrix * matThisNode * translation * rotate * scale;
 
 		if (node.find("mesh") != node.end())
 		{
@@ -157,7 +174,7 @@ namespace Chonps
 			// Create Mesh
 			Mesh mesh = Mesh(vertices, indices, textures);
 			mesh.matrix = matrix;
-			m_Meshes.emplace_back(mesh);
+			m_Meshes.emplace_back(std::move(mesh));
 		}
 	}
 
@@ -302,7 +319,7 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Diffuse, TexFormat::Auto, GetTexFilter(magFilter, minFilter));
+				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Albedo, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
 				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);
@@ -311,7 +328,7 @@ namespace Chonps
 		else // White Texture if no Diffuse Texture was found
 		{
 			uint32_t whiteTextureData = 0xffffffff;
-			Texture* texture = createTexture(1, 1, &whiteTextureData, sizeof(uint32_t));
+			Texture* texture = createTexture(1, 1, &whiteTextureData);
 			textures.emplace_back(texture);
 		}
 		if (material["pbrMetallicRoughness"].find("metallicRoughnessTexture") != material["pbrMetallicRoughness"].end()) // Metallic Roughness
@@ -336,7 +353,7 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::MetallicRoughness, TexFormat::Auto, GetTexFilter(magFilter, minFilter));
+				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::MetallicRoughness, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
 				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);
@@ -364,7 +381,7 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Normal, TexFormat::Auto, GetTexFilter(magFilter, minFilter));
+				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Normal, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
 				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);
@@ -392,7 +409,7 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Occlusion, TexFormat::Auto, GetTexFilter(magFilter, minFilter));
+				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Occlusion, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
 				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);
@@ -420,7 +437,7 @@ namespace Chonps
 				uint32_t magFilter = JSON["samplers"][texSamplerIndex]["magFilter"];
 				uint32_t minFilter = JSON["samplers"][texSamplerIndex]["minFilter"];
 
-				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Emissive, TexFormat::Auto, GetTexFilter(magFilter, minFilter));
+				Texture* texture = createTexture((fileDirectory + texPath).c_str(), TexType::Emissive, GetTexFilter(magFilter, minFilter));
 				textures.emplace_back(texture);
 				m_Textures.emplace_back(&(*texture));
 				m_TexIndex.push_back(texSource);

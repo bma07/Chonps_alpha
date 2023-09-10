@@ -1,88 +1,62 @@
-#ifndef CHONPS_RENDERER_BACKENDS_H
-#define CHONPS_RENDERER_BACKENDS_H
+#ifndef HG_CHONPS_RENDERER_BACKENDS_H
+#define HG_CHONPS_RENDERER_BACKENDS_H
+
+#include "Core/QueueChain.h"
+#include "Pipeline.h"
 
 namespace Chonps
 {
-	enum class RenderTopologyType
-	{
-		Point,
-		Line,
-		LineStrip,
-		Triangle,
-		TriangleStrip,
-		Default
-	};
-	typedef RenderTopologyType TopoType;
-
-	enum class RenderCullFaceMode
-	{
-		Front,
-		Back,
-		Both,
-		Disable
-	};
-	typedef RenderCullFaceMode CullFaceMode;
-
-	enum class RenderCullFrontFace
-	{
-		Clockwise,
-		CounterClockwise,
-
-		CW = Clockwise,
-		CCW = CounterClockwise
-	};
-	typedef RenderCullFrontFace CullFrontFace;
-
 	struct RendererBackends
 	{
 		bool					enableColorBlend;
-		bool					enableGammaCorrection;
-		float					gammaValue;
-		RenderTopologyType		topologyType;
+		bool					enableDepthTesting;
+		bool					enableStencilTesting;
 		bool					enableCullFace;
+		RenderTopologyType		topologyType;
 		RenderCullFaceMode		cullFaceMode;
 		RenderCullFrontFace		cullFrontFace;
+		CompareOperation		depthOpCompare;
+		StencilAttachment		stencil;
+		uint32_t				textureBinding;
+		uint32_t				samplerBinding;
+		uint32_t				frameBufferBinding;
+		uint32_t				cubemapBinding;
+		QueueChain<uint32_t>	fontIDsQueue = QueueChain<uint32_t>(0x01, 0xff);
+		uint32_t				maxFramesInFlight = 3;
+		bool					enableGammaCorrection = false;
+		float					gammaValue = 2.2f;
+		size_t					maxRenderEntities = 0x4000;
+		uint32_t				maxObjectIDs = 0xffff;	
+		uint32_t				maxTextures = 0x1000;	
+		uint32_t				maxGuiDrawObjects = 0x4000;
+		uint32_t				maxGuiVerticesPerObjectHint = 0x200;
+		uint32_t				maxGuiIndicesPerObjectHint = 0x400;
+		bool					enableMultiThreading = false;
+		bool					enableValidationLayers = false;
 
-		RendererBackends()
+		void standardInit()
 		{
-			enableColorBlend = false;
-			enableCullFace = false;
-			enableGammaCorrection = false;
-			gammaValue = 2.2f;
-			topologyType = RenderTopologyType::Triangle;
-			cullFaceMode = RenderCullFaceMode::Both;
-			cullFrontFace = RenderCullFrontFace::Clockwise;
+			enableColorBlend = true;
+			enableDepthTesting = true;
+			enableStencilTesting = false;
+			enableCullFace = true;
+			cullFaceMode = CullFaceMode::Back;
+			cullFrontFace = CullFrontFace::CounterClockwise;
+			topologyType = TopologyType::Triangle;
+			textureBinding = 0;
+			samplerBinding = 1;
+			frameBufferBinding = 0;
+			cubemapBinding = 0;
 		}
 	};
-
-	void renderEnableColorBlend(bool enable);
 	
+	void setRendererBackends(RendererBackends renderBackends);
+	RendererBackends* getRendererBackends();
+
 	void renderGammaCorrection(bool correct);
-	
 	bool renderGetGammaCorrection();
-	
-	void renderSetGamma(float gamma);
-	
-	float renderGetGamma();
-	
-	// When the topology type is set to Default it will automatically be set to Triangle
-	// This is different from filling in a Vulkan pipeline where when the topology is
-	// set to default it will be set to the GraphicsAPI's topology type
-	void renderSetTopologyType(RenderTopologyType type);
-	
-	// Get the topology type for renderering primitive geometry data
-	RenderTopologyType renderGetTopologyType();
-
-	void renderEnableCullFace(bool enable);
-	
-	void renderSetCullFaceMode(RenderCullFaceMode cullFaceMode);
-	
-	RenderCullFaceMode renderGetCullFaceMode();
-	
-	void renderSetCullFrontFace(RenderCullFrontFace cullFrontFace);
-	
-	RenderCullFrontFace renderGetCullFrontFace();
-
+	void renderSetGammaValue(float gamma);
+	float renderGetGammaValue();
 }
 
 #endif

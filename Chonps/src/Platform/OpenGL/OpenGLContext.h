@@ -1,5 +1,5 @@
-#ifndef OPENGL_CONTEXT_H
-#define OPENGL_CONTEXT_H
+#ifndef HG_CHONPS_OPENGL_CONTEXT_H
+#define HG_CHONPS_OPENGL_CONTEXT_H
 
 #include "Core/Config.h"
 
@@ -11,7 +11,5 @@ namespace Chonps
 
 	void gladUpdateViewPort(GLFWwindow* window, unsigned int width, unsigned int height);
 }
-
-
 
 #endif

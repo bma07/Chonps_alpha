@@ -1,5 +1,5 @@
-#ifndef CHONPS_PCH
-#define CHONPS_PCH
+#ifndef HG_CHONPS_PCH
+#define HG_CHONPS_PCH
 
 #include <iostream>
 #include <memory>

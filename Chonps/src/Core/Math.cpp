@@ -61,11 +61,6 @@ namespace Chonps
 		return std::sqrt(std::pow(hyp, 2) - std::pow(leg, 2));
 	}
 
-	double volume(double x, double y, double z)
-	{
-		return x * y * z;
-	}
-
 	double circle_area(double radius)
 	{
 		return CHONPS_PI * std::pow(radius, 2);

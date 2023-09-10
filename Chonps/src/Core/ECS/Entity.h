@@ -1,5 +1,5 @@
-#ifndef CHONPS_ENTITY_H
-#define CHONPS_ENTITY_H
+#ifndef HG_CHONPS_ENTITY_H
+#define HG_CHONPS_ENTITY_H
 
 #include "Core/Log.h"
 #include "Core/Config.h"
@@ -82,7 +82,7 @@ namespace Chonps
 
 	private:
 		std::queue<Entity> m_AvailableEntities;
-		uint32_t m_ExistingEntities;
+		uint32_t m_ExistingEntities = 0;
 		std::unordered_map<Entity, Signature> m_EntitySignatures;
 	};
 }

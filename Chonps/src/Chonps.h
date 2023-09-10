@@ -1,5 +1,5 @@
-#ifndef CHONPS_H
-#define CHONPS_H
+#ifndef HG_CHONPS_H
+#define HG_CHONPS_H
 
 // Core
 #include "Core/Core.h"

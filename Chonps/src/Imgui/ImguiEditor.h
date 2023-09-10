@@ -1,5 +1,5 @@
-#ifndef IMGUI_EDITOR_H
-#define IMGUI_EDITOR_H
+#ifndef HG_CHONPS_IMGUI_EDITOR_H
+#define HG_CHONPS_IMGUI_EDITOR_H
 
 #include "Core/Layer.h"
 #include "Core/Window.h"

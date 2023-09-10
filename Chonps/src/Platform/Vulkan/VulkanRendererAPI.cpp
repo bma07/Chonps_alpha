@@ -7,6 +7,7 @@
 
 #include <optional>
 #include <future>
+#include <thread>
 
 const std::vector<const char*> validationLayers =
 {
@@ -19,22 +20,16 @@ const std::vector<const char*> deviceExtensions =
 	VK_KHR_MAINTENANCE1_EXTENSION_NAME,
 	VK_KHR_MAINTENANCE3_EXTENSION_NAME,
 	VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
-	VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME,
 	VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
 };
-
-#ifdef CHONPS_DEBUG
-const bool enableValidationLayers = true;
-#else
-const bool enableValidationLayers = false;
-#endif
-
 
 
 namespace Chonps
 {
 	static GLFWwindow* s_CurrentWindow;
 	static std::shared_ptr<VulkanBackends> s_VulkanBackends;
+	static VmaAllocator s_VmaAllocator;
+	static TextureDescriptorSetBindings s_TextureDescriptorBindings;
 
 	void setCurrentWindowForVulkanWindowSurface(GLFWwindow* window)
 	{
@@ -44,6 +39,11 @@ namespace Chonps
 	VulkanBackends* getVulkanBackends()
 	{
 		return &(*s_VulkanBackends);
+	}
+
+	VmaAllocator& getVmaAllocator()
+	{
+		return s_VmaAllocator;
 	}
 
 	namespace vkUtils
@@ -137,7 +137,7 @@ namespace Chonps
 			std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 			extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
-			if (enableValidationLayers)
+			if (s_VulkanBackends->enableValidationLayers)
 				extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
 
@@ -193,16 +193,6 @@ namespace Chonps
 			CHONPS_CORE_ASSERT(false, "Failed to find supported format!"); return VkFormat();
 		}
 
-		VkFormat findDepthFormat()
-		{
-			return findSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-		}
-
-		bool hasStencilComponent(VkFormat format)
-		{
-			return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
-		}
-
 		void deviceProperties(VkPhysicalDevice device)
 		{
 			VkPhysicalDeviceProperties deviceProperties;
@@ -215,44 +205,41 @@ namespace Chonps
 			CHONPS_CORE_INFO("\tRenderer: {0}", deviceProperties.deviceName);
 			CHONPS_CORE_INFO("\tVersion: {0}", deviceProperties.driverVersion);
 		}
+
+		void createVmaAllocator()
+		{
+			VmaAllocatorCreateInfo allocatorInfo{};
+			allocatorInfo.device = s_VulkanBackends->device;
+			allocatorInfo.physicalDevice = s_VulkanBackends->physicalDevice;
+			allocatorInfo.instance = s_VulkanBackends->instance;
+
+			vmaCreateAllocator(&allocatorInfo, &s_VmaAllocator);
+		}
 	}
 
 	VulkanRendererAPI::~VulkanRendererAPI()
 	{
 		CleanupSwapChain();
 
-		if (!m_VulkanBackends->graphicsPipeline.empty())
-		{
-			for (auto& pipeline : m_VulkanBackends->graphicsPipeline)
-			{
-				vkDestroyPipeline(m_VulkanBackends->device, pipeline.second.pipeline, nullptr);
-				vkDestroyPipelineLayout(m_VulkanBackends->device, pipeline.second.pipelineLayout, nullptr);
-			}
-		}
-
 		if (m_VulkanBackends->bufferArray != VK_NULL_HANDLE)
 			vkDestroyBuffer(m_VulkanBackends->device, m_VulkanBackends->bufferArray, nullptr);
 		if (m_VulkanBackends->bufferArrayMemory != VK_NULL_HANDLE)
 			vkFreeMemory(m_VulkanBackends->device, m_VulkanBackends->bufferArrayMemory, nullptr);
 
-		// Multithreading CommandBuffers
-		if (m_VulkanBackends->multithreadingEnabled)
-		{
-			for (auto& thread : m_ThreadData)
-			{
-				vkFreeCommandBuffers(m_VulkanBackends->device, thread.commandPool, static_cast<uint32_t>(thread.commandBuffers.size()), thread.commandBuffers.data());
-				vkDestroyCommandPool(m_VulkanBackends->device, thread.commandPool, nullptr);
-			}
-		}
 
 		vkDestroySampler(m_VulkanBackends->device, m_VulkanBackends->nullDataTexture.textureSampler, nullptr);
 		vkDestroyImageView(m_VulkanBackends->device, m_VulkanBackends->nullDataTexture.textureImageView, nullptr);
 		vkDestroyImage(m_VulkanBackends->device, m_VulkanBackends->nullDataTexture.textureImage, nullptr);
-		vkFreeMemory(m_VulkanBackends->device, m_VulkanBackends->nullDataTexture.textureImageMemory, nullptr);
+		vmaFreeMemory(s_VmaAllocator, m_VulkanBackends->nullDataTexture.textureImageMemory);
 
 		vkDestroyDescriptorPool(m_VulkanBackends->device, m_VulkanBackends->descriptorPool, nullptr);
 
-		vkDestroyDescriptorSetLayout(m_VulkanBackends->device, m_VulkanBackends->samplerDescriptorSetsLayout, nullptr);
+		vkDestroyDescriptorSetLayout(m_VulkanBackends->device, m_VulkanBackends->textureArrayDescriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(m_VulkanBackends->device, m_VulkanBackends->frameBufferDescriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(m_VulkanBackends->device, m_VulkanBackends->cubemapDescriptorSetLayout, nullptr);
+
+		for (auto& layout : m_VulkanBackends->descriptorSetLayouts)
+			vkDestroyDescriptorSetLayout(m_VulkanBackends->device, layout, nullptr);
 
 		for (size_t i = 0; i < m_VulkanBackends->maxFramesInFlight; i++)
 		{
@@ -265,9 +252,11 @@ namespace Chonps
 
 		vkDestroyRenderPass(m_VulkanBackends->device, m_VulkanBackends->renderPass, nullptr);
 
+		vmaDestroyAllocator(s_VmaAllocator);
+
 		vkDestroyDevice(m_VulkanBackends->device, nullptr);
 
-		if (enableValidationLayers)
+		if (m_VulkanBackends->enableValidationLayers)
 			vkUtils::DestroyDebugUtilsMessengerEXT(m_VulkanBackends->instance, m_VulkanBackends->debugMessenger, nullptr);
 
 		vkDestroySurfaceKHR(m_VulkanBackends->instance, m_VulkanBackends->surface, nullptr);
@@ -278,13 +267,35 @@ namespace Chonps
 	{
 		m_VulkanBackends = std::make_shared<VulkanBackends>();
 		s_VulkanBackends = m_VulkanBackends;
-		vkSpec::initStandardVulkanPipelineSpecification();
-		vkSpec::fillQueueCountIDs();
+		vks::initStandardVulkanPipelineSpecification();
 
 		uint32_t threadCount = std::thread::hardware_concurrency();
 		m_ThreadPool.setThreadCount(threadCount);
-		m_ThreadData.resize(threadCount);
 		m_VulkanBackends->numThreads = threadCount;
+
+		// Renderer Backends
+		RendererBackends* rendererBackends = getRendererBackends();
+		m_VulkanBackends->maxObjects = rendererBackends->maxRenderEntities;
+		m_VulkanBackends->maxTextures = rendererBackends->maxTextures;
+		m_VulkanBackends->maxFramesInFlight = rendererBackends->maxFramesInFlight;
+		m_VulkanBackends->maxObjectIDs = rendererBackends->maxObjectIDs;
+		m_VulkanBackends->multithreadingEnabled = rendererBackends->enableMultiThreading;
+		m_VulkanBackends->enableValidationLayers = rendererBackends->enableValidationLayers;
+
+		s_TextureDescriptorBindings.textureBinding = rendererBackends->textureBinding;
+		s_TextureDescriptorBindings.samplerBinding = rendererBackends->samplerBinding;
+		s_TextureDescriptorBindings.frameBufferBinding = rendererBackends->frameBufferBinding;
+		s_TextureDescriptorBindings.cubemapBinding = rendererBackends->cubemapBinding;
+
+		PipelineSpecification pipelineSpec = getStandardPipelineSpecification();
+		pipelineSpec.rasterizer.cullMode = rendererBackends->cullFaceMode;
+		pipelineSpec.rasterizer.frontFace = rendererBackends->cullFrontFace;
+		pipelineSpec.depthstencil.enableDepth = rendererBackends->enableDepthTesting;
+		pipelineSpec.depthstencil.enableStencil = rendererBackends->enableStencilTesting;
+		pipelineSpec.depthstencil.depthOpCompare = rendererBackends->depthOpCompare;
+
+		setStandardPipelineSpecification(pipelineSpec);
+		vks::fillQueueCountIDs(1, m_VulkanBackends->maxObjectIDs);
 
 		CreateInstance();
 		SetUpDebugMessenger();
@@ -301,43 +312,126 @@ namespace Chonps
 		CreateCommandBuffers();
 		CreateSyncObjects();
 
+		vkUtils::createVmaAllocator();
+
+		m_VulkanBackends->currentWindow = s_CurrentWindow;
 
 		vkGetPhysicalDeviceProperties(m_VulkanBackends->physicalDevice, &m_VulkanBackends->deviceProperties);
-		//m_VulkanBackends->maxTextures = deviceProperties.limits.maxDescriptorSetSampledImages;
-		//m_VulkanBackends->maxUniformBuffers = deviceProperties.limits.maxDescriptorSetStorageBuffers;
+		m_VulkanBackends->maxFrameBufferColorAttachments = m_VulkanBackends->deviceProperties.limits.maxColorAttachments;
 
-		if (m_VulkanBackends->multithreadingEnabled)
-		{
-			for (uint32_t i = 0; i < m_VulkanBackends->numThreads; i++)
-			{
-				ThreadData* thread = &m_ThreadData[i];
-				thread->commandBuffers.resize(m_VulkanBackends->maxFramesInFlight);
-
-				VkCommandPoolCreateInfo cmdPoolInfo{};
-				cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-				cmdPoolInfo.queueFamilyIndex = m_VulkanBackends->queueFamiliyIndices.graphicsFamily.value();
-				cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-				vkCreateCommandPool(m_VulkanBackends->device, &cmdPoolInfo, nullptr, &thread->commandPool);
-
-				VkCommandBufferAllocateInfo secondaryCmdBufAllocateInfo{};
-				secondaryCmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-				secondaryCmdBufAllocateInfo.commandPool = thread->commandPool;
-				secondaryCmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-				secondaryCmdBufAllocateInfo.commandBufferCount = static_cast<uint32_t>(thread->commandBuffers.size());
-				vkAllocateCommandBuffers(m_VulkanBackends->device, &secondaryCmdBufAllocateInfo, thread->commandBuffers.data());
-			}
-		}
-
+		// Create Null texture if no texture is provided
 		uint32_t textureData = 0x00000000;
-		m_VulkanBackends->nullDataTexture = vkSpec::createSingleDataTexture(1, 1, &textureData);
+		m_VulkanBackends->nullDataTexture = vks::createSingleDataTexture(1, 1, &textureData);
 		m_VulkanBackends->texturesQueue.resize(m_VulkanBackends->maxFramesInFlight);
 
-		CmdSetVertexInputEXT = (PFN_vkCmdSetVertexInputEXT)vkGetInstanceProcAddr(m_VulkanBackends->instance, "vkCmdSetVertexInputEXT");
+		// Create texture array Layout
+		VkDescriptorSetLayoutBinding textureLayoutBinding{};
+		textureLayoutBinding.binding = s_TextureDescriptorBindings.textureBinding;
+		textureLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+		textureLayoutBinding.descriptorCount = m_VulkanBackends->maxTextures;
+		textureLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		textureLayoutBinding.pImmutableSamplers = nullptr;
+
+		VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+		samplerLayoutBinding.binding = s_TextureDescriptorBindings.samplerBinding;
+		samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+		samplerLayoutBinding.descriptorCount = m_VulkanBackends->maxTextures;
+		samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		samplerLayoutBinding.pImmutableSamplers = nullptr;
+
+		std::vector<VkDescriptorSetLayoutBinding> layoutBindings = { textureLayoutBinding, samplerLayoutBinding };
+		VkDescriptorSetLayoutCreateInfo layoutInfo{};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT;
+		layoutInfo.bindingCount = static_cast<uint32_t>(layoutBindings.size());
+		layoutInfo.pBindings = layoutBindings.data();
+
+		CHONPS_CORE_ASSERT(vkCreateDescriptorSetLayout(m_VulkanBackends->device, &layoutInfo, nullptr, &m_VulkanBackends->textureArrayDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout!");
+
+		// Create Offscreen FrameBuffer Layout
+		VkDescriptorSetLayoutBinding frameBufferLayoutBinding{};
+		frameBufferLayoutBinding.binding = s_TextureDescriptorBindings.frameBufferBinding;
+		frameBufferLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		frameBufferLayoutBinding.descriptorCount = m_VulkanBackends->maxFrameBufferColorAttachments;
+		frameBufferLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		frameBufferLayoutBinding.pImmutableSamplers = nullptr;
+
+		VkDescriptorSetLayoutCreateInfo FBlayoutInfo{};
+		FBlayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		FBlayoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT;
+		FBlayoutInfo.bindingCount = 1;
+		FBlayoutInfo.pBindings = &frameBufferLayoutBinding;
+
+		CHONPS_CORE_ASSERT(vkCreateDescriptorSetLayout(m_VulkanBackends->device, &FBlayoutInfo, nullptr, &m_VulkanBackends->frameBufferDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout!");
+
+		// Create Cubemap Layout
+		VkDescriptorSetLayoutBinding cubemapLayoutBinding{};
+		cubemapLayoutBinding.binding = s_TextureDescriptorBindings.cubemapBinding;
+		cubemapLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		cubemapLayoutBinding.descriptorCount = 1;
+		cubemapLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		cubemapLayoutBinding.pImmutableSamplers = nullptr;
+
+		VkDescriptorSetLayoutCreateInfo cubemapLayoutInfo{};
+		cubemapLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		cubemapLayoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT;
+		cubemapLayoutInfo.bindingCount = 1;
+		cubemapLayoutInfo.pBindings = &cubemapLayoutBinding;
+
+		CHONPS_CORE_ASSERT(vkCreateDescriptorSetLayout(m_VulkanBackends->device, &cubemapLayoutInfo, nullptr, &m_VulkanBackends->cubemapDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout!");
+
+		m_VulkanBackends->textureDescriptorBindings = &s_TextureDescriptorBindings;
+
+
+		std::vector<VkDescriptorImageInfo> imageInfo{};
+		imageInfo.resize(m_VulkanBackends->maxTextures);
+		for (uint32_t i = 0; i < imageInfo.size(); i++)
+		{
+			imageInfo[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo[i].imageView = m_VulkanBackends->nullDataTexture.textureImageView;
+			imageInfo[i].sampler = m_VulkanBackends->nullDataTexture.textureSampler;
+		}
+		m_VulkanBackends->imageInfos = imageInfo;
+
+		// Create Descriptor Set for texture array to contain all textures
+		std::vector<VkDescriptorSetLayout> samplerLayouts(m_VulkanBackends->maxFramesInFlight, m_VulkanBackends->textureArrayDescriptorSetLayout);
+		VkDescriptorSetAllocateInfo samplerAllocInfo{};
+		samplerAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		samplerAllocInfo.descriptorPool = m_VulkanBackends->descriptorPool;
+		samplerAllocInfo.descriptorSetCount = static_cast<uint32_t>(samplerLayouts.size());
+		samplerAllocInfo.pSetLayouts = samplerLayouts.data();
+
+		std::vector<VkDescriptorSet> descriptorSets{}; descriptorSets.resize(m_VulkanBackends->maxFramesInFlight);
+		CHONPS_CORE_ASSERT(vkAllocateDescriptorSets(m_VulkanBackends->device, &samplerAllocInfo, descriptorSets.data()) == VK_SUCCESS, "Failed to allocate descriptor sets!");
+		m_VulkanBackends->samplerDescriptorSet = descriptorSets;
+
+		// Fill texture array with null textures
+		for (size_t i = 0; i < descriptorSets.size(); i++)
+		{
+			std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[0].dstSet = descriptorSets[i];
+			descriptorWrites[0].dstBinding = m_VulkanBackends->textureDescriptorBindings->textureBinding;
+			descriptorWrites[0].dstArrayElement = 0;
+			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			descriptorWrites[0].descriptorCount = m_VulkanBackends->maxTextures;
+			descriptorWrites[0].pImageInfo = imageInfo.data();
+
+			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[1].dstSet = descriptorSets[i];
+			descriptorWrites[1].dstBinding = m_VulkanBackends->textureDescriptorBindings->samplerBinding;
+			descriptorWrites[1].dstArrayElement = 0;
+			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+			descriptorWrites[1].descriptorCount = m_VulkanBackends->maxTextures;
+			descriptorWrites[1].pImageInfo = imageInfo.data();
+
+			vkUpdateDescriptorSets(m_VulkanBackends->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+		}
 	}
 
 	void VulkanRendererAPI::CreateInstance()
 	{
-		if (enableValidationLayers)
+		if (m_VulkanBackends->enableValidationLayers)
 		{
 			CHONPS_CORE_INFO("Vulkan validation layers enabled");
 			CHONPS_CORE_ASSERT(vkUtils::checkValidationLayerSupport(), "validation layers requested, but not available!");
@@ -346,10 +440,10 @@ namespace Chonps
 		VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		appInfo.pApplicationName = "CHONPS Framework";
-		appInfo.applicationVersion = VK_MAKE_VERSION(1, 2, 0);
+		appInfo.applicationVersion = VK_MAKE_VERSION(1, 3, 0);
 		appInfo.pEngineName = "CHONPS";
-		appInfo.engineVersion = VK_MAKE_VERSION(1, 2, 0);
-		appInfo.apiVersion = VK_API_VERSION_1_2;
+		appInfo.engineVersion = VK_MAKE_VERSION(1, 3, 0);
+		appInfo.apiVersion = VK_API_VERSION_1_3;
 
 		VkInstanceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -361,7 +455,7 @@ namespace Chonps
 
 
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-		if (enableValidationLayers)
+		if (m_VulkanBackends->enableValidationLayers)
 		{
 			createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 			createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -383,7 +477,7 @@ namespace Chonps
 
 	bool VulkanRendererAPI::SetUpDebugMessenger()
 	{
-		if (!enableValidationLayers) return false;
+		if (!m_VulkanBackends->enableValidationLayers) return false;
 		VkDebugUtilsMessengerCreateInfoEXT createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 		createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -414,6 +508,7 @@ namespace Chonps
 			if (IsDeviceSuitable(device))
 			{
 				m_VulkanBackends->physicalDevice = device;
+				m_VulkanBackends->msaaSamples = vks::getMaxUsableSampleCount();
 				vkUtils::deviceProperties(device);
 				break;
 			}
@@ -462,8 +557,7 @@ namespace Chonps
 			swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 		}
 
-		VkPhysicalDeviceFeatures supportedFeatures{};
-		vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+		vkGetPhysicalDeviceFeatures(device, &m_VulkanBackends->deviceFeatures);
 
 		VkPhysicalDeviceFeatures2 supportedFeatures2{};
 		supportedFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
@@ -472,12 +566,12 @@ namespace Chonps
 		shaderDrawParamFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES;
 		shaderDrawParamFeatures.shaderDrawParameters = VK_TRUE;
 		shaderDrawParamFeatures.pNext = nullptr;
-		
+
 		supportedFeatures2.pNext = &shaderDrawParamFeatures;
 
 		vkGetPhysicalDeviceFeatures2(device, &supportedFeatures2);
 
-		return indices.complete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
+		return indices.complete() && extensionsSupported && swapChainAdequate && m_VulkanBackends->deviceFeatures.samplerAnisotropy;
 	}
 
 	VkSurfaceFormatKHR VulkanRendererAPI::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
@@ -521,11 +615,6 @@ namespace Chonps
 		indexingFeatures.runtimeDescriptorArray = VK_TRUE;
 		indexingFeatures.pNext = nullptr;
 
-		VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT deviceInputDynamicStateFeatures{};
-		deviceInputDynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT;
-		deviceInputDynamicStateFeatures.vertexInputDynamicState = true;
-		deviceInputDynamicStateFeatures.pNext = &indexingFeatures;
-
 		VkDeviceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
@@ -534,9 +623,9 @@ namespace Chonps
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 		createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-		createInfo.pNext = &deviceInputDynamicStateFeatures;
+		createInfo.pNext = &indexingFeatures;
 
-		if (enableValidationLayers)
+		if (m_VulkanBackends->enableValidationLayers)
 		{
 			createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 			createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -603,6 +692,7 @@ namespace Chonps
 
 		m_VulkanBackends->swapChainImageFormat = surfaceFormat.format;
 		m_VulkanBackends->swapChainExtent = extent;
+		m_VulkanBackends->swapChainCount = imageCount;
 	}
 
 	void VulkanRendererAPI::CreateImageViews()
@@ -610,7 +700,7 @@ namespace Chonps
 		m_VulkanBackends->swapChainImageViews.resize(m_VulkanBackends->swapChainImages.size());
 
 		for (size_t i = 0; i < m_VulkanBackends->swapChainImages.size(); i++)
-			m_VulkanBackends->swapChainImageViews[i] = vkSpec::createImageView(m_VulkanBackends->swapChainImages[i], m_VulkanBackends->swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+			m_VulkanBackends->swapChainImageViews[i] = vks::createImageView(m_VulkanBackends->swapChainImages[i], m_VulkanBackends->swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 
 	void VulkanRendererAPI::CreateRenderPass()
@@ -630,11 +720,11 @@ namespace Chonps
 		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentDescription depthAttachment{};
-		depthAttachment.format = vkUtils::findDepthFormat();
+		depthAttachment.format = vks::findDepthFormat();
 		depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -672,11 +762,13 @@ namespace Chonps
 
 	void VulkanRendererAPI::CreateDescriptorPool()
 	{
-		std::array<VkDescriptorPoolSize, 2> poolSizes{};
-		poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		std::array<VkDescriptorPoolSize, 3> poolSizes{};
+		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		poolSizes[0].descriptorCount = m_VulkanBackends->maxDescriptorCounts;
-		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		poolSizes[1].descriptorCount = m_VulkanBackends->maxDescriptorCounts;
+		poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		poolSizes[2].descriptorCount = m_VulkanBackends->maxDescriptorCounts;
 
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -732,12 +824,12 @@ namespace Chonps
 
 	void VulkanRendererAPI::CreateDepthResources()
 	{
-		VkFormat depthFormat = vkUtils::findDepthFormat();
+		VkFormat depthFormat = vks::findDepthFormat();
 
-		vkSpec::createImage(s_VulkanBackends->swapChainExtent.width, s_VulkanBackends->swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VulkanBackends->depthImage, m_VulkanBackends->depthImageMemory);
-		m_VulkanBackends->depthImageView = vkSpec::createImageView(m_VulkanBackends->depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+		vks::createImage(s_VulkanBackends->swapChainExtent.width, s_VulkanBackends->swapChainExtent.height, 0, VK_SAMPLE_COUNT_1_BIT, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VulkanBackends->depthImage, m_VulkanBackends->depthImageMemory);
+		m_VulkanBackends->depthImageView = vks::createImageView(m_VulkanBackends->depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-		vkSpec::transitionImageLayout(m_VulkanBackends->depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		vks::transitionImageLayout(m_VulkanBackends->depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 	}
 
 	void VulkanRendererAPI::CreateCommandBuffers()
@@ -755,72 +847,63 @@ namespace Chonps
 
 	void VulkanRendererAPI::ThreadRender(uint32_t threadIndex, uint32_t cmdBufferIndex, VkCommandBufferInheritanceInfo inheritanceInfo)
 	{
-		ThreadData* thread = &m_ThreadData[threadIndex];
+		//ThreadData* thread = &m_ThreadData[threadIndex];
 
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-		beginInfo.pInheritanceInfo = &inheritanceInfo;
+		//VkCommandBufferBeginInfo beginInfo{};
+		//beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		//beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+		//beginInfo.pInheritanceInfo = &inheritanceInfo;
 
-		VkCommandBuffer cmdBuffer = thread->commandBuffers[cmdBufferIndex];
+		//VkCommandBuffer cmdBuffer = thread->commandBuffers[cmdBufferIndex];
 
-		vkBeginCommandBuffer(cmdBuffer, &beginInfo);
+		//vkBeginCommandBuffer(cmdBuffer, &beginInfo);
 
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(m_VulkanBackends->swapChainExtent.width);
-		viewport.height = static_cast<float>(m_VulkanBackends->swapChainExtent.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
+		//VkViewport viewport{};
+		//viewport.x = 0.0f;
+		//viewport.y = 0.0f;
+		//viewport.width = static_cast<float>(m_VulkanBackends->swapChainExtent.width);
+		//viewport.height = static_cast<float>(m_VulkanBackends->swapChainExtent.height);
+		//viewport.minDepth = 0.0f;
+		//viewport.maxDepth = 1.0f;
+		//vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		scissor.extent = m_VulkanBackends->swapChainExtent;
-		vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
+		//VkRect2D scissor{};
+		//scissor.offset = { 0, 0 };
+		//scissor.extent = m_VulkanBackends->swapChainExtent;
+		//vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
-		CmdSetVertexInputEXT(cmdBuffer, 1, &m_VulkanBackends->bindingDescriptions, static_cast<uint32_t>(m_VulkanBackends->attributeDescriptions.size()), m_VulkanBackends->attributeDescriptions.data());
+		//VertexArray* lastVertexArray = nullptr;
+		//uint32_t lastShaderIndex = 0; bool firstTimeBindShader = true;
 
-		VertexArray* lastVertexArray = nullptr;
-		uint32_t lastShaderIndex = 0; bool firstTimeBindShader = true;
+		//for (auto& drawCommandData : thread->drawCommandData)
+		//{
+		//	DrawCommand drawCmd = drawCommandData.drawCmd;
 
-		for (auto& drawCommandData : thread->drawCommandData)
-		{
-			DrawCommand drawCmd = drawCommandData.drawCmd;
+		//	if (drawCmd.shaderIndex != lastShaderIndex || firstTimeBindShader == true)
+		//	{
+		//		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanBackends->graphicsPipeline[drawCmd.shaderIndex].pipeline);
+		//		firstTimeBindShader = false;
+		//	}
+		//	lastShaderIndex = drawCmd.shaderIndex;
 
-			if (drawCmd.shaderIndex != lastShaderIndex || firstTimeBindShader == true)
-			{
-				vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanBackends->graphicsPipeline[drawCmd.shaderIndex].pipeline);
-				firstTimeBindShader = false;
-			}
-			lastShaderIndex = drawCmd.shaderIndex;
+		//	if (drawCmd.vertexArray != lastVertexArray)
+		//	{
+		//		VkDeviceSize offsets[] = { 0 };
+		//		vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &drawCommandData.vertexBuffer, offsets);
+		//		vkCmdBindIndexBuffer(cmdBuffer, drawCommandData.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		//	}
+		//	lastVertexArray = drawCmd.vertexArray;
 
-			if (drawCmd.vertexArray != lastVertexArray)
-			{
-				VkDeviceSize offsets[] = { 0 };
-				vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &drawCommandData.vertexBuffer, offsets);
-				vkCmdBindIndexBuffer(cmdBuffer, drawCommandData.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-			}
-			lastVertexArray = drawCmd.vertexArray;
+		//	// vkCmdPushConstants(cmdBuffer, m_VulkanBackends->graphicsPipeline[drawCmd.shaderIndex].pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantTextureIndexData), &m_VulkanBackends->textureIndexConstant);
 
-			VkDescriptorSet descriptorSets[] =
-			{
-				// m_VulkanBackends->submitDescriptorSets[drawCmd.uniformBufferIndex][m_VulkanBackends->currentFrame],
-				drawCmd.textureIDs.empty() ? m_VulkanBackends->nullSamplerDescriptorSets[m_VulkanBackends->currentFrame] : m_VulkanBackends->samplerDescriptorSet[m_VulkanBackends->currentFrame]
-			};
+		//	uint32_t indexCount = drawCmd.vertexArray->GetIndexCount();
+		//	vkCmdDrawIndexed(cmdBuffer, indexCount, 1, 0, 0, 0); // main draw call
+		//}
 
-			vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanBackends->graphicsPipeline[drawCmd.shaderIndex].pipelineLayout, 0, 2, descriptorSets, 0, nullptr);
-			vkCmdPushConstants(cmdBuffer, m_VulkanBackends->graphicsPipeline[drawCmd.shaderIndex].pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantTextureIndexData), &m_VulkanBackends->textureIndexConstant);
-
-			uint32_t indexCount = drawCmd.vertexArray->GetIndexCount();
-			vkCmdDrawIndexed(cmdBuffer, indexCount, 1, 0, 0, 0); // main draw call
-		}
-
-		vkEndCommandBuffer(cmdBuffer);
+		//vkEndCommandBuffer(cmdBuffer);
 	}
 
-	void VulkanRendererAPI::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, const uint32_t& count)
+	void VulkanRendererAPI::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, uint32_t count)
 	{
 		std::vector<VkCommandBuffer> secondaryCommandBuffers;
 
@@ -846,7 +929,7 @@ namespace Chonps
 
 			for (uint32_t t = 0; t < m_VulkanBackends->numThreads; t++)
 			{
-				secondaryCommandBuffers.push_back(m_ThreadData[t].commandBuffers[m_VulkanBackends->currentFrame]);
+				//secondaryCommandBuffers.push_back(m_ThreadData[t].commandBuffers[m_VulkanBackends->currentFrame]);
 			}
 
 			// Execute render commands from the secondary command buffer
@@ -948,17 +1031,6 @@ namespace Chonps
 		vkDestroySwapchainKHR(m_VulkanBackends->device, m_VulkanBackends->swapChain, nullptr);
 	}
 
-	void VulkanRendererAPI::CreateOrUpdateUniformBuffer(uint32_t currentImage, uint32_t currentDrawCall)
-	{
-		if (m_VulkanBackends->uboData == nullptr || m_VulkanBackends->uboSize == 0)
-			return;
-
-		void* objectData = m_VulkanBackends->uniformBuffersMapped[currentImage];
-		objectData = static_cast<void*>(static_cast<char*>(objectData) + m_VulkanBackends->uboSize * currentDrawCall);
-
-		memcpy(objectData, static_cast<const char*>(m_VulkanBackends->uboData) + m_VulkanBackends->uboOffset, m_VulkanBackends->uboSize - m_VulkanBackends->uboOffset);
-	}
-
 	void VulkanRendererAPI::CreateOrUpdateTextureImage(uint32_t currentImage)
 	{
 		while (!m_VulkanBackends->texturesQueue[currentImage].empty())
@@ -966,28 +1038,28 @@ namespace Chonps
 			uint32_t texID = m_VulkanBackends->texturesQueue[currentImage].front();
 			VulkanTextureData texData = m_VulkanBackends->textureImages[texID];
 
-			s_VulkanBackends->imageInfos[texID].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			s_VulkanBackends->imageInfos[texID].imageView = texData.textureImageView;
-			s_VulkanBackends->imageInfos[texID].sampler = texData.textureSampler;
+			m_VulkanBackends->imageInfos[texID].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			m_VulkanBackends->imageInfos[texID].imageView = texData.textureImageView;
+			m_VulkanBackends->imageInfos[texID].sampler = texData.textureSampler;
 
 			std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[0].dstSet = s_VulkanBackends->samplerDescriptorSet[currentImage];
-			descriptorWrites[0].dstBinding = s_VulkanBackends->textureBinding;
+			descriptorWrites[0].dstSet = m_VulkanBackends->samplerDescriptorSet[currentImage];
+			descriptorWrites[0].dstBinding = m_VulkanBackends->textureDescriptorBindings->textureBinding;
 			descriptorWrites[0].dstArrayElement = 0;
 			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-			descriptorWrites[0].descriptorCount = s_VulkanBackends->maxTextures;
-			descriptorWrites[0].pImageInfo = s_VulkanBackends->imageInfos.data();
+			descriptorWrites[0].descriptorCount = m_VulkanBackends->maxTextures;
+			descriptorWrites[0].pImageInfo = m_VulkanBackends->imageInfos.data();
 
 			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[1].dstSet = s_VulkanBackends->samplerDescriptorSet[currentImage];
-			descriptorWrites[1].dstBinding = s_VulkanBackends->samplerBinding;
+			descriptorWrites[1].dstSet = m_VulkanBackends->samplerDescriptorSet[currentImage];
+			descriptorWrites[1].dstBinding = m_VulkanBackends->textureDescriptorBindings->samplerBinding;
 			descriptorWrites[1].dstArrayElement = 0;
 			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-			descriptorWrites[1].descriptorCount = s_VulkanBackends->maxTextures;
-			descriptorWrites[1].pImageInfo = s_VulkanBackends->imageInfos.data();
+			descriptorWrites[1].descriptorCount = m_VulkanBackends->maxTextures;
+			descriptorWrites[1].pImageInfo = m_VulkanBackends->imageInfos.data();
 
-			vkUpdateDescriptorSets(s_VulkanBackends->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+			vkUpdateDescriptorSets(m_VulkanBackends->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 
 			m_VulkanBackends->texturesQueue[currentImage].pop();
 		}
@@ -1003,101 +1075,62 @@ namespace Chonps
 
 	}
 
-	void VulkanRendererAPI::Draw(const uint32_t& count)
+	void VulkanRendererAPI::Draw(uint32_t vertexCount)
 	{
-		int width, height;
-		glfwGetFramebufferSize(s_CurrentWindow, &width, &height);
-		if (width == 0 || height == 0)
+		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
+		if (m_VulkanBackends->windowWidth == 0 || m_VulkanBackends->windowHeight == 0)
 			return;
 
-		CreateOrUpdateUniformBuffer(m_VulkanBackends->currentFrame, m_VulkanBackends->drawCallCount);
-		CHONPS_CORE_ASSERT(m_VulkanBackends->uboData != nullptr, "ERROR: UNIFORM_BUFFER: uniform data was nullptr!");
-
-		vkCmdBindPipeline(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanBackends->graphicsPipeline[m_VulkanBackends->currentBindedGraphicsPipeline].pipeline);
-
-		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], 0, 1, &m_VulkanBackends->vertexBuffer, offsets);
-		vkCmdBindIndexBuffer(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], m_VulkanBackends->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-
-		VkDescriptorSet descriptorSets[] =
-		{
-			s_VulkanBackends->descriptorSets[m_VulkanBackends->currentFrame],
-			m_VulkanBackends->currentBindedTextureImages.empty() ? s_VulkanBackends->nullSamplerDescriptorSets[s_VulkanBackends->currentFrame] : s_VulkanBackends->samplerDescriptorSet[s_VulkanBackends->currentFrame]
-		};
-
-		vkCmdBindDescriptorSets(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, s_VulkanBackends->graphicsPipeline[m_VulkanBackends->currentBindedGraphicsPipeline].pipelineLayout, 0, 2, descriptorSets, 0, nullptr);
-		vkCmdPushConstants(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], s_VulkanBackends->graphicsPipeline[m_VulkanBackends->currentBindedGraphicsPipeline].pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantTextureIndexData), &s_VulkanBackends->textureIndexConstant);
-
-		vkCmdDrawIndexed(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], count, 1, 0, 0, m_VulkanBackends->drawCallCount); // main draw call
-
-		m_VulkanBackends->allowClearBindedTextures = true;
-		m_VulkanBackends->drawCallCount++;
+		vkCmdDraw(m_VulkanBackends->commandBuffers[m_VulkanBackends->maxFramesInFlight], vertexCount, 1, 0, 0);
 	}
 
-	void VulkanRendererAPI::Draw(VertexArray* vertexArray)
+	void VulkanRendererAPI::DrawIndexed(uint32_t indexCount)
 	{
-		int width, height;
-		glfwGetFramebufferSize(s_CurrentWindow, &width, &height);
-		if (width == 0 || height == 0)
+		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
+		if (m_VulkanBackends->windowWidth == 0 || m_VulkanBackends->windowHeight == 0)
 			return;
 
-		CreateOrUpdateUniformBuffer(m_VulkanBackends->currentFrame, m_VulkanBackends->drawCallCount);
-		CHONPS_CORE_ASSERT(m_VulkanBackends->uboData != nullptr, "ERROR: UNIFORM_BUFFER: uniform data was nullptr!");
-		
-		vkCmdBindPipeline(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanBackends->graphicsPipeline[m_VulkanBackends->currentBindedGraphicsPipeline].pipeline);
+		vkCmdDrawIndexed(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], indexCount, 1, 0, 0, 0); // main draw call
+	}
 
-		vertexArray->Bind();
-		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], 0, 1, &m_VulkanBackends->vertexBuffer, offsets);
-		vkCmdBindIndexBuffer(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], m_VulkanBackends->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-
-		VkDescriptorSet descriptorSets[] =
-		{
-			s_VulkanBackends->descriptorSets[m_VulkanBackends->currentFrame],
-			m_VulkanBackends->currentBindedTextureImages.empty() ? s_VulkanBackends->nullSamplerDescriptorSets[s_VulkanBackends->currentFrame] : s_VulkanBackends->samplerDescriptorSet[s_VulkanBackends->currentFrame]
-		};
-
-		vkCmdBindDescriptorSets(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, s_VulkanBackends->graphicsPipeline[m_VulkanBackends->currentBindedGraphicsPipeline].pipelineLayout, 0, 2, descriptorSets, 0, nullptr);
-		vkCmdPushConstants(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], s_VulkanBackends->graphicsPipeline[m_VulkanBackends->currentBindedGraphicsPipeline].pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantTextureIndexData), &s_VulkanBackends->textureIndexConstant);
+	void VulkanRendererAPI::DrawIndexed(VertexArray* vertexArray)
+	{
+		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
+		if (m_VulkanBackends->windowWidth == 0 || m_VulkanBackends->windowHeight == 0)
+			return;
 
 		uint32_t indexCount = vertexArray->GetIndexCount();
-		vkCmdDrawIndexed(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], indexCount, 1, 0, 0, m_VulkanBackends->drawCallCount); // main draw call
-
-		m_VulkanBackends->allowClearBindedTextures = true;
-		m_VulkanBackends->drawCallCount++;
+		vkCmdDrawIndexed(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], indexCount, 1, 0, 0, 0); // main draw call
 	}
 
-	void VulkanRendererAPI::DrawLine(VertexArray* vertexArray)
+	void VulkanRendererAPI::DrawInstanced(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance)
 	{
-		int width, height;
-		glfwGetFramebufferSize(s_CurrentWindow, &width, &height);
-		if (width == 0 || height == 0)
+		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
+		if (m_VulkanBackends->windowWidth == 0 || m_VulkanBackends->windowHeight == 0)
 			return;
 
-		DrawCommand drawCommand{};
-		drawCommand.vertexArray = vertexArray;
+		vkCmdDraw(m_VulkanBackends->commandBuffers[m_VulkanBackends->maxFramesInFlight], vertexCount, instanceCount, 0, firstInstance);
+	}
 
-		drawCommand.shaderIndex = m_VulkanBackends->currentBindedGraphicsPipeline;
-		drawCommand.uniformBufferIndex = m_VulkanBackends->drawCallCount - 1;
-		m_DrawList.drawCommands.emplace_back(drawCommand);
+	void VulkanRendererAPI::DrawIndexedInstanced(uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance)
+	{
+		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
+		if (m_VulkanBackends->windowWidth == 0 || m_VulkanBackends->windowHeight == 0)
+			return;
+
+		vkCmdDrawIndexed(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], indexCount, instanceCount, 0, 0, firstInstance); // main draw call
 	}
 
 	void VulkanRendererAPI::BeginNextFrame()
 	{
-		int width, height;
-		glfwGetFramebufferSize(s_CurrentWindow, &width, &height);
-		if (width == 0 || height == 0)
+		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
+		if (m_VulkanBackends->windowWidth == 0 || m_VulkanBackends->windowHeight == 0)
 			return;
 
 		// Clean up rendering data for next frame
 		m_DrawList.clear();
 		m_VulkanBackends->drawCallCount = 0;
-		m_VulkanBackends->currentBindedTextureImages.clear();
 
-		for (auto& thread : m_ThreadData)
-			thread.drawCommandData.clear();
 
 		vkWaitForFences(m_VulkanBackends->device, 1, &m_VulkanBackends->inFlightFences[m_VulkanBackends->currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -1123,58 +1156,16 @@ namespace Chonps
 		beginInfo.pInheritanceInfo = nullptr; // Optional
 
 		CHONPS_CORE_ASSERT(vkBeginCommandBuffer(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], &beginInfo) == VK_SUCCESS, "Failed to begin recording command buffer!");
-
-		VkRenderPassBeginInfo renderPassInfo{};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = m_VulkanBackends->renderPass;
-		renderPassInfo.framebuffer = m_VulkanBackends->swapChainFramebuffers[m_VulkanBackends->imageIndex];
-
-		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = m_VulkanBackends->swapChainExtent;
-
-		renderPassInfo.clearValueCount = 1;
-		renderPassInfo.pClearValues = &m_VulkanBackends->clearColor;
-
-		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = m_VulkanBackends->clearColor.color;
-		clearValues[1].depthStencil = { 1.0f, 0 };
-
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();
-
-		vkCmdBeginRenderPass(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], &renderPassInfo, (m_VulkanBackends->multithreadingEnabled && m_VulkanBackends->drawCallCount >= m_VulkanBackends->numThreads) ? VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS : VK_SUBPASS_CONTENTS_INLINE);
-
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = static_cast<float>(m_VulkanBackends->swapChainExtent.height);
-		viewport.width = static_cast<float>(m_VulkanBackends->swapChainExtent.width);
-		viewport.height = -static_cast<float>(m_VulkanBackends->swapChainExtent.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], 0, 1, &viewport);
-
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		scissor.extent = m_VulkanBackends->swapChainExtent;
-		vkCmdSetScissor(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], 0, 1, &scissor);
-
-		CmdSetVertexInputEXT(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], 1, &m_VulkanBackends->bindingDescriptions, static_cast<uint32_t>(m_VulkanBackends->attributeDescriptions.size()), m_VulkanBackends->attributeDescriptions.data());
 	}
 
 	void VulkanRendererAPI::DrawSubmit()
 	{
-		int width, height;
-		glfwGetFramebufferSize(s_CurrentWindow, &width, &height);
-		if (width == 0 || height == 0)
+		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
+		if (m_VulkanBackends->windowWidth == 0 || m_VulkanBackends->windowHeight == 0)
 			return;
-
-		m_VulkanBackends->firstTimeDrawCallCount = false; // After the first render submit call and counting the total draw calls
-		m_VulkanBackends->allowClearBindedTextures = true; // Allow all texture binds to be cleared in currentlyBindedTextureImages
 
 		m_VulkanBackends->drawCallCountTotal = m_VulkanBackends->drawCallCount;
 
-		// End Render Pass & Command Buffer
-		vkCmdEndRenderPass(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame]);
 		CHONPS_CORE_ASSERT(vkEndCommandBuffer(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame]) == VK_SUCCESS, "Failed to record command buffer!");
 
 		// Submit render to GPU
@@ -1186,7 +1177,6 @@ namespace Chonps
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
-
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame];
 
@@ -1218,50 +1208,113 @@ namespace Chonps
 		else if (result != VK_SUCCESS)
 			CHONPS_CORE_ASSERT(false, "Failed to present swap chain image!");
 
-		CreateOrUpdateTextureImage(m_VulkanBackends->currentFrame); // Update Descriptor Set Texture Array if new textures are added (new textures may override old textures with the same ID)
-
 		m_VulkanBackends->currentFrame = (m_VulkanBackends->currentFrame + 1) % m_VulkanBackends->maxFramesInFlight; // Modulo (%) will loop the frame index back to beggining after every Max Frame
 	}
 
-	void VulkanRendererAPI::FrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height)
+	void VulkanRendererAPI::RenderPassBegin()
 	{
+		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
+		if (m_VulkanBackends->windowWidth == 0 || m_VulkanBackends->windowHeight == 0)
+			return;
 
+		VkRenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = m_VulkanBackends->renderPass;
+		renderPassInfo.framebuffer = m_VulkanBackends->swapChainFramebuffers[m_VulkanBackends->imageIndex];
+		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.extent = m_VulkanBackends->swapChainExtent;
+
+		std::array<VkClearValue, 2> clearValues{};
+		clearValues[0].color = m_VulkanBackends->clearColor.color;
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues = clearValues.data();
+
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = static_cast<float>(m_VulkanBackends->swapChainExtent.height);
+		viewport.width = static_cast<float>(m_VulkanBackends->swapChainExtent.width);
+		viewport.height = -static_cast<float>(m_VulkanBackends->swapChainExtent.height);
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], 0, 1, &viewport);
+
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		scissor.extent = m_VulkanBackends->swapChainExtent;
+		vkCmdSetScissor(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], 0, 1, &scissor);
+
+		vkCmdBeginRenderPass(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], &renderPassInfo, (m_VulkanBackends->multithreadingEnabled && m_VulkanBackends->drawCallCount >= m_VulkanBackends->numThreads) ? VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS : VK_SUBPASS_CONTENTS_INLINE);
 	}
 
-	void VulkanRendererAPI::EnableCullFace()
+	void VulkanRendererAPI::RenderPassEnd()
 	{
+		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
+		if (m_VulkanBackends->windowWidth == 0 || m_VulkanBackends->windowHeight == 0)
+			return;
 
+		vkCmdEndRenderPass(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame]);
 	}
 
-	void VulkanRendererAPI::DisableCullFace()
+	void VulkanRendererAPI::PushConstant(uint32_t size, uint32_t offset, ShaderStage shaderStage, const void* pValues)
 	{
-
-	}
-
-	namespace vkSpec
-	{
-		VkVertexInputBindingDescription2EXT getBindingDescription(uint32_t stride)
+		VkShaderStageFlags shaderStageFlags = VK_SHADER_STAGE_ALL;
+		switch (shaderStage)
 		{
-			VkVertexInputBindingDescription2EXT bindingDescription{};
-			bindingDescription.sType = VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT;
-			bindingDescription.binding = 0;
-			bindingDescription.divisor = 1;
-			bindingDescription.stride = stride;
-			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-			return bindingDescription;
+			case ShaderStage::Vertex:
+			{
+				shaderStageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+				break;
+			}
+			case ShaderStage::Fragment:
+			{
+				shaderStageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+				break;
+			}
+			case ShaderStage::All:
+			{
+				shaderStageFlags = VK_SHADER_STAGE_ALL;
+				break;
+			}
 		}
 
-		VkVertexInputAttributeDescription2EXT getAttributeDescriptions(uint32_t layout, VkFormat type, uint32_t stride, void* offset)
+		vkCmdPushConstants(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], m_VulkanBackends->graphicsPipeline[m_VulkanBackends->currentBindedGraphicsPipeline].pipelineLayout, shaderStageFlags, offset, size, &pValues);
+	}
+
+	void VulkanRendererAPI::BindBufferSet(Shader* shader, UniformBuffer* buffer, uint32_t setIndex)
+	{
+		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
+		if (m_VulkanBackends->windowWidth == 0 || m_VulkanBackends->windowHeight == 0)
+			return;
+
+		CHONPS_CORE_ASSERT(shader != nullptr, "Shader was nullptr!");
+		uint32_t shaderID = shader->id();
+
+		if (buffer != nullptr)
+			vkCmdBindDescriptorSets(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanBackends->graphicsPipeline[shaderID].pipelineLayout, setIndex, 1, &m_VulkanBackends->bufferDescriptorSets[buffer->id()][m_VulkanBackends->currentFrame], 0, nullptr);
+	}
+
+	namespace vks
+	{
+		VkVertexInputAttributeDescription getAttributeDescriptions(uint32_t layout, VkFormat type, uint32_t stride, void* offset)
 		{
-			VkVertexInputAttributeDescription2EXT attributeDescriptions{};
-			attributeDescriptions.sType = VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT;
+			VkVertexInputAttributeDescription attributeDescriptions{};
 			attributeDescriptions.binding = 0;
 			attributeDescriptions.location = layout;
 			attributeDescriptions.format = type;
 			attributeDescriptions.offset = static_cast<uint32_t>(reinterpret_cast<std::uintptr_t>(offset));
-			s_VulkanBackends->bindingDescriptions = getBindingDescription(stride);
 
 			return attributeDescriptions;
+		}
+		
+		VkVertexInputBindingDescription getBindingDescription(uint32_t stride)
+		{
+			VkVertexInputBindingDescription bindingDescription{};
+			bindingDescription.binding = 0;
+			bindingDescription.stride = stride;
+			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+			return bindingDescription;
 		}
 
 		uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -1276,10 +1329,10 @@ namespace Chonps
 			}
 
 			CHONPS_CORE_ASSERT(false, "Failed to find suitable memory type!");
-			return -1;
+			return 0;
 		}
 
-		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+		void createBuffer(VkDeviceSize size, VkBuffer& buffer, VmaAllocation& bufferMemory, VkBufferUsageFlags usage, VmaMemoryUsage memUsage)
 		{
 			VkBufferCreateInfo bufferInfo{};
 			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -1287,29 +1340,45 @@ namespace Chonps
 			bufferInfo.usage = usage;
 			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-			VkDevice device = s_VulkanBackends->device;
+			VmaAllocationCreateInfo allocInfo{};
+			allocInfo.usage = memUsage;
 
-			CHONPS_CORE_ASSERT(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) == VK_SUCCESS, "Failed to create buffer!");
-
-			VkMemoryRequirements memRequirements;
-			vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-			VkMemoryAllocateInfo allocInfo{};
-			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize = memRequirements.size;
-			allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-
-			CHONPS_CORE_ASSERT(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) == VK_SUCCESS, "Failed to allocate buffer memory!");
-
-			vkBindBufferMemory(device, buffer, bufferMemory, 0);
+			CHONPS_CORE_ASSERT(vmaCreateBuffer(s_VmaAllocator, &bufferInfo, &allocInfo, &buffer, &bufferMemory, nullptr) == VK_SUCCESS, "Failed to create Buffer!");
 		}
 
-		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset)
 		{
 			VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
 			VkBufferCopy copyRegion{};
 			copyRegion.size = size;
+			copyRegion.srcOffset = srcOffset;
+			copyRegion.dstOffset = dstOffset;
+			vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+			endSingleTimeCommands(commandBuffer);
+		}
+
+		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset, VkAccessFlags srcMask, VkAccessFlags dstMask)
+		{
+			VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+
+			VkBufferMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+			barrier.buffer = dstBuffer;
+			barrier.size = size;
+			barrier.offset = dstOffset;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.srcAccessMask = srcMask;
+			barrier.dstAccessMask = dstMask;
+
+			vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, nullptr, 1, &barrier, 0, nullptr);
+
+			VkBufferCopy copyRegion{};
+			copyRegion.size = size;
+			copyRegion.srcOffset = srcOffset;
+			copyRegion.dstOffset = dstOffset;
 			vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
 			endSingleTimeCommands(commandBuffer);
@@ -1350,7 +1419,7 @@ namespace Chonps
 			vkFreeCommandBuffers(s_VulkanBackends->device, s_VulkanBackends->commandPool, 1, &commandBuffer);
 		}
 
-		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount)
 		{
 			VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
@@ -1365,7 +1434,7 @@ namespace Chonps
 			barrier.subresourceRange.baseMipLevel = 0;
 			barrier.subresourceRange.levelCount = 1;
 			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
+			barrier.subresourceRange.layerCount = layerCount;
 
 			VkPipelineStageFlags sourceStage;
 			VkPipelineStageFlags destinationStage;
@@ -1374,7 +1443,7 @@ namespace Chonps
 			{
 				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-				if (vkUtils::hasStencilComponent(format))
+				if (vks::hasStencilComponent(format))
 					barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 			}
 			else
@@ -1411,7 +1480,7 @@ namespace Chonps
 			endSingleTimeCommands(commandBuffer);
 		}
 
-		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+		void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount)
 		{
 			VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
@@ -1423,7 +1492,7 @@ namespace Chonps
 			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			region.imageSubresource.mipLevel = 0;
 			region.imageSubresource.baseArrayLayer = 0;
-			region.imageSubresource.layerCount = 1;
+			region.imageSubresource.layerCount = layerCount;
 
 			region.imageOffset = { 0, 0, 0 };
 			region.imageExtent = { width, height, 1 };
@@ -1452,7 +1521,7 @@ namespace Chonps
 			return imageView;
 		}
 
-		void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+		void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
 		{
 			VkImageCreateInfo imageInfo{};
 			imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1466,12 +1535,10 @@ namespace Chonps
 			imageInfo.tiling = tiling;
 			imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			imageInfo.usage = usage;
-			imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+			imageInfo.samples = numSamples;
 			imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-			if (vkCreateImage(s_VulkanBackends->device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
-				throw std::runtime_error("failed to create image!");
-			}
+			CHONPS_CORE_ASSERT(vkCreateImage(s_VulkanBackends->device, &imageInfo, nullptr, &image) == VK_SUCCESS, "failed to create image!");
 
 			VkMemoryRequirements memRequirements;
 			vkGetImageMemoryRequirements(s_VulkanBackends->device, image, &memRequirements);
@@ -1481,9 +1548,7 @@ namespace Chonps
 			allocInfo.allocationSize = memRequirements.size;
 			allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-			if (vkAllocateMemory(s_VulkanBackends->device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-				throw std::runtime_error("failed to allocate image memory!");
-			}
+			CHONPS_CORE_ASSERT(vkAllocateMemory(s_VulkanBackends->device, &allocInfo, nullptr, &imageMemory) == VK_SUCCESS, "failed to allocate image memory!");
 
 			vkBindImageMemory(s_VulkanBackends->device, image, imageMemory, 0);
 		}
@@ -1497,16 +1562,16 @@ namespace Chonps
 			VkFormat format = renderGetGammaCorrection() == true ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
 
 			VkBuffer stagingBuffer;
-			VkDeviceMemory stagingBufferMemory;
+			VmaAllocation stagingBufferMemory;
 
 			VkDeviceSize imageSize = width * height * 4;
 
-			vkSpec::createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+			vks::createBuffer(imageSize, stagingBuffer, stagingBufferMemory, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
 			void* bufferData;
-			vkMapMemory(m_VulkanBackends->device, stagingBufferMemory, 0, imageSize, 0, &bufferData);
+			vmaMapMemory(s_VmaAllocator, stagingBufferMemory, &bufferData);
 			memcpy(bufferData, data, static_cast<size_t>(imageSize));
-			vkUnmapMemory(m_VulkanBackends->device, stagingBufferMemory);
+			vmaUnmapMemory(s_VmaAllocator, stagingBufferMemory);
 
 			VkImageCreateInfo imageInfo{};
 			imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1529,24 +1594,21 @@ namespace Chonps
 			VkMemoryRequirements memRequirements;
 			vkGetImageMemoryRequirements(m_VulkanBackends->device, vulkanTexture.textureImage, &memRequirements);
 
-			VkMemoryAllocateInfo allocInfo{};
-			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize = memRequirements.size;
-			allocInfo.memoryTypeIndex = vkSpec::findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			VmaAllocationCreateInfo allocInfo{};
+			allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-			CHONPS_CORE_ASSERT(vkAllocateMemory(m_VulkanBackends->device, &allocInfo, nullptr, &vulkanTexture.textureImageMemory) == VK_SUCCESS, "Failed to allocate image memory!");
+			vmaAllocateMemory(s_VmaAllocator, &memRequirements, &allocInfo, &vulkanTexture.textureImageMemory, nullptr);
+			vmaBindImageMemory(s_VmaAllocator, vulkanTexture.textureImageMemory, vulkanTexture.textureImage);
 
-			vkBindImageMemory(m_VulkanBackends->device, vulkanTexture.textureImage, vulkanTexture.textureImageMemory, 0);
+			vks::transitionImageLayout(vulkanTexture.textureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+			vks::copyBufferToImage(stagingBuffer, vulkanTexture.textureImage, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 
-			vkSpec::transitionImageLayout(vulkanTexture.textureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-			vkSpec::copyBufferToImage(stagingBuffer, vulkanTexture.textureImage, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
-
-			vkSpec::transitionImageLayout(vulkanTexture.textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			vks::transitionImageLayout(vulkanTexture.textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 			vkDestroyBuffer(m_VulkanBackends->device, stagingBuffer, nullptr);
-			vkFreeMemory(m_VulkanBackends->device, stagingBufferMemory, nullptr);
+			vmaFreeMemory(s_VmaAllocator, stagingBufferMemory);
 
-			vulkanTexture.textureImageView = vkSpec::createImageView(vulkanTexture.textureImage, format, VK_IMAGE_ASPECT_COLOR_BIT);
+			vulkanTexture.textureImageView = vks::createImageView(vulkanTexture.textureImage, format, VK_IMAGE_ASPECT_COLOR_BIT);
 
 			VkSamplerCreateInfo samplerInfo{};
 			samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -1577,96 +1639,113 @@ namespace Chonps
 			return vulkanTexture;
 		}
 
-		void fillQueueCountIDs()
+		void fillQueueCountIDs(uint32_t firstElement, uint32_t finalElement)
 		{
-			for (uint32_t i = 0; i < 0xffff; i++)
+			s_VulkanBackends->uniformBufferCountIDs = QueueChain<uint32_t>(firstElement, finalElement);
+			s_VulkanBackends->shaderCountIDs = QueueChain<uint32_t>(firstElement, finalElement);
+			s_VulkanBackends->vertexBufferCountIDs = QueueChain<uint32_t>(firstElement, finalElement);
+			s_VulkanBackends->indexBufferCountIDs = QueueChain<uint32_t>(firstElement, finalElement);
+			s_VulkanBackends->vertexArrayBufferCountIDs = QueueChain<uint32_t>(firstElement, finalElement);
+			s_VulkanBackends->textureCountIDs = QueueChain<uint32_t>(firstElement, finalElement);
+			s_VulkanBackends->frameBufferCountIDs = QueueChain<uint32_t>(firstElement, finalElement);
+		}
+
+		VkFormat findDepthFormat()
+		{
+			return vkUtils::findSupportedFormat({ VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+		}
+
+		bool hasStencilComponent(VkFormat format)
+		{
+			return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+		}
+
+		void vkImplTextureBinding(uint32_t textureBinding, uint32_t samplerBinding, uint32_t frameBufferBinding, uint32_t cubemapBinding)
+		{
+			CHONPS_CORE_ASSERT(textureBinding != samplerBinding, "textureBinding and samplerBinding must have a different value!");
+			VulkanBackends* vkBackends = getVulkanBackends();
+
+			s_TextureDescriptorBindings.textureBinding = textureBinding;
+			s_TextureDescriptorBindings.samplerBinding = samplerBinding;
+			s_TextureDescriptorBindings.frameBufferBinding = frameBufferBinding;
+			s_TextureDescriptorBindings.cubemapBinding = cubemapBinding;
+		}
+
+		VkSampleCountFlagBits getMaxUsableSampleCount()
+		{
+			VkPhysicalDeviceProperties physicalDeviceProperties;
+			vkGetPhysicalDeviceProperties(s_VulkanBackends->physicalDevice, &physicalDeviceProperties);
+
+			VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+			if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+			if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+			if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+			if (counts & VK_SAMPLE_COUNT_8_BIT)  { return VK_SAMPLE_COUNT_8_BIT; }
+			if (counts & VK_SAMPLE_COUNT_4_BIT)  { return VK_SAMPLE_COUNT_4_BIT; }
+			if (counts & VK_SAMPLE_COUNT_2_BIT)  { return VK_SAMPLE_COUNT_2_BIT; }
+
+			return VK_SAMPLE_COUNT_1_BIT;
+		}
+
+		VkSampleCountFlagBits getSampleCountFlagBits(Sample samples)
+		{
+			switch (samples)
 			{
-				s_VulkanBackends->shaderCountIDs.push(i);
-				s_VulkanBackends->textureCountIDs.push(i);
+				case Chonps::Sample::SampleCount_1_Bit: { return VK_SAMPLE_COUNT_1_BIT; }
+				case Chonps::Sample::SampleCount_2_Bit: { return VK_SAMPLE_COUNT_2_BIT; }
+				case Chonps::Sample::SampleCount_4_Bit: { return VK_SAMPLE_COUNT_4_BIT; }
+				case Chonps::Sample::SampleCount_8_Bit: { return VK_SAMPLE_COUNT_8_BIT; }
+				case Chonps::Sample::SampleCount_16_Bit: { return VK_SAMPLE_COUNT_16_BIT; }
+				case Chonps::Sample::SampleCount_32_Bit: { return VK_SAMPLE_COUNT_32_BIT; }
+				case Chonps::Sample::SampleCount_64_Bit: { return VK_SAMPLE_COUNT_64_BIT; }
+				case Chonps::Sample::SampleCount_Max_Bit: { return VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM; }
+				default:
+				{
+					CHONPS_CORE_WARN("WARNING: Could not find sample, returning default sample!");
+					return VK_SAMPLE_COUNT_1_BIT;
+				}
 			}
+		}
+
+		uint32_t getSampleCountValue(VkSampleCountFlagBits samples)
+		{
+			switch (samples)
+			{
+				case VK_SAMPLE_COUNT_1_BIT: { return 1; }
+				case VK_SAMPLE_COUNT_2_BIT: { return 2; }
+				case VK_SAMPLE_COUNT_4_BIT: { return 4; }
+				case VK_SAMPLE_COUNT_8_BIT: { return 8; }
+				case VK_SAMPLE_COUNT_16_BIT: { return 16; }
+				case VK_SAMPLE_COUNT_32_BIT: { return 32; }
+				case VK_SAMPLE_COUNT_64_BIT: { return 64; }
+				case VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM: { return 0x7FFFFFFF; }
+				default:
+				{
+					CHONPS_CORE_WARN("WARNING: Could not find sample match!");
+					return 1;
+				}
+			}
+		}
+
+		VkSampleCountFlagBits getSupportedSampleCount(Sample samples)
+		{
+			VkSampleCountFlagBits fbSampleCount = getSampleCountFlagBits(samples);
+			VkSampleCountFlagBits maxSampleCount = vks::getMaxUsableSampleCount();
+
+			uint32_t fbCount = getSampleCountValue(fbSampleCount);
+			uint32_t maxCount = getSampleCountValue(maxSampleCount);
+
+			if (fbCount > maxCount)
+			{
+				CHONPS_CORE_WARN("WARNING: Specified FrameBuffer Sample count ({0}) is higher than the max sample count that is supported by the device ({1}); Using supported sample count instead!", fbCount, maxCount);
+				return maxSampleCount;
+			}
+			else
+				return fbSampleCount;
 		}
 
 		void vkImplPrepareDraw()
 		{
-			// Create Descriptor Layout for null texture
-			VkDescriptorSetLayoutBinding textureLayoutBinding{};
-			textureLayoutBinding.binding = s_VulkanBackends->textureBinding;
-			textureLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-			textureLayoutBinding.descriptorCount = s_VulkanBackends->maxTextures;
-			textureLayoutBinding.stageFlags = VK_SHADER_STAGE_ALL;
-			textureLayoutBinding.pImmutableSamplers = nullptr;
-
-			VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-			samplerLayoutBinding.binding = s_VulkanBackends->samplerBinding;
-			samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-			samplerLayoutBinding.descriptorCount = s_VulkanBackends->maxTextures;
-			samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_ALL;
-			samplerLayoutBinding.pImmutableSamplers = nullptr;
-
-			std::vector<VkDescriptorSetLayoutBinding> layoutBindings = { textureLayoutBinding, samplerLayoutBinding };
-			VkDescriptorSetLayoutCreateInfo layoutInfo{};
-			layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT;
-			layoutInfo.bindingCount = static_cast<uint32_t>(layoutBindings.size());
-			layoutInfo.pBindings = layoutBindings.data();
-
-			CHONPS_CORE_ASSERT(vkCreateDescriptorSetLayout(s_VulkanBackends->device, &layoutInfo, nullptr, &s_VulkanBackends->samplerDescriptorSetsLayout) == VK_SUCCESS, "Failed to create descriptor set layout!");
-
-			// Create Descriptor Set for null texture
-			std::vector<VkDescriptorSetLayout> nullSamplerLayouts(s_VulkanBackends->maxFramesInFlight, s_VulkanBackends->samplerDescriptorSetsLayout);
-			VkDescriptorSetAllocateInfo nullSamplerAllocInfo{};
-			nullSamplerAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-			nullSamplerAllocInfo.descriptorPool = s_VulkanBackends->descriptorPool;
-			nullSamplerAllocInfo.descriptorSetCount = static_cast<uint32_t>(nullSamplerLayouts.size());
-			nullSamplerAllocInfo.pSetLayouts = nullSamplerLayouts.data();
-
-			s_VulkanBackends->nullSamplerDescriptorSets.resize(s_VulkanBackends->maxFramesInFlight);
-			CHONPS_CORE_ASSERT(vkAllocateDescriptorSets(s_VulkanBackends->device, &nullSamplerAllocInfo, s_VulkanBackends->nullSamplerDescriptorSets.data()) == VK_SUCCESS, "Failed to allocate descriptor sets!");
-
-			std::vector<VkDescriptorImageInfo> imageInfo{};
-			imageInfo.resize(s_VulkanBackends->maxTextures);
-			for (uint32_t i = 0; i < imageInfo.size(); i++)
-			{
-				imageInfo[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo[i].imageView = s_VulkanBackends->nullDataTexture.textureImageView;
-				imageInfo[i].sampler = s_VulkanBackends->nullDataTexture.textureSampler;
-			}
-			s_VulkanBackends->imageInfos = imageInfo;
-
-			for (size_t i = 0; i < s_VulkanBackends->nullSamplerDescriptorSets.size(); i++)
-			{
-				std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-				descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptorWrites[0].dstSet = s_VulkanBackends->nullSamplerDescriptorSets[i];
-				descriptorWrites[0].dstBinding = s_VulkanBackends->textureBinding;
-				descriptorWrites[0].dstArrayElement = 0;
-				descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-				descriptorWrites[0].descriptorCount = s_VulkanBackends->maxTextures;
-				descriptorWrites[0].pImageInfo = imageInfo.data();
-
-				descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptorWrites[1].dstSet = s_VulkanBackends->nullSamplerDescriptorSets[i];
-				descriptorWrites[1].dstBinding = s_VulkanBackends->samplerBinding;
-				descriptorWrites[1].dstArrayElement = 0;
-				descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-				descriptorWrites[1].descriptorCount = s_VulkanBackends->maxTextures;
-				descriptorWrites[1].pImageInfo = imageInfo.data();
-
-				vkUpdateDescriptorSets(s_VulkanBackends->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-			}
-
-			// Create Descriptor Set for texture array to contain all textures
-			std::vector<VkDescriptorSetLayout> samplerLayouts(s_VulkanBackends->maxFramesInFlight, s_VulkanBackends->samplerDescriptorSetsLayout);
-			VkDescriptorSetAllocateInfo samplerAllocInfo{};
-			samplerAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-			samplerAllocInfo.descriptorPool = s_VulkanBackends->descriptorPool;
-			samplerAllocInfo.descriptorSetCount = static_cast<uint32_t>(samplerLayouts.size());
-			samplerAllocInfo.pSetLayouts = samplerLayouts.data();
-
-			std::vector<VkDescriptorSet> descriptorSets{}; descriptorSets.resize(s_VulkanBackends->maxFramesInFlight);
-			CHONPS_CORE_ASSERT(vkAllocateDescriptorSets(s_VulkanBackends->device, &samplerAllocInfo, descriptorSets.data()) == VK_SUCCESS, "Failed to allocate descriptor sets!");
-			s_VulkanBackends->samplerDescriptorSet = descriptorSets;
-
 			// Update texture array with texture images
 			for (uint32_t i = 0; i < s_VulkanBackends->maxFramesInFlight; i++)
 			{
@@ -1681,7 +1760,7 @@ namespace Chonps
 					std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 					descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 					descriptorWrites[0].dstSet = s_VulkanBackends->samplerDescriptorSet[i];
-					descriptorWrites[0].dstBinding = s_VulkanBackends->textureBinding;
+					descriptorWrites[0].dstBinding = s_VulkanBackends->textureDescriptorBindings->textureBinding;
 					descriptorWrites[0].dstArrayElement = 0;
 					descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 					descriptorWrites[0].descriptorCount = s_VulkanBackends->maxTextures;
@@ -1689,7 +1768,7 @@ namespace Chonps
 
 					descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 					descriptorWrites[1].dstSet = s_VulkanBackends->samplerDescriptorSet[i];
-					descriptorWrites[1].dstBinding = s_VulkanBackends->samplerBinding;
+					descriptorWrites[1].dstBinding = s_VulkanBackends->textureDescriptorBindings->samplerBinding;
 					descriptorWrites[1].dstArrayElement = 0;
 					descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
 					descriptorWrites[1].descriptorCount = s_VulkanBackends->maxTextures;
@@ -1702,42 +1781,6 @@ namespace Chonps
 			for (auto& queue : s_VulkanBackends->texturesQueue)
 				std::queue<uint32_t>().swap(queue);
 
-			// Push Constant
-			VkPushConstantRange pushConstant{};
-			pushConstant.size = sizeof(PushConstantTextureIndexData);
-			pushConstant.offset = 0;
-			pushConstant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-			s_VulkanBackends->pushConstantRange = pushConstant;
-			s_VulkanBackends->pushConstantRangeCount++;
-
-			if (!s_VulkanBackends->uboDescriptorSetLayouts.empty())
-				for (auto& uboDescriptorSetLayout : s_VulkanBackends->uboDescriptorSetLayouts)
-					s_VulkanBackends->toPipelineDescriptorSetLayouts.push_back(uboDescriptorSetLayout.second);
-			else CHONPS_CORE_WARN("WARNING: VULKAN: RENDER_PREP: No Uniform Buffer Objects filled out!");
-
-			s_VulkanBackends->toPipelineDescriptorSetLayouts.push_back(s_VulkanBackends->samplerDescriptorSetsLayout);
-
-			// Vertex Input Binding Description
-			VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-			vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-			vertexInputInfo.vertexBindingDescriptionCount = 0;
-			vertexInputInfo.vertexAttributeDescriptionCount = 0;
-			vertexInputInfo.pVertexBindingDescriptions = nullptr;
-			vertexInputInfo.pVertexAttributeDescriptions = nullptr;
-
-			auto bindingDescription = vkSpec::getBindingDescription(sizeof(vertex));
-			getVulkanBackends()->bindingDescriptions = bindingDescription;
-
-			// Pipeline Specification
-			vkSpec::PipelineSpecification pipeline = vkSpec::getStandardVulkanPipelineSpecification();
-
-			if (!s_VulkanBackends->pipelineShaderStages.empty())
-				for (auto& shaderStage : s_VulkanBackends->pipelineShaderStages)
-				{
-					VkPipelineShaderStageCreateInfo pipelineShaderStageInfo[] = { shaderStage.second.vertexShaderStage, shaderStage.second.fragementShaderStage };
-					s_VulkanBackends->graphicsPipeline[shaderStage.first] = createVulkanPipeline(pipeline, pipelineShaderStageInfo, vertexInputInfo);
-				}
-			else CHONPS_CORE_WARN("WARNING: VULKAN: RENDER_PREP: No shaders or pipelines filled out!");
 		}
 	}
 }

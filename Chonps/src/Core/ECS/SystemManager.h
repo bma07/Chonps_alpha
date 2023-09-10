@@ -1,5 +1,5 @@
-#ifndef CHONPS_SYSTEM_MANAGER_H
-#define CHONPS_SYSTEM_MANAGER_H
+#ifndef HG_CHONPS_SYSTEM_MANAGER_H
+#define HG_CHONPS_SYSTEM_MANAGER_H
 
 #include "Entity.h"
 #include <set>

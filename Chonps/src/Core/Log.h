@@ -1,5 +1,5 @@
-#ifndef CHONPS_LOG_H
-#define CHONPS_LOG_H
+#ifndef HG_CHONPS_LOG_H
+#define HG_CHONPS_LOG_H
 
 #include "Config.h"
 #include <spdlog/spdlog.h>

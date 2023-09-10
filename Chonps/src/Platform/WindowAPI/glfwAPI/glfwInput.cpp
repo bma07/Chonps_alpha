@@ -4,6 +4,8 @@
 #include "Core/Window.h"
 #include <GLFW/glfw3.h>
 
+static float s_ScrollX = 0.0f, s_ScrollY = 0.0f;
+
 namespace Chonps
 {
 	bool glfwInput::KeyPressed(Window* window, int keycode)

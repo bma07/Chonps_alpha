@@ -1,5 +1,5 @@
-#ifndef IMGUI_WINDOW_H
-#define IMGUI_WINDOW_H
+#ifndef HG_CHONPS_IMGUI_WINDOW_H
+#define HG_CHONPS_IMGUI_WINDOW_H
 
 #include "Core/Window.h"
 

@@ -1,5 +1,5 @@
-#ifndef CHONPS_FILE_H
-#define CHONPS_FILE_H
+#ifndef HG_CHONPS_FILE_H
+#define HG_CHONPS_FILE_H
 
 #include <string>
 #include <fstream>

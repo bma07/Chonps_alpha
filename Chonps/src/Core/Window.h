@@ -1,10 +1,12 @@
-#ifndef CHONPS_WINDOW_H
-#define CHONPS_WINDOW_H
+#ifndef HG_CHONPS_WINDOW_H
+#define HG_CHONPS_WINDOW_H
 
 #include "Events/Event.h"
 
 namespace Chonps
 {
+	using EventCallbackFn = std::function<void(Event&)>;
+
 	enum class WindowAPI
 	{
 		None = 0,
@@ -12,10 +14,30 @@ namespace Chonps
 		Win32
 	};
 
+	struct WindowIconData
+	{
+		unsigned char* image = nullptr;
+		int width = 0, height = 0;
+	};
+
+	struct WindowData
+	{
+		uint32_t width, height;
+		std::string title;
+		WindowIconData* pIcons = nullptr;
+		uint32_t iconCount = 0;
+		bool fullscreen = false, resizable = true, vSync = true;
+		int minWidth = 0, minHeight = 0;
+		int maxWidth = -1, maxHeight = -1;
+
+		EventCallbackFn EventCallback;
+	};
+
 	class Window
 	{
 	public:
-		Window(std::string Title, int Width, int Height) {}
+		Window(uint32_t width, uint32_t height, std::string title, bool fullscreen, bool resizable, int minWidth, int minHeight) {}
+		Window(WindowData winCreateInfo) {}
 
 		using EventCallbackFn = std::function<void(Event&)>;
 
@@ -40,14 +62,22 @@ namespace Chonps
 		virtual void Delete() = 0;
 	};
 
-	std::shared_ptr<Window> createWindowSp(std::string title, unsigned int width, unsigned int height, bool fullScreen = false);
-	Window* createWindow(std::string title, unsigned int width, unsigned int height, bool fullScreen = false);
+	std::shared_ptr<Window> createWindowSp(WindowData winCreateInfo);
+	Window* createWindow(WindowData winCreateInfo);
+
+	std::shared_ptr<Window> createWindowSp(uint32_t width, uint32_t height, std::string title, bool fullscreen = false, bool resizable = true, int minWidth = 0, int minHeight = 0);
+	Window* createWindow(uint32_t width, uint32_t height, std::string title, bool fullscreen = false, bool resizable = true, int minWidth = 0, int minHeight = 0);
 
 	bool setWindowContext(WindowAPI api);
 	bool windowTerminateContext();
 
 	WindowAPI getWindowContext();
 	std::string getWindowContextName();
+
+	// All rendering will be done on the window that is set to the current render target
+	void setWindowContextRenderTarget(Window* window);
+
+	WindowIconData getWindowIconImageData(const std::string& filepath);
 }
 
 

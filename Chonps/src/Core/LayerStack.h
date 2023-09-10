@@ -1,5 +1,5 @@
-#ifndef CHONPS_LAYER_STACK_H
-#define CHONPS_LAYER_STACK_H
+#ifndef HG_CHONPS_LAYER_STACK_H
+#define HG_CHONPS_LAYER_STACK_H
 
 #include <vector>
 
@@ -32,7 +32,7 @@ namespace Chonps
 		std::vector<Layer*>::iterator end() { return layers.end(); }
 
 		// Use GetLayer function instead to avoid manipulating layers data
-		Layer* get(int index) { return layers[index]; }
+		Layer* Get(int index) { return layers[index]; }
 
 		std::vector<Layer*> layers;
 

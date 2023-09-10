@@ -1,27 +1,5 @@
 #include <Chonps.h>
-#include <filesystem>
-
 #include "ChonpsEditor.h"
-
-namespace fs = std::filesystem;
-
-
-void CameraMovment(Chonps::Window* window, Chonps::Camera* camera)
-{
-	const float radius = 10.0f;
-	float camX = std::sin(Chonps::getTimeSeconds()) * radius;
-	float camZ = std::cos(Chonps::getTimeSeconds()) * radius;
-
-	camera->position = glm::vec3(camX, camera->position.y, camZ);
-}
-
-void onEvent(Chonps::Event& e)
-{
-	if (e.GetEventType() == Chonps::EventType::WindowFramebufferResize || e.GetEventType() == Chonps::EventType::WindowMoved)
-	{
-		CHONPS_TRACE("{0}", e.GetName());
-	}
-}
 
 int main()
 {
@@ -32,11 +10,39 @@ int main()
 	Chonps::setWindowContext(Chonps::WindowAPI::Glfw);
 	Chonps::setRenderContext(Chonps::GraphicsAPI::Vulkan);
 
-	Chonps::createRendererAPI();
+	Chonps::RendererBackends rendererBackends{};
+	rendererBackends.enableColorBlend = true;
+	rendererBackends.enableDepthTesting = true;
+	rendererBackends.enableStencilTesting = false;
+	rendererBackends.enableCullFace = true;
+	rendererBackends.cullFaceMode = Chonps::CullFaceMode::Back;
+	rendererBackends.cullFrontFace = Chonps::CullFrontFace::CounterClockwise;
+	rendererBackends.topologyType = Chonps::TopologyType::Triangle;
+	rendererBackends.depthOpCompare = Chonps::CompareOperation::LessOrEqual;
+	rendererBackends.textureBinding = 0;
+	rendererBackends.samplerBinding = 1;
+	rendererBackends.frameBufferBinding = 0;
+	rendererBackends.cubemapBinding = 0;
+	rendererBackends.enableValidationLayers = true;
+
+	Chonps::createRendererAPI(&rendererBackends);
 
 	Chonps::renderGammaCorrection(false);
-	
-	Chonps::Application app("Chonps", 1280, 800);
+
+	Chonps::textureBinding(0, 1, 0, 0);
+
+	Chonps::WindowData winCreateInfo{};
+	winCreateInfo.title = "Chonps";
+	winCreateInfo.width = 1280;
+	winCreateInfo.height = 800;
+	winCreateInfo.minWidth = 500;
+	winCreateInfo.minHeight = 300;
+	winCreateInfo.maxWidth = -1;
+	winCreateInfo.maxHeight = -1;
+	winCreateInfo.fullscreen = false;
+	winCreateInfo.resizable = true;
+
+	Chonps::Application app(winCreateInfo);
 
 	Chonps::ChonpsEditor chonpsEditor("ChonpsEditor");
 
@@ -46,7 +52,7 @@ int main()
 
 	app.Terminate();
 
-	Chonps::windowTerminateContext(); 
+	Chonps::windowTerminateContext();
 	Chonps::destroyRendererAPI();
 
 	return 0;

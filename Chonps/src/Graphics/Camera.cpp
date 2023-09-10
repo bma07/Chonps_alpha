@@ -14,12 +14,23 @@
 namespace Chonps
 {
 	Camera::Camera(int width, int height)
-		: m_Width(width), m_Height(height) {}
+	{
+		m_Width = width < 0 ? -width : width;
+		m_Height = height < 0 ? -height : height;
+	}
+
+	Camera::Camera(int width, int height, glm::vec3 inPosition, glm::vec3 inOrientation, float inFOVdeg, float inNearPlane, float inFarPlane)
+		: position(inPosition), orientation(inOrientation), FOVdeg(inFOVdeg), nearPlane(inNearPlane), farPlane(inFarPlane)
+	{
+		m_Width = width < 0 ? -width : width;
+		m_Height = height < 0 ? -height : height;
+	}
 
 	// Updates Camera Matrix, call in loop
 	void Camera::UpdateMatrix()
 	{
-		m_ViewMatrix = glm::lookAt(position, orientation, upVector);
+		glm::vec3 look = position + orientation;
+		m_ViewMatrix = glm::lookAt(position, position + orientation, upVector);
 
 		if (m_Width > 0 && m_Height > 0)
 			m_ProjectionMatrix = glm::perspective(glm::radians(FOVdeg), (float)m_Width / (float)m_Height, nearPlane, farPlane);
@@ -28,29 +39,30 @@ namespace Chonps
 	}
 
 	// Sets up Camera position and FOV
-	void Camera::SetUp(glm::vec3 _position, float _FOVdeg, float _nearPlane, float _farPlane)
+	void Camera::SetFormat(glm::vec3 inPosition, glm::vec3 inOrientation, float inFOVdeg, float inNearPlane, float inFarPlane)
 	{
-		position = _position;
-		SetFOV(_FOVdeg, _nearPlane, _farPlane);
+		position = inPosition;
+		orientation = glm::normalize(inOrientation);
+		SetFOV(inFOVdeg, inNearPlane, inFarPlane);
 	}
 
 	// Sets Field of View (FOV) for camera
 	// NOTE: Call this function after setting the position and orientation of the camera
-	void Camera::SetFOV(float _FOVdeg, float _nearPlane, float _farPlane)
+	void Camera::SetFOV(float inFOVdeg, float inNearPlane, float inFarPlane)
 	{
-		FOVdeg = _FOVdeg;
-		nearPlane = _nearPlane;
-		farPlane = _farPlane;
+		FOVdeg = inFOVdeg;
+		nearPlane = inNearPlane;
+		farPlane = inFarPlane;
 
 		UpdateMatrix();
 	}
 
-	std::shared_ptr<Camera> createCameraSp(int width, int height)
+	std::shared_ptr<Camera> CreateCameraSp(int width, int height)
 	{
 		return std::make_shared<Camera>(width, height);
 	}
 
-	Camera* createCamera(int width, int height)
+	Camera* CreateCamera(int width, int height)
 	{
 		return new Camera(width, height);
 	}

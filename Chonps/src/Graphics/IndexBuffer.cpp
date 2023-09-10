@@ -7,7 +7,7 @@
 
 namespace Chonps
 {
-	std::shared_ptr<IndexBuffer> createIndexBufferSp(uint32_t* indices, uint32_t size)
+	std::shared_ptr<IndexBuffer> createIndexBufferSp(uint32_t* indices, uint32_t size, BufferState bufferState)
 	{
 		switch (getGraphicsAPI())
 		{
@@ -17,15 +17,9 @@ namespace Chonps
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
-			{
-				return std::make_shared<OpenGLIndexBuffer>(indices, size);
-			}
+			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLIndexBuffer>(indices, size, bufferState); }
 
-			case GraphicsAPI::Vulkan:
-			{
-				return std::make_shared<VulkanIndexBuffer>(indices, size);;
-			}
+			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanIndexBuffer>(indices, size, bufferState); }
 
 			case GraphicsAPI::DirectX:
 			{
@@ -36,7 +30,7 @@ namespace Chonps
 		return nullptr;
 	}
 
-	std::shared_ptr<IndexBuffer> createIndexBufferSp(std::vector<uint32_t>& indices)
+	std::shared_ptr<IndexBuffer> createIndexBufferSp(std::vector<uint32_t>& indices, BufferState bufferState)
 	{
 		switch (getGraphicsAPI())
 		{
@@ -46,15 +40,9 @@ namespace Chonps
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
-			{
-				return std::make_shared<OpenGLIndexBuffer>(indices);
-			}
+			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLIndexBuffer>(indices, bufferState); }
 
-			case GraphicsAPI::Vulkan:
-			{
-				return std::make_shared<VulkanIndexBuffer>(indices);
-			}
+			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanIndexBuffer>(indices, bufferState); }
 
 			case GraphicsAPI::DirectX:
 			{
@@ -65,7 +53,7 @@ namespace Chonps
 		return nullptr;
 	}
 
-	IndexBuffer* createIndexBuffer(uint32_t* indices, uint32_t size)
+	IndexBuffer* createIndexBuffer(uint32_t* indices, uint32_t size, BufferState bufferState)
 	{
 		switch (getGraphicsAPI())
 		{
@@ -75,15 +63,9 @@ namespace Chonps
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
-			{
-				return new OpenGLIndexBuffer(indices, size);
-			}
+			case GraphicsAPI::OpenGL: { return new OpenGLIndexBuffer(indices, size, bufferState); }
 
-			case GraphicsAPI::Vulkan:
-			{
-				return new VulkanIndexBuffer(indices, size);
-			}
+			case GraphicsAPI::Vulkan: { return new VulkanIndexBuffer(indices, size, bufferState); }
 
 			case GraphicsAPI::DirectX:
 			{
@@ -94,7 +76,7 @@ namespace Chonps
 		return nullptr;
 	}
 
-	IndexBuffer* createIndexBuffer(std::vector<uint32_t>& indices)
+	IndexBuffer* createIndexBuffer(std::vector<uint32_t>& indices, BufferState bufferState)
 	{
 		switch (getGraphicsAPI())
 		{
@@ -104,15 +86,9 @@ namespace Chonps
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
-			{
-				return new OpenGLIndexBuffer(indices);
-			}
+			case GraphicsAPI::OpenGL: { return new OpenGLIndexBuffer(indices, bufferState); }
 
-			case GraphicsAPI::Vulkan:
-			{
-				return new VulkanIndexBuffer(indices);
-			}
+			case GraphicsAPI::Vulkan: { return new VulkanIndexBuffer(indices, bufferState); }
 
 			case GraphicsAPI::DirectX:
 			{

@@ -1,9 +1,7 @@
-#ifndef EVENT_H
-#define EVENT_H
+#ifndef HG_CHONPS_EVENT_H
+#define HG_CHONPS_EVENT_H
 
 #include "Core/Config.h"
-
-#define BIT(x) (1 << x)
 
 namespace Chonps
 {

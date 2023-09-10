@@ -6,10 +6,13 @@
 
 namespace Chonps
 {
+	static RendererAPI* s_RendererAPIAddressRenderCommand = nullptr;
+
 	// Sets and init specific render function calls before drawing vertices
 	void renderInit()
 	{
 		static bool s_Init = false;
+		s_RendererAPIAddressRenderCommand = getRendererAPI();
 
 		if (!s_Init)
 		{
@@ -22,13 +25,13 @@ namespace Chonps
 	// Clear function clears the window viewport with all of the vertices drawn on it
 	void renderClear()
 	{
-		getRendererAPI()->Clear();
+		s_RendererAPIAddressRenderCommand->Clear();
 	}
 
 	// Clears the window and set the color of the viewport/background
 	void renderClearColor(const float r, const float g, const float b, const float w /*= 0.0f*/)
 	{
-		getRendererAPI()->ClearColor(r, g, b, w);
+		s_RendererAPIAddressRenderCommand->ClearColor(r, g, b, w);
 	}
 
 	// Prepares any data related to rendering before the rendering begins, 
@@ -39,21 +42,61 @@ namespace Chonps
 		GraphicsAPI GraphicsAPI = getGraphicsAPI();
 
 		if (GraphicsAPI == GraphicsAPI::Vulkan)
-			vkSpec::vkImplPrepareDraw();
+			vks::vkImplPrepareDraw();
+	}
+
+	void renderDrawIndexed(VertexArray* vertexArray)
+	{
+		s_RendererAPIAddressRenderCommand->DrawIndexed(vertexArray);
+	}
+
+	void renderDrawIndexed(uint32_t indexCount)
+	{
+		s_RendererAPIAddressRenderCommand->DrawIndexed(indexCount);
+	}
+
+	void renderDrawInstanced(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance)
+	{
+		s_RendererAPIAddressRenderCommand->DrawInstanced(vertexCount, instanceCount, firstInstance);
+	}
+
+	void renderDrawIndexedInstanced(uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance)
+	{
+		s_RendererAPIAddressRenderCommand->DrawIndexedInstanced(indexCount, instanceCount, firstInstance);
+	}
+
+	void renderDraw(uint32_t vertexCount)
+	{
+		s_RendererAPIAddressRenderCommand->Draw(vertexCount);
 	}
 
 	void renderBeginNextFrame()
 	{
-		getRendererAPI()->BeginNextFrame();
+		s_RendererAPIAddressRenderCommand->BeginNextFrame();
 	}
 
 	void renderDrawSubmit()
 	{
-		getRendererAPI()->DrawSubmit();
+		s_RendererAPIAddressRenderCommand->DrawSubmit();
 	}
 
-	void renderFrameBufferBlit(uint32_t readFBO, uint32_t drawFBO, uint32_t width, uint32_t height)
+	void renderPassBegin()
 	{
-		getRendererAPI()->FrameBufferBlit(readFBO, drawFBO, width, height);
+		s_RendererAPIAddressRenderCommand->RenderPassBegin();
+	}
+
+	void renderPassEnd()
+	{
+		s_RendererAPIAddressRenderCommand->RenderPassEnd();
+	}
+
+	void renderBindBufferSet(Shader* shader, UniformBuffer* buffer, uint32_t setIndex)
+	{
+		s_RendererAPIAddressRenderCommand->BindBufferSet(shader, buffer, setIndex);
+	}
+
+	void renderPushConstant(uint32_t size, uint32_t offset, ShaderStage shaderStage, const void* pValues)
+	{
+		s_RendererAPIAddressRenderCommand->PushConstant(size, offset, shaderStage, pValues);
 	}
 }

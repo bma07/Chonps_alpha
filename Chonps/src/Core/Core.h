@@ -1,5 +1,5 @@
-#ifndef CHONPS_CORE_H
-#define CHONPS_CORE_H
+#ifndef HG_CHONPS_CORE_H
+#define HG_CHONPS_CORE_H
 
 // Core
 #include "Config.h"
@@ -14,6 +14,7 @@
 #include "Math.h"
 #include "MouseButtonCodes.h"
 #include "Application.h"
+#include "QueueChain.h"
 #include "ThreadPool.h"
 #include "Timer.h"
 

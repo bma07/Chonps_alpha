@@ -9,6 +9,8 @@
 #include "Core/Events/MouseEvents.h"
 #include "Core/Events/WindowEvents.h"
 
+#include <stb_image.h>
+
 namespace Chonps
 {
 	static bool s_glfwInit = false;
@@ -41,35 +43,9 @@ namespace Chonps
 			CHONPS_CORE_WARN("glfw already terminated!");
 	}
 
-	glfwWindowAPI::glfwWindowAPI(std::string Title, int Width, int Height, bool fullScreen)
-		: Window(Title, Width, Height)
+	void glfwImplSetWindowContextRenderTarget(Window* window)
 	{
-		m_Data.Title = Title;
-		m_Data.Width = Width;
-		m_Data.Height = Height;
-		m_Data.FullScreen = fullScreen;
-		Create();
-		SetEventCallback(std::bind(&Window::OnEvent, this, std::placeholders::_1));
-	}
-
-	void glfwWindowAPI::Create()
-	{
-		GLFWmonitor* fullScreen = nullptr;
-		if (m_Data.FullScreen)
-			fullScreen = glfwGetPrimaryMonitor();
-
-		GraphicsAPI graphicsAPI = getGraphicsAPI();
-		if (graphicsAPI == GraphicsAPI::Vulkan)
-		{
-			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		}
-
-		CHONPS_CORE_INFO("Creating Window: {0} ({1}, {2})", m_Data.Title, m_Data.Width, m_Data.Height);
-		m_Window = glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), fullScreen, nullptr);
-		CHONPS_CORE_ASSERT(m_Window, "Window failed to load!");
-
-
-		switch (graphicsAPI)
+		switch (getGraphicsAPI())
 		{
 			case Chonps::GraphicsAPI::None:
 			{
@@ -78,13 +54,13 @@ namespace Chonps
 
 			case Chonps::GraphicsAPI::OpenGL:
 			{
-				gladInit(m_Window, m_Data.Width, m_Data.Height);
+				gladInit(static_cast<GLFWwindow*>(window->GetNativeWindow()), window->GetWidth(), window->GetHeight());
 				break;
 			}
 
 			case Chonps::GraphicsAPI::Vulkan:
 			{
-				setCurrentWindowForVulkanWindowSurface(m_Window);
+				setCurrentWindowForVulkanWindowSurface(static_cast<GLFWwindow*>(window->GetNativeWindow()));
 				break;
 			}
 
@@ -99,16 +75,74 @@ namespace Chonps
 				break;
 			}
 		}
+	}
+
+	glfwWindowAPI::glfwWindowAPI(uint32_t width, uint32_t height, std::string title, bool fullscreen, bool resizable, int minWidth, int minHeight)
+		: Window(width, height, title, fullscreen, resizable, minWidth, minHeight)
+	{
+		m_Data.title = title;
+		m_Data.width = width;
+		m_Data.height = height;
+		m_Data.fullscreen = fullscreen;
+		m_Data.resizable = resizable;
+		m_Data.minWidth = minWidth;
+		m_Data.minHeight = minHeight;
+
+		Create();
+		SetEventCallback(std::bind(&Window::OnEvent, this, std::placeholders::_1));
+	}
+
+	glfwWindowAPI::glfwWindowAPI(WindowData winCreateInfo)
+		: Window(winCreateInfo), m_Data(winCreateInfo)
+	{
+		Create();
+		SetEventCallback(std::bind(&Window::OnEvent, this, std::placeholders::_1));
+	}
+
+	void glfwWindowAPI::Create()
+	{
+		GLFWmonitor* fullScreen = nullptr;
+		if (m_Data.fullscreen)
+			fullScreen = glfwGetPrimaryMonitor();
+
+		GraphicsAPI graphicsAPI = getGraphicsAPI();
+		if (graphicsAPI == GraphicsAPI::Vulkan)
+		{
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		}
+
+		if (!m_Data.resizable)
+			glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+		CHONPS_CORE_INFO("Creating Window: {0} ({1}, {2})", m_Data.title, m_Data.width, m_Data.height);
+		m_Window = glfwCreateWindow(m_Data.width, m_Data.height, m_Data.title.c_str(), fullScreen, nullptr);
+		CHONPS_CORE_ASSERT(m_Window, "Window failed to load!");
+
+		if (m_Data.pIcons != nullptr)
+		{
+			std::vector<GLFWimage> images;
+			for (uint32_t i = 0; i < m_Data.iconCount; i++)
+			{
+				GLFWimage image{};
+				image.pixels = m_Data.pIcons[i].image;
+				image.width = m_Data.pIcons[i].width;
+				image.height = m_Data.pIcons[i].height;
+				images.push_back(image);
+			}
+
+			glfwSetWindowIcon(m_Window, static_cast<int>(images.size()), images.data());
+		}
+		
+		glfwSetWindowSizeLimits(m_Window, m_Data.minWidth, m_Data.minHeight, m_Data.maxWidth, m_Data.maxHeight);
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
-		SetVSync(true);
 
 		// Set GLFW Callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.Width = width;
-			data.Height = height;
+			data.width = width;
+			data.height = height;
 
 			WindowResizeEvent eventType(width, height);
 			data.EventCallback(eventType);
@@ -131,8 +165,8 @@ namespace Chonps
 		glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.Width = width;
-			data.Height = height;
+			data.width = width;
+			data.height = height;
 			
 			WindowFramebufferResizeEvent eventType(width, height);
 			data.EventCallback(eventType);
@@ -265,7 +299,7 @@ namespace Chonps
 	{
 		if (e.IsInCategory(EventCategoryInput) && m_LogEvents)
 		{
-			CHONPS_CORE_INFO("Window '{0}': {1}", m_Data.Title, e.ToString());
+			CHONPS_CORE_INFO("Window '{0}': {1}", m_Data.title, e.ToString());
 		}
 	}
 
@@ -285,7 +319,7 @@ namespace Chonps
 		if (getGraphicsAPI() == GraphicsAPI::OpenGL)
 		{
 			glfwSwapInterval(enabled);
-			m_Data.VSync = enabled;
+			m_Data.vSync = enabled;
 		}
 	}
 

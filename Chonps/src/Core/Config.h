@@ -1,5 +1,5 @@
-#ifndef CHONPS_CONFIG_H
-#define CHONPS_CONFIG_H
+#ifndef HG_CHONPS_CONFIG_H
+#define HG_CHONPS_CONFIG_H
 
 #include <memory>
 
@@ -44,19 +44,32 @@
 #endif
 
 
+#ifdef _MSC_VER
+	#define CHONPS_ASSERT_BREAK __debugbreak()
+	#pragma warning (disable : 4267)
+	#pragma warning (disable : 4244)
+#else
+	#define CHONPS_ASSERT_BREAK assert(false);
+#endif
+
+
 // Debug
 #ifdef CHONPS_DEBUG
 	#define CHONPS_ENABLE_ASSERTS 
 #endif
 
 #ifdef CHONPS_ENABLE_ASSERTS
-	#define CHONPS_ASSERT(x, ...) { if(!(x)) { CHONPS_ERROR("Assertion Failed: {0}", __VA_ARGS__); assert(false); } }
-	#define CHONPS_CORE_ASSERT(x, ...) { if(!(x)) { CHONPS_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); assert(false); } }
-#else
-	#define CHONPS_ASSERT(x, ...) (x)
-	#define CHONPS_CORE_ASSERT(x, ...) (x)
+	#define CHONPS_ASSERT(x, ...) { if(!(x)) { CHONPS_ERROR("Assertion Failed: {0}", __VA_ARGS__); CHONPS_ASSERT_BREAK; } }
+	#define CHONPS_CORE_ASSERT(x, ...) { if(!(x)) { CHONPS_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); CHONPS_ASSERT_BREAK; } }
+#else	
+	#define CHONPS_ASSERT(x, ...) { if(!(x)) { CHONPS_ERROR("ERROR: {0}", __VA_ARGS__); } }
+	#define CHONPS_CORE_ASSERT(x, ...) { if(!(x)) { CHONPS_CORE_ERROR("ERROR: {0}", __VA_ARGS__); } }
 #endif
 
+// Warnings
+#ifdef CHONPS_DEBUG
+
+#endif
 
 // Specification
 #ifndef CHONPS_FORCE_GRAPHICS_API_NAMESPACES
@@ -73,13 +86,17 @@
 #define CHONPS_UINT64_MAX 0xffffffffffffffff
 
 #define ALIGN(x) alignas(x)
+#define BIT(x) (1 << x)
+#define SCAST(t, x) static_cast<t>(x)
+#define CASTUI(x) SCAST(uint32_t, x)
+#define CASTF(x) SCAST(float, x)
 
 namespace Chonps
 {
 	template <typename T>
 	using Shared = std::shared_ptr<T>;
 	template <typename T, typename... Args>
-	constexpr Shared<T> createSharedPtr(Args&& ... args)
+	constexpr Shared<T> CreateSharedPtr(Args&& ... args)
 	{
 		return std::make_shared<T>(std::forward<Args>(args)...);
 	}
@@ -87,7 +104,7 @@ namespace Chonps
 	template <typename T>
 	using Unique = std::unique_ptr<T>;
 	template <typename T, typename... Args>
-	constexpr Unique<T> createUniquePtr(Args&& ... args)
+	constexpr Unique<T> CreateUniquePtr(Args&& ... args)
 	{
 		return std::make_unique<T>(std::forward<Args>(args)...);
 	}
