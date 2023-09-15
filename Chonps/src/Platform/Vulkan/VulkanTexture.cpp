@@ -5,6 +5,7 @@
 
 #include "Graphics/RendererBackends.h"
 #include "VulkanRendererAPI.h"
+#include "VulkanShader.h"
 
 namespace Chonps
 {
@@ -108,13 +109,11 @@ namespace Chonps
 		return format;
 	}
 
-	VulkanTexture::VulkanTexture(const std::string& filepath, TexType texType, TexFilterPair texFilter, TexWrap texWrap)
+	VulkanTexture::VulkanTexture(const std::string& filepath , TexType texType, TexFilterPair texFilter, TexWrap texWrap)
 		: Texture(filepath, texType, texFilter, texWrap), m_TexType(texType), m_TexFilter(texFilter), m_TexWrap(texWrap)
 	{
 		VulkanBackends* vkBackends = getVulkanBackends();
 		VmaAllocator vmaAllocator = getVmaAllocator();
-
-		CHONPS_CORE_ASSERT(!vkBackends->textureCountIDs.empty(), "Reached max Texture count IDs!");
 
 		m_ID = vkBackends->textureCountIDs.take_next();
 
@@ -158,27 +157,27 @@ namespace Chonps
 		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		imageInfo.flags = 0; // Optional
 
-		CHONPS_CORE_ASSERT(vkCreateImage(vkBackends->device, &imageInfo, nullptr, &m_TextureImage) == VK_SUCCESS, "Failed to create image!");
+		CHONPS_CORE_ASSERT(vkCreateImage(vkBackends->device, &imageInfo, nullptr, &m_TexData.textureImage) == VK_SUCCESS, "Failed to create image!");
 
 		VkMemoryRequirements memRequirements;
-		vkGetImageMemoryRequirements(vkBackends->device, m_TextureImage, &memRequirements);
+		vkGetImageMemoryRequirements(vkBackends->device, m_TexData.textureImage, &memRequirements);
 
 		VmaAllocationCreateInfo allocInfo{};
 		allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 		allocInfo.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-		CHONPS_CORE_ASSERT(vmaAllocateMemory(vmaAllocator, &memRequirements, &allocInfo, &m_TextureImageMemory, nullptr) == VK_SUCCESS, "Failed to allocate texture memory!");
-		vmaBindImageMemory(vmaAllocator, m_TextureImageMemory, m_TextureImage);
+		CHONPS_CORE_ASSERT(vmaAllocateMemory(vmaAllocator, &memRequirements, &allocInfo, &m_TexData.textureImageMemory, nullptr) == VK_SUCCESS, "Failed to allocate texture memory!");
+		vmaBindImageMemory(vmaAllocator, m_TexData.textureImageMemory, m_TexData.textureImage);
 
-		vks::transitionImageLayout(m_TextureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		vks::copyBufferToImage(stagingBuffer, m_TextureImage, static_cast<uint32_t>(m_Width), static_cast<uint32_t>(m_Height));
+		vks::transitionImageLayout(m_TexData.textureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		vks::copyBufferToImage(stagingBuffer, m_TexData.textureImage, static_cast<uint32_t>(m_Width), static_cast<uint32_t>(m_Height));
 
-		vks::transitionImageLayout(m_TextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		vks::transitionImageLayout(m_TexData.textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		vkDestroyBuffer(vkBackends->device, stagingBuffer, nullptr);
 		vmaFreeMemory(vmaAllocator, stagingBufferMemory);
 
-		m_TextureImageView = vks::createImageView(m_TextureImage, format, VK_IMAGE_ASPECT_COLOR_BIT);
+		m_TexData.textureImageView = vks::createImageView(m_TexData.textureImage, format, VK_IMAGE_ASPECT_COLOR_BIT);
 
 		VkFilter minFilter = VK_FILTER_NEAREST, magFilter = VK_FILTER_NEAREST;
 		switch (texFilter.min)
@@ -233,18 +232,7 @@ namespace Chonps
 		samplerInfo.minLod = 0.0f;
 		samplerInfo.maxLod = 0.0f;
 
-		CHONPS_CORE_ASSERT(vkCreateSampler(vkBackends->device, &samplerInfo, nullptr, &m_TextureSampler) == VK_SUCCESS, "Failed to create texture sampler!");
-
-		VulkanTextureData vulkanTexData{};
-		vulkanTexData.textureImage = m_TextureImage;
-		vulkanTexData.textureImageMemory = m_TextureImageMemory;
-		vulkanTexData.textureImageView = m_TextureImageView;
-		vulkanTexData.textureSampler = m_TextureSampler;
-
-		vkBackends->textureImages[m_ID] = vulkanTexData;
-
-		for (auto& queue : vkBackends->texturesQueue)
-			queue.push(m_ID);
+		CHONPS_CORE_ASSERT(vkCreateSampler(vkBackends->device, &samplerInfo, nullptr, &m_TexData.textureSampler) == VK_SUCCESS, "Failed to create texture sampler!");
 	}
 
 	VulkanTexture::VulkanTexture(uint32_t width, uint32_t height, const void* data, TexType texType, TexFilterPair texFilter, TexWrap texWrap)
@@ -285,27 +273,27 @@ namespace Chonps
 		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		imageInfo.flags = 0; // Optional
 
-		CHONPS_CORE_ASSERT(vkCreateImage(vkBackends->device, &imageInfo, nullptr, &m_TextureImage) == VK_SUCCESS, "Failed to create image!");
+		CHONPS_CORE_ASSERT(vkCreateImage(vkBackends->device, &imageInfo, nullptr, &m_TexData.textureImage) == VK_SUCCESS, "Failed to create image!");
 
 		VkMemoryRequirements memRequirements;
-		vkGetImageMemoryRequirements(vkBackends->device, m_TextureImage, &memRequirements);
+		vkGetImageMemoryRequirements(vkBackends->device, m_TexData.textureImage, &memRequirements);
 
 		VmaAllocationCreateInfo allocInfo{};
 		allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 		allocInfo.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-		vmaAllocateMemory(vmaAllocator, &memRequirements, &allocInfo, &m_TextureImageMemory, nullptr);
-		vmaBindImageMemory(vmaAllocator, m_TextureImageMemory, m_TextureImage);
+		vmaAllocateMemory(vmaAllocator, &memRequirements, &allocInfo, &m_TexData.textureImageMemory, nullptr);
+		vmaBindImageMemory(vmaAllocator, m_TexData.textureImageMemory, m_TexData.textureImage);
 
-		vks::transitionImageLayout(m_TextureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		vks::copyBufferToImage(stagingBuffer, m_TextureImage, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+		vks::transitionImageLayout(m_TexData.textureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		vks::copyBufferToImage(stagingBuffer, m_TexData.textureImage, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 
-		vks::transitionImageLayout(m_TextureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		vks::transitionImageLayout(m_TexData.textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		vkDestroyBuffer(vkBackends->device, stagingBuffer, nullptr);
 		vmaFreeMemory(vmaAllocator, stagingBufferMemory);
 
-		m_TextureImageView = vks::createImageView(m_TextureImage, format, VK_IMAGE_ASPECT_COLOR_BIT);
+		m_TexData.textureImageView = vks::createImageView(m_TexData.textureImage, format, VK_IMAGE_ASPECT_COLOR_BIT);
 
 		VkFilter minFilter = VK_FILTER_NEAREST, magFilter = VK_FILTER_NEAREST;
 		switch (texFilter.min)
@@ -362,39 +350,11 @@ namespace Chonps
 		samplerInfo.minLod = 0.0f;
 		samplerInfo.maxLod = 0.0f;
 
-		CHONPS_CORE_ASSERT(vkCreateSampler(vkBackends->device, &samplerInfo, nullptr, &m_TextureSampler) == VK_SUCCESS, "Failed to create texture sampler!");
-
-		VulkanTextureData texData{};
-		texData.textureImage = m_TextureImage;
-		texData.textureImageMemory = m_TextureImageMemory;
-		texData.textureImageView = m_TextureImageView;
-		texData.textureSampler = m_TextureSampler;
-
-		vkBackends->textureImages[m_ID] = texData;
-
-		for (auto& queue : vkBackends->texturesQueue)
-			queue.push(m_ID);
+		CHONPS_CORE_ASSERT(vkCreateSampler(vkBackends->device, &samplerInfo, nullptr, &m_TexData.textureSampler) == VK_SUCCESS, "Failed to create texture sampler!");
 
 		m_TexType = TexType::Diffuse;
 		m_TexFilter = { TexFilter::Linear, TexFilter::Linear };
 		m_TexWrap = TexWrap::Repeat;
-	}
-
-	void VulkanTexture::Bind(uint32_t unit) const
-	{
-		VulkanBackends* vkBackends = getVulkanBackends();
-		vkBackends->textureImages[m_ID].unit = unit;
-	}
-
-	void VulkanTexture::Bind() const
-	{
-		VulkanBackends* vkBackends = getVulkanBackends();
-		vkBackends->textureImages[m_ID].unit = m_Unit;
-	}
-
-	void VulkanTexture::Unbind() const
-	{
-		VulkanBackends* vkBackends = getVulkanBackends();
 	}
 
 	void VulkanTexture::Delete()
@@ -403,10 +363,10 @@ namespace Chonps
 		{
 			VulkanBackends* vkBackends = getVulkanBackends();
 
-			vkDestroySampler(vkBackends->device, m_TextureSampler, nullptr);
-			vkDestroyImageView(vkBackends->device, m_TextureImageView, nullptr);
-			vkDestroyImage(vkBackends->device, m_TextureImage, nullptr);
-			vmaFreeMemory(getVmaAllocator(), m_TextureImageMemory);
+			vkDestroySampler(vkBackends->device, m_TexData.textureSampler, nullptr);
+			vkDestroyImageView(vkBackends->device, m_TexData.textureImageView, nullptr);
+			vkDestroyImage(vkBackends->device, m_TexData.textureImage, nullptr);
+			vmaFreeMemory(getVmaAllocator(), m_TexData.textureImageMemory);
 
 			vkBackends->textureImages.erase(m_ID);
 			vkBackends->textureCountIDs.push(m_ID);
@@ -414,9 +374,105 @@ namespace Chonps
 		}
 	}
 
-	void VulkanTexture::TexUnit(uint32_t unit)
+	VulkanTextureLayout::VulkanTextureLayout(TextureCreateInfo* pTextures, uint32_t textureCount, uint32_t setIndex)
+		: TextureLayout(pTextures, textureCount, setIndex), m_SetIndex(setIndex)
 	{
-		m_Unit = unit;
-		getVulkanBackends()->textureImages[m_ID].unit = unit;
+		VulkanBackends* vkBackends = getVulkanBackends();
+		
+		for (uint32_t i = 0; i < textureCount; i++)
+		{
+			TextureCreateInfo textureInfo = pTextures[i];
+
+			CHONPS_CORE_ASSERT(textureInfo.slot < vkBackends->maxTextureBindingSlots, "cannot have texture slot that is above the max texture binding slot!");
+
+			if (m_Textures.find(textureInfo.slot) == m_Textures.end())
+			{
+				m_Textures[textureInfo.slot] = std::move(textureInfo.texture);
+			}
+			else CHONPS_CORE_WARN("WARNING: TEXTURE_LAYOUT: Texture with slot {0} already exists! Ignoring second texture slot", textureInfo.slot);
+		}
+
+		// Create Descriptor Set for texture array to contain all textures
+		std::vector<VkDescriptorSetLayout> samplerLayouts(vkBackends->maxFramesInFlight, vkBackends->textureDescriptorSetLayout);
+		VkDescriptorSetAllocateInfo samplerAllocInfo{};
+		samplerAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		samplerAllocInfo.descriptorPool = vkBackends->descriptorPool;
+		samplerAllocInfo.descriptorSetCount = static_cast<uint32_t>(samplerLayouts.size());
+		samplerAllocInfo.pSetLayouts = samplerLayouts.data();
+
+		m_TextureDescriptorSet.resize(vkBackends->maxFramesInFlight);
+		CHONPS_CORE_ASSERT(vkAllocateDescriptorSets(vkBackends->device, &samplerAllocInfo, m_TextureDescriptorSet.data()) == VK_SUCCESS, "Failed to allocate descriptor sets!");
+
+		// Fill imageInfos with texture data
+		m_ImageInfo = vkBackends->nullImageInfos;
+		for (auto& texture : m_Textures)
+		{
+			VulkanTextureData* texData = static_cast<VulkanTexture*>(texture.second)->getNativeTextureData();
+			m_ImageInfo[texture.first].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			m_ImageInfo[texture.first].imageView = texData->textureImageView;
+			m_ImageInfo[texture.first].sampler = texData->textureSampler;
+		}
+
+		// Update texture data
+		for (uint32_t i = 0; i < m_TextureDescriptorSet.size(); i++)
+		{
+			std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[0].dstSet = m_TextureDescriptorSet[i];
+			descriptorWrites[0].dstBinding = vkBackends->textureDescriptorBindings->textureBinding;
+			descriptorWrites[0].dstArrayElement = 0;
+			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			descriptorWrites[0].descriptorCount = vkBackends->maxTextureBindingSlots;
+			descriptorWrites[0].pImageInfo = m_ImageInfo.data();
+
+			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[1].dstSet = m_TextureDescriptorSet[i];
+			descriptorWrites[1].dstBinding = vkBackends->textureDescriptorBindings->samplerBinding;
+			descriptorWrites[1].dstArrayElement = 0;
+			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+			descriptorWrites[1].descriptorCount = vkBackends->maxTextureBindingSlots;
+			descriptorWrites[1].pImageInfo = m_ImageInfo.data();
+
+			vkUpdateDescriptorSets(vkBackends->device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+		}
+	}
+
+	void VulkanTextureLayout::insert(Texture* texture, uint32_t slot)
+	{
+		if (m_Textures.find(slot) == m_Textures.end())
+		{
+			m_Textures[slot] = std::move(texture);
+		}
+		else CHONPS_CORE_WARN("WARNING: TEXTURE_LAYOUT: Texture with slot {0} already exists! Ignoring second texture slot", slot);
+	}
+
+	void VulkanTextureLayout::erase(uint32_t slot)
+	{
+		if (m_Textures.find(slot) == m_Textures.end())
+			CHONPS_CORE_WARN("WARNING: TEXTURE_LAYOUT: No texture was found at slot {0}! texture cannot be removed because it does not exist!", slot);
+		else
+			m_Textures.erase(slot);
+	}
+
+	void VulkanTextureLayout::Bind(Shader* shader) const
+	{
+		VulkanBackends* vkBackends = getVulkanBackends();
+		glfwGetFramebufferSize(vkBackends->currentWindow, &vkBackends->windowWidth, &vkBackends->windowHeight);
+		if (vkBackends->windowWidth == 0 || vkBackends->windowHeight == 0)
+			return;
+
+		VkPipelineLayout pipelineLayout = static_cast<VulkanShader*>(shader)->getNativePipelineLayout();
+		vkCmdBindDescriptorSets(vkBackends->commandBuffers[vkBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, m_SetIndex, 1, &m_TextureDescriptorSet[vkBackends->currentFrame], 0, nullptr);
+	}
+
+	void VulkanTextureLayout::Unbind() const
+	{
+
+	}
+
+	void VulkanTextureLayout::Delete()
+	{
+		for (auto& texture : m_Textures)
+			texture.second->Delete();
 	}
 }

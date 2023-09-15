@@ -11,7 +11,7 @@ namespace Chonps
 	const char* Cubemap::m_CubemapProjectionUniformName = "cubemapProj";
 	const char* Cubemap::m_CubemapViewUniformName = "cubemapView";
 
-	std::shared_ptr<Cubemap> createCubemapSp(CubemapCreateInfo createInfo)
+	std::shared_ptr<Cubemap> createCubemapSp(CubemapCreateInfo createInfo, uint32_t setIndex)
 	{
 		switch (getGraphicsAPI())
 		{
@@ -20,8 +20,8 @@ namespace Chonps
 				CHONPS_CORE_WARN("WANRING: TEXTURE: createCubemapSp(cubeMapFaces) - No graphics API selected beforehand!");
 				break;
 			}
-			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLCubemap>(createInfo); }
-			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanCubemap>(createInfo); }
+			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLCubemap>(createInfo, setIndex); }
+			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanCubemap>(createInfo, setIndex); }
 			case GraphicsAPI::DirectX:
 			{
 				break;
@@ -31,7 +31,7 @@ namespace Chonps
 		return nullptr;
 	}
 
-	Cubemap* createCubemap(CubemapCreateInfo createInfo)
+	Cubemap* createCubemap(CubemapCreateInfo createInfo, uint32_t setIndex)
 	{
 		switch (getGraphicsAPI())
 		{
@@ -40,8 +40,8 @@ namespace Chonps
 				CHONPS_CORE_WARN("WANRING: TEXTURE: createCubemapSp(cubeMapFaces) - No graphics API selected beforehand!");
 				break;
 			}
-			case GraphicsAPI::OpenGL: { return new OpenGLCubemap(createInfo); }
-			case GraphicsAPI::Vulkan: { return new VulkanCubemap(createInfo); }
+			case GraphicsAPI::OpenGL: { return new OpenGLCubemap(createInfo, setIndex); }
+			case GraphicsAPI::Vulkan: { return new VulkanCubemap(createInfo, setIndex); }
 			case GraphicsAPI::DirectX:
 			{
 				break;

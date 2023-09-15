@@ -9,19 +9,19 @@
 
 namespace Chonps
 {
-	std::shared_ptr<Shader> createShaderSp(const std::string& vertex, const std::string& fragment)
+	std::shared_ptr<Shader> createShaderSp(const std::string& vertex, const std::string& fragment, PipelineLayoutInfo* pipelineInfo)
 	{
 		switch (getGraphicsAPI())
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: SHADER: createShaderSp(vertex, fragment, name) - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: SHADER: createShaderSp(vertex, fragment, pipelineInfo) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLShader>(vertex, fragment); }
+			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLShader>(vertex, fragment, pipelineInfo); }
 
-			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanShader>(vertex, fragment); }
+			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanShader>(vertex, fragment, pipelineInfo); }
 
 			case GraphicsAPI::DirectX:
 			{
@@ -32,19 +32,19 @@ namespace Chonps
 		return nullptr;
 	}
 
-	Shader* createShader(const std::string& vertex, const std::string& fragment)
+	Shader* createShader(const std::string& vertex, const std::string& fragment, PipelineLayoutInfo* pipelineInfo)
 	{
 		switch (getGraphicsAPI())
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: SHADER: createShader(vertex, fragment, name) - No graphics API selected beforehand!");
+				CHONPS_CORE_WARN("WANRING: SHADER: createShader(vertex, fragment, pipelineInfo) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL: { return new OpenGLShader(vertex, fragment); }
+			case GraphicsAPI::OpenGL: { return new OpenGLShader(vertex, fragment, pipelineInfo); }
 
-			case GraphicsAPI::Vulkan: { return new VulkanShader(vertex, fragment); }
+			case GraphicsAPI::Vulkan: { return new VulkanShader(vertex, fragment, pipelineInfo); }
 
 			case GraphicsAPI::DirectX:
 			{
@@ -53,21 +53,6 @@ namespace Chonps
 		}
 		CHONPS_CORE_ERROR("ERROR: SHADER: Could not create Shader!");
 		return nullptr;
-	}
-
-	void bindPipelineToShader(Shader* shader, PipelineLayoutInfo* pipelineLayout)
-	{
-		GraphicsAPI api = getGraphicsAPI();
-		if (api == GraphicsAPI::OpenGL)
-		{
-			OpenGLShader* oglShader = static_cast<OpenGLShader*>(shader);
-			oglShader->BindPipeline(pipelineLayout);
-		}
-		else if (api == GraphicsAPI::Vulkan)
-		{
-			VulkanShader* vkShader = static_cast<VulkanShader*>(shader);
-			vkShader->BindPipeline(pipelineLayout);
-		}
 	}
 
 	namespace ogls

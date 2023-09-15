@@ -33,9 +33,8 @@ namespace Chonps
 		Camera m_SceneCamera;
 
 		UniformBuffer* m_UniformBuffer;
-		UniformBuffer* m_FBOUniformBuffer;
-		UniformBuffer* m_CubemapUniformBuffer;
-		UniformBuffer* m_GuiUniformBuffer;
+		UniformBuffer* m_CameraUniformBuffer;
+		UniformBuffer* m_SceneCameraUniformBuffer;
 
 		ShaderLibrary m_ShaderLibrary;
 
@@ -54,8 +53,7 @@ namespace Chonps
 
 		std::vector<Mesh> m_Meshes;
 
-		Texture* m_Texture;
-		Texture* m_Texture2;
+		TextureLayout* m_TextureLayout;
 		Chonps::Font m_Font;
 
 		FrameBuffer* m_FBO;

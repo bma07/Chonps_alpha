@@ -142,6 +142,23 @@ namespace Chonps
 		glDrawElementsInstancedBaseInstance(m_TopologyType, indexCount, GL_UNSIGNED_INT, 0, instanceCount, firstInstance);
 	}
 
+	void OpenGLRendererAPI::SetStencilReference(uint32_t reference)
+	{
+		GLint stencilFunc, stencilMask;
+		glGetIntegerv(GL_STENCIL_FUNC, &stencilFunc);
+		glGetIntegerv(GL_STENCIL_VALUE_MASK, &stencilMask);
+		glStencilFunc(stencilFunc, reference, stencilMask);
+	}
+
+	void OpenGLRendererAPI::SetStencilMask(uint32_t compareMask, uint32_t writeMask)
+	{
+		GLint stencilFunc, stencilRef;
+		glGetIntegerv(GL_STENCIL_FUNC, &stencilFunc);
+		glGetIntegerv(GL_STENCIL_REF, &stencilRef);
+		glStencilFunc(stencilFunc, stencilRef, compareMask);
+		glStencilMask(writeMask);
+	}
+
 	void OpenGLRendererAPI::BeginNextFrame()
 	{
 		int width, height;
@@ -179,5 +196,109 @@ namespace Chonps
 	void setOglCurrentWindow(GLFWwindow* window)
 	{
 		s_OglCurrentWindowContext = window;
+	}
+
+	namespace ogls
+	{
+		uint32_t getBlendFactorType(ColorBlendFactor blendFactor)
+		{
+			switch (blendFactor)
+			{
+				case Chonps::ColorBlendFactor::Zero: { return GL_ZERO; }
+				case Chonps::ColorBlendFactor::One: { return GL_ONE; }
+				case Chonps::ColorBlendFactor::SrcColor: { return GL_SRC_COLOR; }
+				case Chonps::ColorBlendFactor::OneMinusSrcColor: { return GL_ONE_MINUS_SRC_COLOR; }
+				case Chonps::ColorBlendFactor::DstColor: { return GL_DST_COLOR; }
+				case Chonps::ColorBlendFactor::OneMinusDstColor: { return GL_ONE_MINUS_DST_COLOR; }
+				case Chonps::ColorBlendFactor::SrcAlpha: { return GL_SRC_ALPHA; }
+				case Chonps::ColorBlendFactor::OneMinusSrcAlpha: { return GL_ONE_MINUS_SRC_ALPHA; }
+				case Chonps::ColorBlendFactor::DstAlpha: { return GL_DST_ALPHA; }
+				case Chonps::ColorBlendFactor::OneMinusDstAlpha: { return GL_ONE_MINUS_DST_ALPHA; }
+				case Chonps::ColorBlendFactor::ConstantColor: { return GL_CONSTANT_COLOR; }
+				case Chonps::ColorBlendFactor::OneMinusConstantColor: { return GL_ONE_MINUS_CONSTANT_COLOR; }
+				case Chonps::ColorBlendFactor::ConstantAlpha: { return GL_CONSTANT_ALPHA; }
+				case Chonps::ColorBlendFactor::OneMinusConstantAlpha: { return GL_ONE_MINUS_CONSTANT_ALPHA; }
+				case Chonps::ColorBlendFactor::SrcAlphaSaturate: { return GL_SRC_ALPHA_SATURATE; }
+				case Chonps::ColorBlendFactor::Src1Color: { return GL_SRC1_COLOR; }
+				case Chonps::ColorBlendFactor::OneMinusSrc1Color: { return GL_ONE_MINUS_SRC1_COLOR; }
+				case Chonps::ColorBlendFactor::Src1_Alpha: { return GL_SRC1_ALPHA; }
+				case Chonps::ColorBlendFactor::OneMinusSrc1Alpha: { return GL_ONE_MINUS_SRC1_ALPHA; }
+				default:
+				{
+					CHONPS_CORE_ERROR("ERROR: Could not find matching color blend factor!");
+					return GL_ZERO;
+				}
+			}
+		}
+
+		uint32_t getPipelineCullFaceMode(CullFaceMode cullFaceMode)
+		{
+			switch (cullFaceMode)
+				{
+				case CullFaceMode::Disable: { return GL_NONE; }
+				case CullFaceMode::Front: { return GL_FRONT; }
+				case CullFaceMode::Back: { return GL_BACK; }
+				case CullFaceMode::Both: { return GL_FRONT_AND_BACK; }
+				default:
+				{
+					CHONPS_CORE_ERROR("ERROR: Cannot find matching cull face mode!");
+					return GL_NONE;
+				}
+			}
+		}
+
+		uint32_t getPipelineFrontFace(CullFrontFace frontFace)
+		{
+			switch (frontFace)
+			{
+				case CullFrontFace::Clockwise: { return GL_CW; }
+				case CullFrontFace::CounterClockwise: { return GL_CCW; }
+				default:
+				{
+					CHONPS_CORE_ERROR("ERROR: Cannot find matching cull face front mode!");
+					return GL_CW;
+				}
+			}
+		}
+
+		uint32_t getPipelineCompareOp(CompareOperation compare)
+		{
+			switch (compare)
+				{
+				case CompareOperation::Never: { return GL_NEVER; }
+				case CompareOperation::Less: { return GL_LESS; }
+				case CompareOperation::Equal: { return GL_EQUAL; }
+				case CompareOperation::LessOrEqual: { return GL_LEQUAL; }
+				case CompareOperation::Greater: { return GL_GREATER; }
+				case CompareOperation::NotEqual: { return GL_NOTEQUAL; }
+				case CompareOperation::GreaterOrEqual: { return GL_GEQUAL; }
+				case CompareOperation::Always: { return GL_ALWAYS; }
+				default:
+				{
+					CHONPS_CORE_ERROR("ERROR: Cannot find matching compare operation!");
+					return GL_NEVER;
+			}
+			}
+		}
+
+		uint32_t getPipelineStencilOp(StencilOperation stencilOp)
+		{
+			switch (stencilOp)
+			{
+				case StencilOperation::Keep: { return GL_KEEP; }
+				case StencilOperation::Zero: { return GL_ZERO; }
+				case StencilOperation::Replace: { return GL_REPLACE; }
+				case StencilOperation::IncrementAndClamp: { return GL_INCR_WRAP; }
+				case StencilOperation::DecrementAndClamp: { return GL_DECR_WRAP; }
+				case StencilOperation::Invert: { return GL_INVERT; }
+				case StencilOperation::IncrementAndWrap: { return GL_INCR_WRAP; }
+				case StencilOperation::DecrementAndWrap: { return GL_DECR_WRAP; }
+				default:
+				{
+					CHONPS_CORE_ERROR("ERROR: Cannot find matching stencil operation!");
+					return GL_KEEP;
+				}
+			}
+		}
 	}
 }

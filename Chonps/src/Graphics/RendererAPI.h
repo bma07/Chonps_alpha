@@ -37,6 +37,9 @@ namespace Chonps
 		virtual void DrawInstanced(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance) = 0;
 		virtual void DrawIndexedInstanced(uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance) = 0;
 
+		virtual void SetStencilReference(uint32_t reference) = 0;
+		virtual void SetStencilMask(uint32_t compareMask, uint32_t writeMask) = 0;
+
 		virtual void BeginNextFrame() = 0;
 		virtual void DrawSubmit() = 0;
 		virtual void RenderPassBegin() = 0;

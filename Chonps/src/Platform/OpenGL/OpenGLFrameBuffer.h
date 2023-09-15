@@ -8,9 +8,9 @@ namespace Chonps
 	class OpenGLFrameBuffer : public FrameBuffer
 	{
 	public:
-		OpenGLFrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo);
+		OpenGLFrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo, uint32_t setIndex);
 
-		virtual void Draw(uint32_t index = 0) override;
+		virtual void Draw(Shader* shader, uint32_t index = 0) override;
 		virtual void Resize(uint32_t width, uint32_t height) override;
 		virtual void Viewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 

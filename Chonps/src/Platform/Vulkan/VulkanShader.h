@@ -9,10 +9,18 @@
 
 namespace Chonps
 {
+	struct VulkanDynamicStencil
+	{
+		bool enabled = false;
+		VkStencilOp failOp = VK_STENCIL_OP_KEEP, depthFailOp = VK_STENCIL_OP_KEEP, passOp = VK_STENCIL_OP_KEEP;
+		VkCompareOp compareOp = VK_COMPARE_OP_ALWAYS;
+		uint32_t writeMask = 0x00, compareMask = 0x00, reference = 1;
+	};
+
 	class VulkanShader : public Shader
 	{
 	public:
-		VulkanShader(const std::string& vertexFile, const std::string& fragmentFile);
+		VulkanShader(const std::string& vertexFile, const std::string& fragmentFile, PipelineLayoutInfo* pipelineInfo);
 		virtual ~VulkanShader();
 
 		virtual void Bind() const override;
@@ -23,20 +31,21 @@ namespace Chonps
 
 		operator uint32_t& () { return m_ID; }
 
-		void BindPipeline(PipelineLayoutInfo* pipelineLayout);
+		VkPipelineLayout getNativePipelineLayout() { return m_Pipeline.pipelineLayout; }
 
 	private:
-
 		uint32_t m_ID;
 		PipelineLayoutInfo m_LayoutInfo;
 
 		VkShaderModule m_VertexShaderModule;
 		VkShaderModule m_FragmentShaderModule;
 		VulkanPipeline m_Pipeline;
-		bool m_TextureArray = false, m_FrameBuffer = false, m_Cubemap = false;
-		uint32_t m_TextureArrayIndex, m_FrameBufferIndex, m_CubemapIndex;
+
+		VulkanDynamicStencil m_DynamicStencil;
 
 		VulkanPipelineShaderStages m_ShaderStages;
+
+		void BindPipeline(PipelineLayoutInfo* pipelineLayout);
 	};
 }
 

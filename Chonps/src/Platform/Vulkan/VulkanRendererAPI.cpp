@@ -234,7 +234,7 @@ namespace Chonps
 
 		vkDestroyDescriptorPool(m_VulkanBackends->device, m_VulkanBackends->descriptorPool, nullptr);
 
-		vkDestroyDescriptorSetLayout(m_VulkanBackends->device, m_VulkanBackends->textureArrayDescriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(m_VulkanBackends->device, m_VulkanBackends->textureDescriptorSetLayout, nullptr);
 		vkDestroyDescriptorSetLayout(m_VulkanBackends->device, m_VulkanBackends->frameBufferDescriptorSetLayout, nullptr);
 		vkDestroyDescriptorSetLayout(m_VulkanBackends->device, m_VulkanBackends->cubemapDescriptorSetLayout, nullptr);
 
@@ -276,7 +276,7 @@ namespace Chonps
 		// Renderer Backends
 		RendererBackends* rendererBackends = getRendererBackends();
 		m_VulkanBackends->maxObjects = rendererBackends->maxRenderEntities;
-		m_VulkanBackends->maxTextures = rendererBackends->maxTextures;
+		m_VulkanBackends->maxTextureBindingSlots = rendererBackends->maxTextureBindingSlots;
 		m_VulkanBackends->maxFramesInFlight = rendererBackends->maxFramesInFlight;
 		m_VulkanBackends->maxObjectIDs = rendererBackends->maxObjectIDs;
 		m_VulkanBackends->multithreadingEnabled = rendererBackends->enableMultiThreading;
@@ -324,18 +324,19 @@ namespace Chonps
 		m_VulkanBackends->nullDataTexture = vks::createSingleDataTexture(1, 1, &textureData);
 		m_VulkanBackends->texturesQueue.resize(m_VulkanBackends->maxFramesInFlight);
 
+		// Create texture Layout
 		// Create texture array Layout
 		VkDescriptorSetLayoutBinding textureLayoutBinding{};
 		textureLayoutBinding.binding = s_TextureDescriptorBindings.textureBinding;
 		textureLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-		textureLayoutBinding.descriptorCount = m_VulkanBackends->maxTextures;
+		textureLayoutBinding.descriptorCount = m_VulkanBackends->maxTextureBindingSlots;
 		textureLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		textureLayoutBinding.pImmutableSamplers = nullptr;
 
 		VkDescriptorSetLayoutBinding samplerLayoutBinding{};
 		samplerLayoutBinding.binding = s_TextureDescriptorBindings.samplerBinding;
 		samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-		samplerLayoutBinding.descriptorCount = m_VulkanBackends->maxTextures;
+		samplerLayoutBinding.descriptorCount = m_VulkanBackends->maxTextureBindingSlots;
 		samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		samplerLayoutBinding.pImmutableSamplers = nullptr;
 
@@ -346,7 +347,7 @@ namespace Chonps
 		layoutInfo.bindingCount = static_cast<uint32_t>(layoutBindings.size());
 		layoutInfo.pBindings = layoutBindings.data();
 
-		CHONPS_CORE_ASSERT(vkCreateDescriptorSetLayout(m_VulkanBackends->device, &layoutInfo, nullptr, &m_VulkanBackends->textureArrayDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout!");
+		CHONPS_CORE_ASSERT(vkCreateDescriptorSetLayout(m_VulkanBackends->device, &layoutInfo, nullptr, &m_VulkanBackends->textureDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout!");
 
 		// Create Offscreen FrameBuffer Layout
 		VkDescriptorSetLayoutBinding frameBufferLayoutBinding{};
@@ -382,50 +383,12 @@ namespace Chonps
 
 		m_VulkanBackends->textureDescriptorBindings = &s_TextureDescriptorBindings;
 
-
-		std::vector<VkDescriptorImageInfo> imageInfo{};
-		imageInfo.resize(m_VulkanBackends->maxTextures);
-		for (uint32_t i = 0; i < imageInfo.size(); i++)
+		m_VulkanBackends->nullImageInfos.resize(m_VulkanBackends->maxTextureBindingSlots);
+		for (uint32_t i = 0; i < m_VulkanBackends->nullImageInfos.size(); i++)
 		{
-			imageInfo[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo[i].imageView = m_VulkanBackends->nullDataTexture.textureImageView;
-			imageInfo[i].sampler = m_VulkanBackends->nullDataTexture.textureSampler;
-		}
-		m_VulkanBackends->imageInfos = imageInfo;
-
-		// Create Descriptor Set for texture array to contain all textures
-		std::vector<VkDescriptorSetLayout> samplerLayouts(m_VulkanBackends->maxFramesInFlight, m_VulkanBackends->textureArrayDescriptorSetLayout);
-		VkDescriptorSetAllocateInfo samplerAllocInfo{};
-		samplerAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		samplerAllocInfo.descriptorPool = m_VulkanBackends->descriptorPool;
-		samplerAllocInfo.descriptorSetCount = static_cast<uint32_t>(samplerLayouts.size());
-		samplerAllocInfo.pSetLayouts = samplerLayouts.data();
-
-		std::vector<VkDescriptorSet> descriptorSets{}; descriptorSets.resize(m_VulkanBackends->maxFramesInFlight);
-		CHONPS_CORE_ASSERT(vkAllocateDescriptorSets(m_VulkanBackends->device, &samplerAllocInfo, descriptorSets.data()) == VK_SUCCESS, "Failed to allocate descriptor sets!");
-		m_VulkanBackends->samplerDescriptorSet = descriptorSets;
-
-		// Fill texture array with null textures
-		for (size_t i = 0; i < descriptorSets.size(); i++)
-		{
-			std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[0].dstSet = descriptorSets[i];
-			descriptorWrites[0].dstBinding = m_VulkanBackends->textureDescriptorBindings->textureBinding;
-			descriptorWrites[0].dstArrayElement = 0;
-			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-			descriptorWrites[0].descriptorCount = m_VulkanBackends->maxTextures;
-			descriptorWrites[0].pImageInfo = imageInfo.data();
-
-			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[1].dstSet = descriptorSets[i];
-			descriptorWrites[1].dstBinding = m_VulkanBackends->textureDescriptorBindings->samplerBinding;
-			descriptorWrites[1].dstArrayElement = 0;
-			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-			descriptorWrites[1].descriptorCount = m_VulkanBackends->maxTextures;
-			descriptorWrites[1].pImageInfo = imageInfo.data();
-
-			vkUpdateDescriptorSets(m_VulkanBackends->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+			m_VulkanBackends->nullImageInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			m_VulkanBackends->nullImageInfos[i].imageView = m_VulkanBackends->nullDataTexture.textureImageView;
+			m_VulkanBackends->nullImageInfos[i].sampler = m_VulkanBackends->nullDataTexture.textureSampler;
 		}
 	}
 
@@ -1033,7 +996,7 @@ namespace Chonps
 
 	void VulkanRendererAPI::CreateOrUpdateTextureImage(uint32_t currentImage)
 	{
-		while (!m_VulkanBackends->texturesQueue[currentImage].empty())
+		/*while (!m_VulkanBackends->texturesQueue[currentImage].empty())
 		{
 			uint32_t texID = m_VulkanBackends->texturesQueue[currentImage].front();
 			VulkanTextureData texData = m_VulkanBackends->textureImages[texID];
@@ -1062,7 +1025,7 @@ namespace Chonps
 			vkUpdateDescriptorSets(m_VulkanBackends->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 
 			m_VulkanBackends->texturesQueue[currentImage].pop();
-		}
+		}*/
 	}
 
 	void VulkanRendererAPI::ClearColor(const float r, const float g, const float b, const float w)
@@ -1121,8 +1084,28 @@ namespace Chonps
 		vkCmdDrawIndexed(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], indexCount, instanceCount, 0, 0, firstInstance); // main draw call
 	}
 
+	void VulkanRendererAPI::SetStencilReference(uint32_t reference)
+	{
+		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
+		if (m_VulkanBackends->windowWidth == 0 || m_VulkanBackends->windowHeight == 0)
+			return;
+
+		vkCmdSetStencilReference(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], VK_STENCIL_FACE_FRONT_AND_BACK, reference);
+	}
+
+	void VulkanRendererAPI::SetStencilMask(uint32_t compareMask, uint32_t writeMask)
+	{
+		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
+		if (m_VulkanBackends->windowWidth == 0 || m_VulkanBackends->windowHeight == 0)
+			return;
+
+		vkCmdSetStencilCompareMask(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], VK_STENCIL_FACE_FRONT_AND_BACK, compareMask);
+		vkCmdSetStencilWriteMask(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], VK_STENCIL_FACE_FRONT_AND_BACK, writeMask);
+	}
+
 	void VulkanRendererAPI::BeginNextFrame()
 	{
+
 		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
 		if (m_VulkanBackends->windowWidth == 0 || m_VulkanBackends->windowHeight == 0)
 			return;
@@ -1663,7 +1646,7 @@ namespace Chonps
 		void vkImplTextureBinding(uint32_t textureBinding, uint32_t samplerBinding, uint32_t frameBufferBinding, uint32_t cubemapBinding)
 		{
 			CHONPS_CORE_ASSERT(textureBinding != samplerBinding, "textureBinding and samplerBinding must have a different value!");
-			VulkanBackends* vkBackends = getVulkanBackends();
+			VulkanBackends* m_VulkanBackends = getVulkanBackends();
 
 			s_TextureDescriptorBindings.textureBinding = textureBinding;
 			s_TextureDescriptorBindings.samplerBinding = samplerBinding;
@@ -1744,43 +1727,192 @@ namespace Chonps
 				return fbSampleCount;
 		}
 
-		void vkImplPrepareDraw()
+		VkPrimitiveTopology getVulkanTopologyType(RenderTopologyType topologyType)
 		{
-			// Update texture array with texture images
-			for (uint32_t i = 0; i < s_VulkanBackends->maxFramesInFlight; i++)
+			switch (topologyType)
 			{
-				for (const auto& texImg : s_VulkanBackends->textureImages)
+				case RenderTopologyType::Point: return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+				case RenderTopologyType::Line: return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+				case RenderTopologyType::LineStrip: return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+				case RenderTopologyType::Triangle: return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+				case RenderTopologyType::TriangleStrip: return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+				case RenderTopologyType::None: return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+			}
+
+			CHONPS_CORE_ERROR("ERROR: VULKAN: No topology was chosen, cannot get topology type!");
+			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		}
+
+		VkCullModeFlags getVulkanCullModeFlag(RenderCullFaceMode cullFaceMode)
+		{
+			switch (cullFaceMode)
+			{
+				case RenderCullFaceMode::Disable: return VK_CULL_MODE_NONE;
+				case RenderCullFaceMode::Front: return VK_CULL_MODE_FRONT_BIT;
+				case RenderCullFaceMode::Back: return VK_CULL_MODE_BACK_BIT;
+				case RenderCullFaceMode::Both: return VK_CULL_MODE_FRONT_AND_BACK;
+			}
+
+			CHONPS_CORE_ERROR("ERROR: VULKAN: No cull face mode was chosen, cannot get cull face mode!");
+			return VK_CULL_MODE_NONE;
+		}
+
+		VkFrontFace getVulkanCullFrontFace(RenderCullFrontFace cullFrontFace)
+		{
+			switch (cullFrontFace)
+			{
+				case RenderCullFrontFace::Clockwise: return VK_FRONT_FACE_CLOCKWISE;
+				case RenderCullFrontFace::CounterClockwise: return VK_FRONT_FACE_COUNTER_CLOCKWISE;
+			}
+
+			CHONPS_CORE_ERROR("ERROR: VULKAN: No cull front face was chosen, cannot get cull front face!");
+			return VK_FRONT_FACE_CLOCKWISE;
+		}
+
+		VkColorComponentFlags getColorComponents(ColorWriteMask colorMask)
+		{
+			VkColorComponentFlags colorComponentsFlag = 0;
+
+			if (colorMask.colorComponent_R_Bit) colorComponentsFlag |= VK_COLOR_COMPONENT_R_BIT;
+			if (colorMask.colorComponent_G_Bit) colorComponentsFlag |= VK_COLOR_COMPONENT_G_BIT;
+			if (colorMask.colorComponent_B_Bit) colorComponentsFlag |= VK_COLOR_COMPONENT_B_BIT;
+			if (colorMask.colorComponent_A_Bit) colorComponentsFlag |= VK_COLOR_COMPONENT_A_BIT;
+
+			return colorComponentsFlag;
+		}
+
+		VkBlendFactor getBlendFactor(ColorBlendFactor blendFactor)
+		{
+			switch (blendFactor)
+			{
+				case ColorBlendFactor::Zero: { return VK_BLEND_FACTOR_ZERO; }
+				case ColorBlendFactor::One: { return VK_BLEND_FACTOR_ONE; }
+				case ColorBlendFactor::SrcColor: { return VK_BLEND_FACTOR_SRC_COLOR; }
+				case ColorBlendFactor::OneMinusSrcColor: { return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR; }
+				case ColorBlendFactor::DstColor: { return VK_BLEND_FACTOR_DST_COLOR; }
+				case ColorBlendFactor::OneMinusDstColor: { return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR; }
+				case ColorBlendFactor::SrcAlpha: { return VK_BLEND_FACTOR_SRC_ALPHA; }
+				case ColorBlendFactor::OneMinusSrcAlpha: { return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; }
+				case ColorBlendFactor::DstAlpha: { return VK_BLEND_FACTOR_DST_ALPHA; }
+				case ColorBlendFactor::OneMinusDstAlpha: { return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA; }
+				case ColorBlendFactor::ConstantColor: { return VK_BLEND_FACTOR_CONSTANT_COLOR; }
+				case ColorBlendFactor::OneMinusConstantColor: { return VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR; }
+				case ColorBlendFactor::ConstantAlpha: { return VK_BLEND_FACTOR_CONSTANT_ALPHA; }
+				case ColorBlendFactor::OneMinusConstantAlpha: { return VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA; }
+				case ColorBlendFactor::SrcAlphaSaturate: { return VK_BLEND_FACTOR_SRC_ALPHA_SATURATE; }
+				case ColorBlendFactor::Src1Color: { return VK_BLEND_FACTOR_SRC1_COLOR; }
+				case ColorBlendFactor::OneMinusSrc1Color: { return VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR; }
+				case ColorBlendFactor::Src1_Alpha: { return VK_BLEND_FACTOR_SRC1_ALPHA; }
+				case ColorBlendFactor::OneMinusSrc1Alpha: { return VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA; }
+				default:
 				{
-					VulkanTextureData texData = texImg.second;
-
-					s_VulkanBackends->imageInfos[texImg.first].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-					s_VulkanBackends->imageInfos[texImg.first].imageView = texData.textureImageView;
-					s_VulkanBackends->imageInfos[texImg.first].sampler = texData.textureSampler;
-
-					std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-					descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptorWrites[0].dstSet = s_VulkanBackends->samplerDescriptorSet[i];
-					descriptorWrites[0].dstBinding = s_VulkanBackends->textureDescriptorBindings->textureBinding;
-					descriptorWrites[0].dstArrayElement = 0;
-					descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-					descriptorWrites[0].descriptorCount = s_VulkanBackends->maxTextures;
-					descriptorWrites[0].pImageInfo = s_VulkanBackends->imageInfos.data();
-
-					descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptorWrites[1].dstSet = s_VulkanBackends->samplerDescriptorSet[i];
-					descriptorWrites[1].dstBinding = s_VulkanBackends->textureDescriptorBindings->samplerBinding;
-					descriptorWrites[1].dstArrayElement = 0;
-					descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-					descriptorWrites[1].descriptorCount = s_VulkanBackends->maxTextures;
-					descriptorWrites[1].pImageInfo = s_VulkanBackends->imageInfos.data();
-
-					vkUpdateDescriptorSets(s_VulkanBackends->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+					CHONPS_CORE_ERROR("ERROR: PIPELINE: Could not find matching color blend factor!");
+					return VK_BLEND_FACTOR_ZERO;
 				}
 			}
-			// Queue
-			for (auto& queue : s_VulkanBackends->texturesQueue)
-				std::queue<uint32_t>().swap(queue);
+		}
 
+		VkBlendOp getBlendOperation(ColorBlendOperation blendOp)
+		{
+			switch (blendOp)
+			{
+				case ColorBlendOperation::Add: { return VK_BLEND_OP_ADD; }
+				case ColorBlendOperation::Subtract: { return VK_BLEND_OP_SUBTRACT; }
+				case ColorBlendOperation::ReverseSubtract: { return VK_BLEND_OP_REVERSE_SUBTRACT; }
+				case ColorBlendOperation::Min: { return VK_BLEND_OP_MIN; }
+				case ColorBlendOperation::Max: { return VK_BLEND_OP_MAX; }
+				case ColorBlendOperation::ZeroExt: { return VK_BLEND_OP_ZERO_EXT; }
+				case ColorBlendOperation::SrcExt: { return VK_BLEND_OP_SRC_EXT; }
+				case ColorBlendOperation::DstExt: { return VK_BLEND_OP_DST_EXT; }
+				case ColorBlendOperation::SrcOverExt: { return VK_BLEND_OP_SRC_OVER_EXT; }
+				case ColorBlendOperation::DstOverExt: { return VK_BLEND_OP_DST_OVER_EXT; }
+				case ColorBlendOperation::SrcInExt: { return VK_BLEND_OP_SRC_IN_EXT; }
+				case ColorBlendOperation::DstInExt: { return VK_BLEND_OP_DST_IN_EXT; }
+				case ColorBlendOperation::SrcOutExt: { return VK_BLEND_OP_SRC_OUT_EXT; }
+				case ColorBlendOperation::DstOutExt: { return VK_BLEND_OP_DST_OUT_EXT; }
+				case ColorBlendOperation::SrcAtopExt: { return VK_BLEND_OP_SRC_ATOP_EXT; }
+				case ColorBlendOperation::DstAtopExt: { return VK_BLEND_OP_DST_ATOP_EXT; }
+				case ColorBlendOperation::XorExt: { return VK_BLEND_OP_XOR_EXT; }
+				case ColorBlendOperation::MultiplyExt: { return VK_BLEND_OP_MULTIPLY_EXT; }
+				case ColorBlendOperation::ScreenExt: { return VK_BLEND_OP_SCREEN_EXT; }
+				case ColorBlendOperation::OverlayExt: { return VK_BLEND_OP_OVERLAY_EXT; }
+				case ColorBlendOperation::DarkenExt: { return VK_BLEND_OP_DARKEN_EXT; }
+				case ColorBlendOperation::LightenExt: { return VK_BLEND_OP_LIGHTEN_EXT; }
+				case ColorBlendOperation::ColorDodgeExt: { return VK_BLEND_OP_COLORDODGE_EXT; }
+				case ColorBlendOperation::ColorBurnExt: { return VK_BLEND_OP_COLORBURN_EXT; }
+				case ColorBlendOperation::HardLightExt: { return VK_BLEND_OP_HARDLIGHT_EXT; }
+				case ColorBlendOperation::SoftLightExt: { return VK_BLEND_OP_SOFTLIGHT_EXT; }
+				case ColorBlendOperation::DifferenceExt: { return VK_BLEND_OP_DIFFERENCE_EXT; }
+				case ColorBlendOperation::ExclusionExt: { return VK_BLEND_OP_EXCLUSION_EXT; }
+				case ColorBlendOperation::InvertExt: { return VK_BLEND_OP_INVERT_EXT; }
+				case ColorBlendOperation::InvertRGBExt: { return VK_BLEND_OP_INVERT_RGB_EXT; }
+				case ColorBlendOperation::LinearDodgeExt: { return VK_BLEND_OP_LINEARDODGE_EXT; }
+				case ColorBlendOperation::LinearBurnExt: { return VK_BLEND_OP_LINEARBURN_EXT; }
+				case ColorBlendOperation::VividLightExt: { return VK_BLEND_OP_VIVIDLIGHT_EXT; }
+				case ColorBlendOperation::LinearLightExt: { return VK_BLEND_OP_LINEARLIGHT_EXT; }
+				case ColorBlendOperation::PinLightExt: { return VK_BLEND_OP_PINLIGHT_EXT; }
+				case ColorBlendOperation::HardMixExt: { return VK_BLEND_OP_HARDMIX_EXT; }
+				case ColorBlendOperation::HSLHueExt: { return VK_BLEND_OP_HSL_HUE_EXT; }
+				case ColorBlendOperation::HSLSaturationExt: { return VK_BLEND_OP_HSL_SATURATION_EXT; }
+				case ColorBlendOperation::HSLColorExt: { return VK_BLEND_OP_HSL_COLOR_EXT; }
+				case ColorBlendOperation::HSLLuminosityExt: { return VK_BLEND_OP_HSL_LUMINOSITY_EXT; }
+				case ColorBlendOperation::PlusExt: { return VK_BLEND_OP_PLUS_EXT; }
+				case ColorBlendOperation::PlusClampedExt: { return VK_BLEND_OP_PLUS_CLAMPED_EXT; }
+				case ColorBlendOperation::PlusClampedAlphaExt: { return VK_BLEND_OP_PLUS_CLAMPED_ALPHA_EXT; }
+				case ColorBlendOperation::PlusDarkerExt: { return VK_BLEND_OP_PLUS_DARKER_EXT; }
+				case ColorBlendOperation::MinusExt: { return VK_BLEND_OP_MINUS_EXT; }
+				case ColorBlendOperation::MinusClampedExt: { return VK_BLEND_OP_MINUS_CLAMPED_EXT; }
+				case ColorBlendOperation::ContrastExt: { return VK_BLEND_OP_CONTRAST_EXT; }
+				case ColorBlendOperation::InvertOVGExt: { return VK_BLEND_OP_INVERT_OVG_EXT; }
+				case ColorBlendOperation::RedExt: { return VK_BLEND_OP_RED_EXT; }
+				case ColorBlendOperation::GreenExt: { return VK_BLEND_OP_GREEN_EXT; }
+				case ColorBlendOperation::BlueExt: { return VK_BLEND_OP_BLUE_EXT; }
+				default:
+				{
+					CHONPS_CORE_ERROR("ERROR: PIPELINE: Could not find matching blend operation!");
+					return VK_BLEND_OP_ADD;
+				}
+			}
+		}
+
+		VkCompareOp getCompareOp(CompareOperation compare)
+		{
+			switch (compare)
+			{
+				case CompareOperation::Never: { return VK_COMPARE_OP_NEVER; }
+				case CompareOperation::Less: { return VK_COMPARE_OP_LESS; }
+				case CompareOperation::Equal: { return VK_COMPARE_OP_EQUAL; }
+				case CompareOperation::LessOrEqual: { return VK_COMPARE_OP_LESS_OR_EQUAL; }
+				case CompareOperation::Greater: { return VK_COMPARE_OP_GREATER; }
+				case CompareOperation::NotEqual: { return VK_COMPARE_OP_NOT_EQUAL; }
+				case CompareOperation::GreaterOrEqual: { return VK_COMPARE_OP_GREATER_OR_EQUAL; }
+				case CompareOperation::Always: { return VK_COMPARE_OP_ALWAYS; }
+				default:
+				{
+					CHONPS_CORE_ERROR("ERROR: PIPELINE: Could not find matching compare operation!");
+					return VK_COMPARE_OP_NEVER;
+				}
+			}
+		}
+
+		VkStencilOp getStencilOp(StencilOperation stencilOp)
+		{
+			switch (stencilOp)
+			{
+				case StencilOperation::Keep: { return VK_STENCIL_OP_KEEP; }
+				case StencilOperation::Zero: { return VK_STENCIL_OP_ZERO; }
+				case StencilOperation::Replace: { return VK_STENCIL_OP_REPLACE; }
+				case StencilOperation::IncrementAndClamp: { return VK_STENCIL_OP_INCREMENT_AND_CLAMP; }
+				case StencilOperation::DecrementAndClamp: { return VK_STENCIL_OP_DECREMENT_AND_CLAMP; }
+				case StencilOperation::Invert: { return VK_STENCIL_OP_INVERT; }
+				case StencilOperation::IncrementAndWrap: { return VK_STENCIL_OP_INCREMENT_AND_WRAP; }
+				case StencilOperation::DecrementAndWrap: { return VK_STENCIL_OP_DECREMENT_AND_WRAP; }
+				default:
+				{
+					CHONPS_CORE_ERROR("ERROR: PIPELINE: Could not find matching stencil operation!");
+					return VK_STENCIL_OP_KEEP;
+				}
+			}
 		}
 	}
 }

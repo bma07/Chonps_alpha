@@ -135,4 +135,62 @@ namespace Chonps
 		CHONPS_CORE_ERROR("ERROR: TEXTURE: Could not create Texture!");
 		return nullptr;
 	}
+
+	TextureLayout* createTextureLayout(TextureCreateInfo* pTextures, uint32_t textureCount, uint32_t setIndex)
+	{
+		switch (getGraphicsAPI())
+		{
+			case GraphicsAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: TEXTURE: createTextureLayout(pTextures, textureCount, setIndex) - No graphics API selected beforehand!");
+				break;
+			}
+
+			case GraphicsAPI::OpenGL:
+			{
+				return new OpenGLTextureLayout(pTextures, textureCount, setIndex);
+			}
+
+			case GraphicsAPI::Vulkan:
+			{
+				return new VulkanTextureLayout(pTextures, textureCount, setIndex);
+			}
+
+			case GraphicsAPI::DirectX:
+			{
+				break;
+			}
+		}
+		CHONPS_CORE_ERROR("ERROR: TEXTURE: Could not create Texture!");
+		return nullptr;
+	}
+
+	std::shared_ptr<TextureLayout> createTextureLayoutSp(TextureCreateInfo* pTextures, uint32_t textureCount, uint32_t setIndex)
+	{
+		switch (getGraphicsAPI())
+		{
+			case GraphicsAPI::None:
+			{
+				CHONPS_CORE_WARN("WANRING: TEXTURE: createTextureLayout(pTextures, textureCount) - No graphics API selected beforehand!");
+				break;
+			}
+
+			case GraphicsAPI::OpenGL:
+			{
+				return std::make_shared<OpenGLTextureLayout>(pTextures, textureCount, setIndex);
+			}
+
+			case GraphicsAPI::Vulkan:
+			{
+				return std::make_shared<VulkanTextureLayout>(pTextures, textureCount, setIndex);
+			}
+
+			case GraphicsAPI::DirectX:
+			{
+				break;
+			}
+		}
+		CHONPS_CORE_ERROR("ERROR: TEXTURE: Could not create Texture!");
+		return nullptr;
+	}
 }

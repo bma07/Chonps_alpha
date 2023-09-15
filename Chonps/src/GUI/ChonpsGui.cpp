@@ -87,6 +87,8 @@ namespace Chonps
 		void SubmitDraw()
 		{
 			s_ChonpsGuiContext.preStencilShader->Bind();
+			renderSetStencilReference(1);
+			renderSetStencilMask(0xff, 0xff);
 			s_ChonpsGuiContext.batchRenderer.DrawSubmit();
 
 
@@ -99,7 +101,21 @@ namespace Chonps
 			DrawRectEx(rectData);
 
 			s_ChonpsGuiContext.postStencilShader->Bind();
+			renderSetStencilReference(1);
+			renderSetStencilMask(0xff, 0xff);
 			s_ChonpsGuiContext.stencilRenderer.DrawSubmit();
+
+
+			rectData.pos = { 240.0f, 90.0f };
+			rectData.dimensions = { 130.0f, 700.0f };
+			rectData.color = { 0.8f, 0.8f, 0.8f, 0.8f };
+			rectData.batchRenderer = &s_ChonpsGuiContext.fontRenderer;
+
+			DrawRectEx(rectData);
+
+			renderSetStencilReference(2);
+			renderSetStencilMask(0xff, 0xff);
+			s_ChonpsGuiContext.fontRenderer.DrawSubmit();
 		}
 
 		void AddFontFromTTF(Font font)

@@ -2,6 +2,7 @@
 #define HG_CHONPS_OPENGL_RENDERER_API_H
 
 #include "Graphics/RendererAPI.h"
+#include "Graphics/RendererBackends.h"
 
 #include "Platform/WindowAPI/glfwAPI/glfwWindowAPI.h"
 
@@ -22,6 +23,9 @@ namespace Chonps
 		virtual void DrawInstanced(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance) override;
 		virtual void DrawIndexedInstanced(uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance) override;
 
+		virtual void SetStencilReference(uint32_t reference) override;
+		virtual void SetStencilMask(uint32_t compareMask, uint32_t writeMask) override;
+
 		virtual void BeginNextFrame() override;
 		virtual void DrawSubmit() override;
 		virtual void RenderPassBegin() override;
@@ -36,6 +40,19 @@ namespace Chonps
 	};
 
 	void setOglCurrentWindow(GLFWwindow* window);
+
+	namespace ogls
+	{
+		uint32_t getBlendFactorType(ColorBlendFactor blendFactor);
+
+		uint32_t getPipelineCullFaceMode(CullFaceMode cullFaceMode);
+
+		uint32_t getPipelineFrontFace(CullFrontFace frontFace);
+
+		uint32_t getPipelineCompareOp(CompareOperation compare);
+
+		uint32_t getPipelineStencilOp(StencilOperation stencilOp);
+	}
 }
 
 #endif

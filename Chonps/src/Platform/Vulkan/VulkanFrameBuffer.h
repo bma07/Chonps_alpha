@@ -9,9 +9,9 @@ namespace Chonps
 	class VulkanFrameBuffer : public FrameBuffer
 	{
 	public:
-		VulkanFrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo);
+		VulkanFrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo, uint32_t setIndex);
 
-		virtual void Draw(uint32_t index = 0) override;
+		virtual void Draw(Shader* shader, uint32_t index = 0) override;
 		virtual void Resize(uint32_t width, uint32_t height) override;
 		virtual void Viewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
@@ -35,8 +35,9 @@ namespace Chonps
 
 	private:
 		OffscreenPass m_OffscreenPass;
-
 		FrameBufferSpecificationInfo m_FrameBufferSpecificationInfo;
+		uint32_t m_SetIndex;
+
 		std::vector<FrameBufferColorAttachment> m_ColorAttachments;
 		FrameBufferDepthAttachment m_DepthAttachment = { 0, FrameBufferDepthFormat::None };
 		bool m_DepthAttached = false;

@@ -123,8 +123,8 @@ namespace Chonps
 		CHONPS_CORE_ASSERT(internalFormat && dataFormat, "Format not supported!");
 	}
 
-	OpenGLTexture::OpenGLTexture(const std::string& filepath, TexType texType, TexFilterPair texFilter, TexWrap texWrap)
-		: Texture(filepath, texType, texFilter, texWrap), m_TexType(texType), m_TexFilter(texFilter), m_TexWrap(texWrap), m_Unit(0)
+	OpenGLTexture::OpenGLTexture(const std::string& filepath , TexType texType, TexFilterPair texFilter, TexWrap texWrap)
+		: Texture(filepath, texType, texFilter, texWrap), m_TexType(texType), m_TexFilter(texFilter), m_TexWrap(texWrap)
 	{
 		int channels;
 		stbi_uc* data = stbi_load(filepath.c_str(), &m_Width, &m_Height, &channels, STBI_rgb_alpha);
@@ -140,18 +140,18 @@ namespace Chonps
 		GLenum magFilter = GL_NEAREST, minFilter = GL_LINEAR;
 		switch (m_TexFilter.min)
 		{
-			case TexFilter::Linear: magFilter = GL_LINEAR; break;
-			case TexFilter::Nearest: magFilter = GL_NEAREST; break;
-			case TexFilter::Nearest_Mipmap_Nearest: magFilter = GL_NEAREST_MIPMAP_NEAREST; break;
-			case TexFilter::Nearest_Mipmap_Linear: magFilter = GL_NEAREST_MIPMAP_LINEAR; break;
-			case TexFilter::Linear_Mipmap_Nearest: magFilter = GL_LINEAR_MIPMAP_NEAREST; break;
-			case TexFilter::Linear_Mipmap_Linear: magFilter = GL_LINEAR_MIPMAP_LINEAR; break;
+		case TexFilter::Linear: magFilter = GL_LINEAR; break;
+		case TexFilter::Nearest: magFilter = GL_NEAREST; break;
+		case TexFilter::Nearest_Mipmap_Nearest: magFilter = GL_NEAREST_MIPMAP_NEAREST; break;
+		case TexFilter::Nearest_Mipmap_Linear: magFilter = GL_NEAREST_MIPMAP_LINEAR; break;
+		case TexFilter::Linear_Mipmap_Nearest: magFilter = GL_LINEAR_MIPMAP_NEAREST; break;
+		case TexFilter::Linear_Mipmap_Linear: magFilter = GL_LINEAR_MIPMAP_LINEAR; break;
 		}
 		switch (m_TexFilter.mag)
 		{
-			case TexFilter::Linear: magFilter = GL_LINEAR; break;
-			case TexFilter::Nearest: magFilter = GL_NEAREST; break;
-			default: CHONPS_CORE_WARN("WARNING: TEXTURE: Use of texture filter unsupported in mag filter\n Mag filter only accepts Linear or Nearest"); break;
+		case TexFilter::Linear: magFilter = GL_LINEAR; break;
+		case TexFilter::Nearest: magFilter = GL_NEAREST; break;
+		default: CHONPS_CORE_WARN("WARNING: TEXTURE: Use of texture filter unsupported in mag filter\n Mag filter only accepts Linear or Nearest"); break;
 		}
 
 		// Get texture wrap mode format
@@ -179,12 +179,11 @@ namespace Chonps
 	}
 
 	OpenGLTexture::OpenGLTexture(uint32_t width, uint32_t height, const void* data, TexType texType, TexFilterPair texFilter, TexWrap texWrap)
-		: Texture(width, height, data, texType, texFilter, texWrap), 
-		m_Width(width), m_Height(height), 
-		m_TexType(texType), 
-		m_TexFilter(texFilter), 
-		m_TexWrap(texWrap), 
-		m_Unit(0)
+		: Texture(width, height, data, texType, texFilter, texWrap),
+		m_Width(width), m_Height(height),
+		m_TexType(texType),
+		m_TexFilter(texFilter),
+		m_TexWrap(texWrap)
 	{
 		bool gammaCorrect = renderGetGammaCorrection();
 
@@ -196,18 +195,18 @@ namespace Chonps
 		GLenum magFilter = GL_NEAREST, minFilter = GL_LINEAR;
 		switch (m_TexFilter.min)
 		{
-			case TexFilter::Linear: magFilter = GL_LINEAR; break;
-			case TexFilter::Nearest: magFilter = GL_NEAREST; break;
-			case TexFilter::Nearest_Mipmap_Nearest: magFilter = GL_NEAREST_MIPMAP_NEAREST; break;
-			case TexFilter::Nearest_Mipmap_Linear: magFilter = GL_NEAREST_MIPMAP_LINEAR; break;
-			case TexFilter::Linear_Mipmap_Nearest: magFilter = GL_LINEAR_MIPMAP_NEAREST; break;
-			case TexFilter::Linear_Mipmap_Linear: magFilter = GL_LINEAR_MIPMAP_LINEAR; break;
+		case TexFilter::Linear: magFilter = GL_LINEAR; break;
+		case TexFilter::Nearest: magFilter = GL_NEAREST; break;
+		case TexFilter::Nearest_Mipmap_Nearest: magFilter = GL_NEAREST_MIPMAP_NEAREST; break;
+		case TexFilter::Nearest_Mipmap_Linear: magFilter = GL_NEAREST_MIPMAP_LINEAR; break;
+		case TexFilter::Linear_Mipmap_Nearest: magFilter = GL_LINEAR_MIPMAP_NEAREST; break;
+		case TexFilter::Linear_Mipmap_Linear: magFilter = GL_LINEAR_MIPMAP_LINEAR; break;
 		}
 		switch (m_TexFilter.mag)
 		{
-			case TexFilter::Linear: magFilter = GL_LINEAR; break;
-			case TexFilter::Nearest: magFilter = GL_NEAREST; break;
-			default: CHONPS_CORE_WARN("WARNING: TEXTURE: Use of texture filter unsupported in mag filter\n Mag filter only accepts Linear or Nearest"); break;
+		case TexFilter::Linear: magFilter = GL_LINEAR; break;
+		case TexFilter::Nearest: magFilter = GL_NEAREST; break;
+		default: CHONPS_CORE_WARN("WARNING: TEXTURE: Use of texture filter unsupported in mag filter\n Mag filter only accepts Linear or Nearest"); break;
 		}
 		// Get texture wrap mode format
 		GLenum wrapFormat = GL_REPEAT;
@@ -234,26 +233,63 @@ namespace Chonps
 		m_TexWrap = TexWrap::Repeat;
 	}
 
-	void OpenGLTexture::Bind(uint32_t unit) const
+	void OpenGLTexture::Delete()
 	{
-		glActiveTexture(GL_TEXTURE0 + unit);
-		glBindTexture(GL_TEXTURE_2D, m_ID);
-		//glBindTextureUnit(unit, m_ID);
+		glDeleteTextures(1, &m_ID);
 	}
 
-	void OpenGLTexture::Bind() const
+	OpenGLTextureLayout::OpenGLTextureLayout(TextureCreateInfo* pTextures, uint32_t textureCount, uint32_t setIndex)
+		: TextureLayout(pTextures, textureCount, setIndex)
 	{
-		glActiveTexture(GL_TEXTURE0 + m_Unit);
-		glBindTexture(GL_TEXTURE_2D, m_ID);
+		for (uint32_t i = 0; i < textureCount; i++)
+		{
+			TextureCreateInfo textureInfo = pTextures[i];
+
+			if (m_Textures.find(textureInfo.slot) == m_Textures.end())
+			{
+				m_Textures[textureInfo.slot] = std::move(textureInfo.texture);
+			}
+			else CHONPS_CORE_WARN("WARNING: TEXTURE_LAYOUT: Texture with slot {0} already exists! Ignoring second texture slot", textureInfo.slot);
+		}
 	}
 
-	void OpenGLTexture::Unbind() const
+	void OpenGLTextureLayout::insert(Texture* texture, uint32_t slot)
+	{
+		if (m_Textures.find(slot) == m_Textures.end())
+		{
+			m_Textures[slot] = std::move(texture);
+		}
+		else CHONPS_CORE_WARN("WARNING: TEXTURE_LAYOUT: Texture with slot {0} already exists! Ignoring second texture slot", slot);
+	}
+
+	void OpenGLTextureLayout::erase(uint32_t slot)
+	{
+		if (m_Textures.find(slot) == m_Textures.end())
+			CHONPS_CORE_WARN("WARNING: TEXTURE_LAYOUT: No texture was found at slot {0}! texture cannot be removed because it does not exist!", slot);
+		else
+			m_Textures.erase(slot);
+	}
+
+	void OpenGLTextureLayout::Bind(Shader* shader) const
+	{
+		for (auto& texture : m_Textures)
+		{
+			glActiveTexture(GL_TEXTURE0 + texture.first);
+			glBindTexture(GL_TEXTURE_2D, texture.second->id());
+		}
+	}
+
+	void OpenGLTextureLayout::Unbind() const
 	{
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	void OpenGLTexture::Delete()
+	void OpenGLTextureLayout::Delete()
 	{
-		glDeleteTextures(1, &m_ID);
+		for (auto& texture : m_Textures)
+		{
+			OpenGLTexture* oglTexture = static_cast<OpenGLTexture*>(texture.second);
+			glDeleteTextures(1, oglTexture->getNativeID());
+		}
 	}
 }

@@ -34,17 +34,6 @@ namespace Chonps
 		s_RendererAPIAddressRenderCommand->ClearColor(r, g, b, w);
 	}
 
-	// Prepares any data related to rendering before the rendering begins, 
-	// this function is usually called before the main render loop and after
-	// all vertex, index, texture data, ect. have been created.
-	void renderPrepareDraw()
-	{
-		GraphicsAPI GraphicsAPI = getGraphicsAPI();
-
-		if (GraphicsAPI == GraphicsAPI::Vulkan)
-			vks::vkImplPrepareDraw();
-	}
-
 	void renderDrawIndexed(VertexArray* vertexArray)
 	{
 		s_RendererAPIAddressRenderCommand->DrawIndexed(vertexArray);
@@ -63,6 +52,16 @@ namespace Chonps
 	void renderDrawIndexedInstanced(uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance)
 	{
 		s_RendererAPIAddressRenderCommand->DrawIndexedInstanced(indexCount, instanceCount, firstInstance);
+	}
+
+	void renderSetStencilReference(uint32_t reference)
+	{
+		s_RendererAPIAddressRenderCommand->SetStencilReference(reference);
+	}
+
+	void renderSetStencilMask(uint32_t compareMask, uint32_t writeMask)
+	{
+		s_RendererAPIAddressRenderCommand->SetStencilMask(compareMask, writeMask);
 	}
 
 	void renderDraw(uint32_t vertexCount)

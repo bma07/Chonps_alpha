@@ -26,8 +26,8 @@ namespace Chonps
 		bool					enableGammaCorrection = false;
 		float					gammaValue = 2.2f;
 		size_t					maxRenderEntities = 0x4000;
+		uint32_t				maxTextureBindingSlots = 32;
 		uint32_t				maxObjectIDs = 0xffff;	
-		uint32_t				maxTextures = 0x1000;	
 		uint32_t				maxGuiDrawObjects = 0x4000;
 		uint32_t				maxGuiVerticesPerObjectHint = 0x200;
 		uint32_t				maxGuiIndicesPerObjectHint = 0x400;

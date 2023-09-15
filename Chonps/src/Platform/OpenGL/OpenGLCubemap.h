@@ -9,9 +9,9 @@ namespace Chonps
 	{
 	public:
 		// Note: Order of cubemap texture must be in this index order: posx, negx, posy, negy, posz, negz
-		OpenGLCubemap(CubemapCreateInfo cubemapInfo);
+		OpenGLCubemap(CubemapCreateInfo cubemapInfo, uint32_t setIndex);
 
-		virtual void Draw() override;
+		virtual void Bind(Shader* shader) override;
 		virtual void Delete() override;
 
 	private:

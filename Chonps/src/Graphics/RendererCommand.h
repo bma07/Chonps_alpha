@@ -12,8 +12,6 @@ namespace Chonps
 
 	void renderClearColor(const float r, const float g, const float b, const float w = 0.0f);
 
-	void renderPrepareDraw();
-
 	void renderDraw(uint32_t vertexCount);
 
 	void renderDrawIndexed(VertexArray* vertexArray);
@@ -23,6 +21,10 @@ namespace Chonps
 	void renderDrawInstanced(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance);
 
 	void renderDrawIndexedInstanced(uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance);
+
+	void renderSetStencilReference(uint32_t reference);
+
+	void renderSetStencilMask(uint32_t compareMask, uint32_t writeMask);
 
 	void renderBeginNextFrame();
 

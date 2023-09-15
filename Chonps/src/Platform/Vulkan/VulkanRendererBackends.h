@@ -134,7 +134,7 @@ namespace Chonps
 		uint32_t maxDescriptorCounts = 65536;
 		uint32_t maxFrameBufferColorAttachments = 8;
 		size_t maxObjects = 0x80000;
-		uint32_t maxTextures = 0x8000;
+		uint32_t maxTextureBindingSlots = 32;
 		uint32_t maxObjectIDs = 0xffff;
 		QueueChain<uint32_t> uniformBufferCountIDs;
 		QueueChain<uint32_t> shaderCountIDs;
@@ -167,27 +167,18 @@ namespace Chonps
 		std::unordered_map<uint32_t, std::vector<VkDescriptorSet>> bufferDescriptorSets;
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
 		std::vector<std::pair<uint32_t, VkDescriptorSetLayout>> descriptorSetLayoutIndex;
-		std::vector<VkDescriptorSet> samplerDescriptorSet;
-		VkDescriptorSetLayout textureArrayDescriptorSetLayout, frameBufferDescriptorSetLayout, cubemapDescriptorSetLayout;
+
+		VkDescriptorSetLayout textureDescriptorSetLayout, frameBufferDescriptorSetLayout, cubemapDescriptorSetLayout;
 		uint32_t drawCallCount = 0, drawCallCountTotal = 0;
 
 		const void* uboData;
 		size_t uboSize;
 		uint32_t uboOffset;
 
-		std::unordered_map<uint32_t, bool> pipelineTextureArrayRequired;
-		std::unordered_map<uint32_t, uint32_t> pipelineTextureSetIndex;
-		std::unordered_map<uint32_t, bool> pipelineFrameBufferImagesRequired;
-		std::unordered_map<uint32_t, uint32_t> pipelineFrameBufferImagesSetIndex;
-		std::unordered_map<uint32_t, bool> pipelineCubemapImagesRequired;
-		std::unordered_map<uint32_t, uint32_t> pipelineCubemapImagesSetIndex;
-		std::unordered_map<uint32_t, std::vector<VkDescriptorSet>> pipelineFrameBufferImagesDescriptors;
-		std::unordered_map<uint32_t, std::vector<VkDescriptorSet>> pipelineCubemapImagesDescriptors;
-
 		TextureDescriptorSetBindings* textureDescriptorBindings;
 		std::vector<std::queue<uint32_t>> texturesQueue;
 		std::unordered_map<uint32_t, VulkanTextureData> textureImages;
-		std::vector<VkDescriptorImageInfo> imageInfos;
+		std::vector<VkDescriptorImageInfo> nullImageInfos;
 		VulkanTextureData nullDataTexture;
 
 

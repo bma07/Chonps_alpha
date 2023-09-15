@@ -9,107 +9,6 @@ namespace Chonps
 {
 	static PipelineSpecification s_StandardPipelineSpecification;
 
-	GLenum getBlendFactorType(ColorBlendFactor blendFactor)
-	{
-		switch (blendFactor)
-		{
-			case Chonps::ColorBlendFactor::Zero: { return GL_ZERO; }
-			case Chonps::ColorBlendFactor::One: { return GL_ONE; }
-			case Chonps::ColorBlendFactor::SrcColor: { return GL_SRC_COLOR; }
-			case Chonps::ColorBlendFactor::OneMinusSrcColor: { return GL_ONE_MINUS_SRC_COLOR; }
-			case Chonps::ColorBlendFactor::DstColor: { return GL_DST_COLOR; }
-			case Chonps::ColorBlendFactor::OneMinusDstColor: { return GL_ONE_MINUS_DST_COLOR; }
-			case Chonps::ColorBlendFactor::SrcAlpha: { return GL_SRC_ALPHA; }
-			case Chonps::ColorBlendFactor::OneMinusSrcAlpha: { return GL_ONE_MINUS_SRC_ALPHA; }
-			case Chonps::ColorBlendFactor::DstAlpha: { return GL_DST_ALPHA; }
-			case Chonps::ColorBlendFactor::OneMinusDstAlpha: { return GL_ONE_MINUS_DST_ALPHA; }
-			case Chonps::ColorBlendFactor::ConstantColor: { return GL_CONSTANT_COLOR; }
-			case Chonps::ColorBlendFactor::OneMinusConstantColor: { return GL_ONE_MINUS_CONSTANT_COLOR; }
-			case Chonps::ColorBlendFactor::ConstantAlpha: { return GL_CONSTANT_ALPHA; }
-			case Chonps::ColorBlendFactor::OneMinusConstantAlpha: { return GL_ONE_MINUS_CONSTANT_ALPHA; }
-			case Chonps::ColorBlendFactor::SrcAlphaSaturate: { return GL_SRC_ALPHA_SATURATE; }
-			case Chonps::ColorBlendFactor::Src1Color: { return GL_SRC1_COLOR; }
-			case Chonps::ColorBlendFactor::OneMinusSrc1Color: { return GL_ONE_MINUS_SRC1_COLOR; }
-			case Chonps::ColorBlendFactor::Src1_Alpha: { return GL_SRC1_ALPHA; }
-			case Chonps::ColorBlendFactor::OneMinusSrc1Alpha: { return GL_ONE_MINUS_SRC1_ALPHA; }
-			default:
-			{
-				CHONPS_CORE_ERROR("ERROR: Could not find matching color blend factor!");
-				return GL_ZERO;
-			}
-		}
-	}
-
-	GLenum getPipelineCullFaceMode(CullFaceMode cullFaceMode)
-	{
-		switch (cullFaceMode)
-		{
-			case CullFaceMode::Disable: { return GL_NONE; }
-			case CullFaceMode::Front: { return GL_FRONT; }
-			case CullFaceMode::Back: { return GL_BACK; }
-			case CullFaceMode::Both: { return GL_FRONT_AND_BACK; }
-			default:
-			{
-				CHONPS_CORE_ERROR("ERROR: Cannot find matching cull face mode!");
-				return GL_NONE;
-			}
-		}
-	}
-
-	GLenum getPipelineFrontFace(CullFrontFace frontFace)
-	{
-		switch (frontFace)
-		{
-			case CullFrontFace::Clockwise: { return GL_CW; }
-			case CullFrontFace::CounterClockwise: { return GL_CCW; }
-			default:
-			{
-				CHONPS_CORE_ERROR("ERROR: Cannot find matching cull face front mode!");
-				return GL_CW;
-			}
-		}
-	}
-
-	GLenum getPipelineCompareOp(CompareOperation compare)
-	{
-		switch (compare)
-		{
-			case CompareOperation::Never: { return GL_NEVER; }
-			case CompareOperation::Less: { return GL_LESS; }
-			case CompareOperation::Equal: { return GL_EQUAL; }
-			case CompareOperation::LessOrEqual: { return GL_LEQUAL; }
-			case CompareOperation::Greater: { return GL_GREATER; }
-			case CompareOperation::NotEqual: { return GL_NOTEQUAL; }
-			case CompareOperation::GreaterOrEqual: { return GL_GEQUAL; }
-			case CompareOperation::Always: { return GL_ALWAYS; }
-			default:
-			{
-				CHONPS_CORE_ERROR("ERROR: Cannot find matching compare operation!");
-				return GL_NEVER;
-			}
-		}
-	}
-
-	GLenum getPipelineStencilOp(StencilOperation stencilOp)
-	{
-		switch (stencilOp)
-		{
-			case StencilOperation::Keep: { return GL_KEEP; }
-			case StencilOperation::Zero: { return GL_ZERO; }
-			case StencilOperation::Replace: { return GL_REPLACE; }
-			case StencilOperation::IncrementAndClamp: { return GL_INCR_WRAP; }
-			case StencilOperation::DecrementAndClamp: { return GL_DECR_WRAP; }
-			case StencilOperation::Invert: { return GL_INVERT; }
-			case StencilOperation::IncrementAndWrap: { return GL_INCR_WRAP; }
-			case StencilOperation::DecrementAndWrap: { return GL_DECR_WRAP; }
-			default:
-			{
-				CHONPS_CORE_ERROR("ERROR: Cannot find matching stencil operation!");
-				return GL_KEEP;
-			}
-		}
-	}
-
 	GLenum get_shader_type(std::string type)
 	{
 		std::transform(type.begin(), type.end(), type.begin(), [](unsigned char c) { return std::tolower(c); });
@@ -226,8 +125,8 @@ namespace Chonps
 		}
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& vertexFile, const std::string& fragmentFile)
-		: Shader(vertexFile, fragmentFile)
+	OpenGLShader::OpenGLShader(const std::string& vertexFile, const std::string& fragmentFile, PipelineLayoutInfo* pipelineInfo)
+		: Shader(vertexFile, fragmentFile, pipelineInfo)
 	{
 		std::string vertexCode = get_file_contents(vertexFile.c_str());
 		std::string fragmentCode = get_file_contents(fragmentFile.c_str());
@@ -260,6 +159,8 @@ namespace Chonps
 		glDetachShader(m_ID, fragmentShader);
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
+
+		BindPipeline(pipelineInfo);
 	}
 
 	void OpenGLShader::Bind() const
@@ -330,35 +231,35 @@ namespace Chonps
 		{
 			ColorBlendAttachment colorBlendAttachment = pipelineSpec.colorBlend.pColorBlendAttachments[0];
 			m_Pipeline.enableBlending = true;
-			m_Pipeline.srcBlendFactor = getBlendFactorType(colorBlendAttachment.srcColorBlendFactor);
-			m_Pipeline.dstBlendFactor = getBlendFactorType(colorBlendAttachment.dstColorBlendFactor);
+			m_Pipeline.srcBlendFactor = ogls::getBlendFactorType(colorBlendAttachment.srcColorBlendFactor);
+			m_Pipeline.dstBlendFactor = ogls::getBlendFactorType(colorBlendAttachment.dstColorBlendFactor);
 		}
 		else if(getRendererBackends()->enableColorBlend)
 		{
 			ColorBlendAttachment colorBlendAttachment = getColorBlendAttachment();
 			m_Pipeline.enableBlending = true;
-			m_Pipeline.srcBlendFactor = getBlendFactorType(colorBlendAttachment.srcColorBlendFactor);
-			m_Pipeline.dstBlendFactor = getBlendFactorType(colorBlendAttachment.dstColorBlendFactor);
+			m_Pipeline.srcBlendFactor = ogls::getBlendFactorType(colorBlendAttachment.srcColorBlendFactor);
+			m_Pipeline.dstBlendFactor = ogls::getBlendFactorType(colorBlendAttachment.dstColorBlendFactor);
 		}
 
 		// Cull Face
-		m_Pipeline.cullmode = getPipelineCullFaceMode(pipelineSpec.rasterizer.cullMode);
+		m_Pipeline.cullmode = ogls::getPipelineCullFaceMode(pipelineSpec.rasterizer.cullMode);
 		if (pipelineSpec.rasterizer.cullMode != CullFaceMode::Disable)
 			m_Pipeline.enableCullMode = true;
 
-		m_Pipeline.cullModeFrontFace = getPipelineFrontFace(pipelineSpec.rasterizer.frontFace);
+		m_Pipeline.cullModeFrontFace = ogls::getPipelineFrontFace(pipelineSpec.rasterizer.frontFace);
 
 		// Depth Stencil
 		m_Pipeline.enableDepthTest = pipelineSpec.depthstencil.enableDepth;
-		m_Pipeline.depthCompare = getPipelineCompareOp(pipelineSpec.depthstencil.depthOpCompare);
+		m_Pipeline.depthCompare = ogls::getPipelineCompareOp(pipelineSpec.depthstencil.depthOpCompare);
 		m_Pipeline.enableStencilTest = pipelineSpec.depthstencil.enableStencil;
-		m_Pipeline.stencilCompareOp = getPipelineCompareOp(pipelineSpec.depthstencil.stencil.compareOp);
+		m_Pipeline.stencilCompareOp = ogls::getPipelineCompareOp(pipelineSpec.depthstencil.stencil.compareOp);
 		m_Pipeline.stencilCompareMask = pipelineSpec.depthstencil.stencil.compareMask;
 		m_Pipeline.stencilWriteMask = pipelineSpec.depthstencil.stencil.writeMask;
 		m_Pipeline.stencilReference = pipelineSpec.depthstencil.stencil.reference;
-		m_Pipeline.stencilPassOp = getPipelineStencilOp(pipelineSpec.depthstencil.stencil.passOp);
-		m_Pipeline.stencilFailOp = getPipelineStencilOp(pipelineSpec.depthstencil.stencil.failOp);
-		m_Pipeline.stencilDepthFailOp = getPipelineStencilOp(pipelineSpec.depthstencil.stencil.depthFailOp);
+		m_Pipeline.stencilPassOp = ogls::getPipelineStencilOp(pipelineSpec.depthstencil.stencil.passOp);
+		m_Pipeline.stencilFailOp = ogls::getPipelineStencilOp(pipelineSpec.depthstencil.stencil.failOp);
+		m_Pipeline.stencilDepthFailOp = ogls::getPipelineStencilOp(pipelineSpec.depthstencil.stencil.depthFailOp);
 	}
 
 	namespace ogls

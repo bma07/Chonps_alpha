@@ -1,6 +1,6 @@
 #version 460
 
-const int MAX_TEXTURE_COUNT = 4096;
+const int MAX_TEXTURE_COUNT = 32;
 
 layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 outColor2;

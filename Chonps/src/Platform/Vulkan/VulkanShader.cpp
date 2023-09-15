@@ -7,8 +7,8 @@
 
 namespace Chonps
 {
-	VulkanShader::VulkanShader(const std::string& vertexFile, const std::string& fragmentFile)
-		: Shader(vertexFile, fragmentFile)
+	VulkanShader::VulkanShader(const std::string& vertexFile, const std::string& fragmentFile, PipelineLayoutInfo* pipelineInfo)
+		: Shader(vertexFile, fragmentFile, pipelineInfo)
 	{
 		VulkanBackends* vkBackends = getVulkanBackends();
 
@@ -48,6 +48,8 @@ namespace Chonps
 
 		m_ShaderStages.vertexShaderStage = vertShaderStageInfo;
 		m_ShaderStages.fragementShaderStage = fragShaderStageInfo;
+
+		BindPipeline(pipelineInfo);
 	}
 
 	VulkanShader::~VulkanShader()
@@ -65,14 +67,12 @@ namespace Chonps
 		vkCmdBindPipeline(vkBackends->commandBuffers[vkBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline.pipeline);
 		vkBackends->currentBindedGraphicsPipeline = m_ID;
 
-		if (m_TextureArray)
-			vkCmdBindDescriptorSets(vkBackends->commandBuffers[vkBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline.pipelineLayout, m_TextureArrayIndex, 1, &vkBackends->samplerDescriptorSet[vkBackends->currentFrame], 0, nullptr);
-
-		if (m_FrameBuffer)
-			vkCmdBindDescriptorSets(vkBackends->commandBuffers[vkBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline.pipelineLayout, m_FrameBufferIndex, 1, &vkBackends->pipelineFrameBufferImagesDescriptors[m_ID][vkBackends->currentFrame], 0, nullptr);
-
-		if (m_Cubemap)
-			vkCmdBindDescriptorSets(vkBackends->commandBuffers[vkBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline.pipelineLayout, m_CubemapIndex, 1, &vkBackends->pipelineCubemapImagesDescriptors[m_ID][vkBackends->currentFrame], 0, nullptr);
+		if (m_DynamicStencil.enabled)
+		{
+			vkCmdSetStencilReference(vkBackends->commandBuffers[vkBackends->currentFrame], VK_STENCIL_FACE_FRONT_AND_BACK, m_DynamicStencil.reference);
+			vkCmdSetStencilCompareMask(vkBackends->commandBuffers[vkBackends->currentFrame], VK_STENCIL_FACE_FRONT_AND_BACK, m_DynamicStencil.compareMask);
+			vkCmdSetStencilWriteMask(vkBackends->commandBuffers[vkBackends->currentFrame], VK_STENCIL_FACE_FRONT_AND_BACK, m_DynamicStencil.writeMask);
+		}
 	}
 
 	void VulkanShader::Unbind() const
@@ -108,6 +108,16 @@ namespace Chonps
 			pipelineSpec = vks::vkImplGetStandardVulkanPipelineSpecification();
 		else
 			pipelineSpec = *pipelineLayout->pipelineSpecification;
+
+		// Stencil Rendering
+		m_DynamicStencil.enabled = pipelineSpec.depthstencil.enableStencil;
+		m_DynamicStencil.failOp = vks::getStencilOp(pipelineSpec.depthstencil.stencil.failOp);
+		m_DynamicStencil.depthFailOp = vks::getStencilOp(pipelineSpec.depthstencil.stencil.depthFailOp);
+		m_DynamicStencil.passOp = vks::getStencilOp(pipelineSpec.depthstencil.stencil.passOp);
+		m_DynamicStencil.compareOp = vks::getCompareOp(pipelineSpec.depthstencil.stencil.compareOp);
+		m_DynamicStencil.reference = pipelineSpec.depthstencil.stencil.reference;
+		m_DynamicStencil.compareMask = pipelineSpec.depthstencil.stencil.compareMask;
+		m_DynamicStencil.writeMask = pipelineSpec.depthstencil.stencil.writeMask;
 
 		// Vertex Input Binding Description
 		std::vector<VkVertexInputAttributeDescription> attributeDescrption;
@@ -153,32 +163,20 @@ namespace Chonps
 		}
 		for (uint32_t j = 0; j < pipelineLayout->layoutIncludeCount; j++)
 		{
-			if (pipelineLayout->pLayoutIncludes[j].layoutOption == DescriptorLayoutOption::TextureArray)
+			if (pipelineLayout->pLayoutIncludes[j].imageLayoutOption == ImageLayoutOption::TextureImages)
 			{
 				CHONPS_CORE_ASSERT(pipelineLayout->pLayoutIncludes[j].setIndex < descriptorSetLayouts.size(), "vkImplCreatePipelines() - Texture set index must be less than the total number of descriptor layouts binded to this pipeline starting from index 0.");
-				descriptorSetLayouts[pipelineLayout->pLayoutIncludes[j].setIndex] = vkBackends->textureArrayDescriptorSetLayout;
-				vkBackends->pipelineTextureArrayRequired[m_ID] = true;
-				vkBackends->pipelineTextureSetIndex[m_ID] = pipelineLayout->pLayoutIncludes[j].setIndex;
-				m_TextureArray = true;
-				m_TextureArrayIndex = pipelineLayout->pLayoutIncludes[j].setIndex;
+				descriptorSetLayouts[pipelineLayout->pLayoutIncludes[j].setIndex] = vkBackends->textureDescriptorSetLayout;
 			}
-			if (pipelineLayout->pLayoutIncludes[j].layoutOption == DescriptorLayoutOption::FrameBufferImages)
+			if (pipelineLayout->pLayoutIncludes[j].imageLayoutOption == ImageLayoutOption::FrameBufferImages)
 			{
 				CHONPS_CORE_ASSERT(pipelineLayout->pLayoutIncludes[j].setIndex < descriptorSetLayouts.size(), "vkImplCreatePipelines() - FrameBuffer set index must be less than the total number of descriptor layouts binded to this pipeline starting from index 0.");
 				descriptorSetLayouts[pipelineLayout->pLayoutIncludes[j].setIndex] = vkBackends->frameBufferDescriptorSetLayout;
-				vkBackends->pipelineFrameBufferImagesRequired[m_ID] = true;
-				vkBackends->pipelineFrameBufferImagesSetIndex[m_ID] = pipelineLayout->pLayoutIncludes[j].setIndex;
-				m_FrameBuffer = true;
-				m_FrameBufferIndex = pipelineLayout->pLayoutIncludes[j].setIndex;
 			}
-			if (pipelineLayout->pLayoutIncludes[j].layoutOption == DescriptorLayoutOption::CubemapImages)
+			if (pipelineLayout->pLayoutIncludes[j].imageLayoutOption == ImageLayoutOption::CubemapImages)
 			{
 				CHONPS_CORE_ASSERT(pipelineLayout->pLayoutIncludes[j].setIndex < descriptorSetLayouts.size(), "vkImplCreatePipelines() - Cubemap set index must be less than the total number of descriptor layouts binded to this pipeline starting from index 0.");
 				descriptorSetLayouts[pipelineLayout->pLayoutIncludes[j].setIndex] = vkBackends->cubemapDescriptorSetLayout;
-				vkBackends->pipelineCubemapImagesRequired[m_ID] = true;
-				vkBackends->pipelineCubemapImagesSetIndex[m_ID] = pipelineLayout->pLayoutIncludes[j].setIndex;
-				m_Cubemap = true;
-				m_CubemapIndex = pipelineLayout->pLayoutIncludes[j].setIndex;
 			}
 		}
 

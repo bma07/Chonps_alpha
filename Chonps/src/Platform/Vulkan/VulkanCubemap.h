@@ -9,9 +9,9 @@ namespace Chonps
 	class VulkanCubemap : public Cubemap
 	{
 	public:
-		VulkanCubemap(CubemapCreateInfo cubemapInfo);
+		VulkanCubemap(CubemapCreateInfo cubemapInfo, uint32_t setIndex);
 
-		virtual void Draw() override;
+		virtual void Bind(Shader* shader) override;
 		virtual void Delete() override;
 
 	private:
@@ -28,6 +28,7 @@ namespace Chonps
 		VmaAllocation m_IndexBufferMemory = VK_NULL_HANDLE;
 
 		std::vector<VkDescriptorSet> m_DescriptorSets;
+		uint32_t m_SetIndex;
 	};
 }
 

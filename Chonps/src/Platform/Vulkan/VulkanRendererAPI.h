@@ -25,6 +25,9 @@ namespace Chonps
 		virtual void DrawInstanced(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance) override;
 		virtual void DrawIndexedInstanced(uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance) override;
 
+		virtual void SetStencilReference(uint32_t reference) override;
+		virtual void SetStencilMask(uint32_t compareMask, uint32_t writeMask) override;
+
 		virtual void BeginNextFrame() override;
 		virtual void DrawSubmit() override;
 		virtual void RenderPassBegin() override;
@@ -112,7 +115,21 @@ namespace Chonps
 
 		VkSampleCountFlagBits getSupportedSampleCount(Sample samples);
 
-		void vkImplPrepareDraw();
+		VkPrimitiveTopology getVulkanTopologyType(RenderTopologyType topologyType);
+
+		VkCullModeFlags getVulkanCullModeFlag(RenderCullFaceMode cullFaceMode);
+
+		VkFrontFace getVulkanCullFrontFace(RenderCullFrontFace cullFrontFace);
+
+		VkColorComponentFlags getColorComponents(ColorWriteMask colorMask);
+
+		VkBlendFactor getBlendFactor(ColorBlendFactor blendFactor);
+
+		VkBlendOp getBlendOperation(ColorBlendOperation blendOp);
+
+		VkCompareOp getCompareOp(CompareOperation compare);
+
+		VkStencilOp getStencilOp(StencilOperation stencilOp);
 	}
 }
 

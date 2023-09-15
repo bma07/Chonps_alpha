@@ -27,6 +27,7 @@ namespace Chonps
 		std::vector<vertex>		vertices;
 		std::vector<uint32_t>	indices;
 		VertexArray*			vertexArray;
+		TextureLayout*			textures;
 		Material				material;
 		glm::mat4				matrix = glm::mat4(1.0f);
 

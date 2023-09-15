@@ -42,8 +42,8 @@ namespace Chonps
 		7, 2, 6
 	};
 
-	OpenGLCubemap::OpenGLCubemap(CubemapCreateInfo cubemapInfo)
-		: Cubemap(cubemapInfo)
+	OpenGLCubemap::OpenGLCubemap(CubemapCreateInfo cubemapInfo, uint32_t setIndex)
+		: Cubemap(cubemapInfo, setIndex)
 	{
 		glGenVertexArrays(1, &m_VAO);
 		glBindVertexArray(m_VAO);
@@ -113,7 +113,7 @@ namespace Chonps
 		}
 	}
 
-	void OpenGLCubemap::Draw()
+	void OpenGLCubemap::Bind(Shader* shader)
 	{
 		glBindVertexArray(m_VAO);
 		glActiveTexture(GL_TEXTURE0);

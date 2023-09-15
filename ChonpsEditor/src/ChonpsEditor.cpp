@@ -190,7 +190,23 @@ namespace Chonps
 		bufferInfo.bufferType = BufferType::Storage;
 		bufferInfo.binding = 0;
 
-		std::vector<BufferBindingInfo> buffers = { bufferInfo };
+		m_SceneCameraUniformBuffer = createUniformBuffer(1, sizeof(CameraMatrixUniformBuffer), BufferType::Uniform);
+
+		BufferBindingInfo sceneCameraBufferInfo{};
+		sceneCameraBufferInfo.uniformBuffer = m_SceneCameraUniformBuffer;
+		sceneCameraBufferInfo.shaderStage = ShaderStage::Vertex;
+		sceneCameraBufferInfo.bufferType = BufferType::Uniform;
+		sceneCameraBufferInfo.binding = 1;
+
+		m_CameraUniformBuffer = createUniformBuffer(2, sizeof(CameraMatrixUniformBuffer), BufferType::Uniform);
+
+		BufferBindingInfo cameraBufferInfo{};
+		cameraBufferInfo.uniformBuffer = m_CameraUniformBuffer;
+		cameraBufferInfo.shaderStage = ShaderStage::Vertex;
+		cameraBufferInfo.bufferType = BufferType::Uniform;
+		cameraBufferInfo.binding = 2;
+
+		std::vector<BufferBindingInfo> buffers = { bufferInfo, sceneCameraBufferInfo, cameraBufferInfo };
 
 		BufferBindingCreateLayoutsInfo bufferBindingInfo{};
 		bufferBindingInfo.bindingCount = static_cast<uint32_t>(buffers.size());
@@ -198,59 +214,6 @@ namespace Chonps
 
 		BufferLayout bufferLayout = createBufferLayout(&bufferBindingInfo, 0);
 
-		// FrameBuffer Uniform Buffer
-		m_FBOUniformBuffer = createUniformBuffer(0, sizeof(CameraMatrixUniformBuffer), BufferType::Uniform);
-
-		BufferBindingInfo FBbufferInfo{};
-		FBbufferInfo.uniformBuffer = m_FBOUniformBuffer;
-		FBbufferInfo.shaderStage = ShaderStage::Vertex;
-		FBbufferInfo.bufferType = BufferType::Uniform;
-		FBbufferInfo.binding = 0;
-
-		BufferBindingCreateLayoutsInfo FBbufferBindingInfo{};
-		FBbufferBindingInfo.bindingCount = 1;
-		FBbufferBindingInfo.pBufferBindings = &FBbufferInfo;
-
-		BufferLayout FBbufferLayout = createBufferLayout(&FBbufferBindingInfo, 0);
-
-		// Cubemap Uniform Buffer
-		m_CubemapUniformBuffer = createUniformBuffer(1, sizeof(CameraMatrixUniformBuffer), BufferType::Uniform);
-
-		BufferBindingInfo cubemapBufferInfo{};
-		cubemapBufferInfo.uniformBuffer = m_CubemapUniformBuffer;
-		cubemapBufferInfo.shaderStage = ShaderStage::Vertex;
-		cubemapBufferInfo.bufferType = BufferType::Uniform;
-		cubemapBufferInfo.binding = 1;
-
-		BufferBindingCreateLayoutsInfo cubemapBufferBindingInfo{};
-		cubemapBufferBindingInfo.bindingCount = 1;
-		cubemapBufferBindingInfo.pBufferBindings = &cubemapBufferInfo;
-
-		BufferLayout cubemapBufferLayout = createBufferLayout(&cubemapBufferBindingInfo, 0);
-
-		// GUI Uniform Buffer
-		m_GuiUniformBuffer = createUniformBuffer(2, sizeof(CameraMatrixUniformBuffer), BufferType::Uniform);
-
-		BufferBindingInfo guiBufferInfo{};
-		guiBufferInfo.uniformBuffer = m_GuiUniformBuffer;
-		guiBufferInfo.shaderStage = ShaderStage::Vertex;
-		guiBufferInfo.bufferType = BufferType::Uniform;
-		guiBufferInfo.binding = 2;
-
-		BufferBindingCreateLayoutsInfo guiBufferBindingInfo{};
-		guiBufferBindingInfo.bindingCount = 1;
-		guiBufferBindingInfo.pBufferBindings = &guiBufferInfo;
-
-		BufferLayout guiBufferLayout = createBufferLayout(&guiBufferBindingInfo, 0);
-
-		// Shader
-		m_Shader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/shader_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/shader_frag.spv");
-		m_FBOShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/FBOshader_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/FBOshader_frag.spv");
-		m_CubemapShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/cubemap_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/cubemap_frag.spv");
-		m_GuiShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/gui_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/gui_frag.spv");
-		m_PreStencilShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/preStencil_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/preStencil_frag.spv");
-
-		gui::SetShader(m_PreStencilShader, m_GuiShader, m_GuiUniformBuffer);
 
 		// Vao
 		m_VAO = createVertexArray();
@@ -304,10 +267,16 @@ namespace Chonps
 		m_Meshes = loadModel("D:/Dev/Chonps/ChonpsEditor/res/models/gltf/wall/wall.gltf");
 
 		// Textures
-		m_Texture = createTexture("D:/Dev/Chonps/ChonpsEditor/res/textures/brick.png", TexType::Diffuse);
-		m_Texture->TexUnit(0);
-		m_Texture2 = createTexture("D:/Dev/Chonps/ChonpsEditor/res/textures/Checkerboard.png", TexType::Diffuse);
-		m_Texture->TexUnit(0);
+		Texture* texture = createTexture("D:/Dev/Chonps/ChonpsEditor/res/textures/brick.png", TexType::Diffuse);
+		Texture* texture2 = createTexture("D:/Dev/Chonps/ChonpsEditor/res/textures/Checkerboard.png", TexType::Diffuse);
+
+		std::vector<TextureCreateInfo> textures =
+		{
+			{ texture, 0 },
+			{ texture2, 1 }
+		};
+
+		m_TextureLayout = createTextureLayout(textures.data(), textures.size(), 1);
 
 		CubemapCreateInfo cubemapCreateInfo{};
 		cubemapCreateInfo.posx = "D:/Dev/Chonps/ChonpsEditor/res/cubemaps/Chapel/posx.jpg";
@@ -316,10 +285,8 @@ namespace Chonps
 		cubemapCreateInfo.negy = "D:/Dev/Chonps/ChonpsEditor/res/cubemaps/Chapel/negy.jpg";
 		cubemapCreateInfo.posz = "D:/Dev/Chonps/ChonpsEditor/res/cubemaps/Chapel/posz.jpg";
 		cubemapCreateInfo.negz = "D:/Dev/Chonps/ChonpsEditor/res/cubemaps/Chapel/negz.jpg";
-		cubemapCreateInfo.pShaders = &m_CubemapShader;
-		cubemapCreateInfo.shaderCount = 1;
 
-		m_Cubemap = createCubemap(cubemapCreateInfo);
+		m_Cubemap = createCubemap(cubemapCreateInfo, 1);
 
 		// FrameBuffers
 		std::vector<FrameBufferColorAttachment> fbColorAttachment = { { 0, FrameBufferColorFormat::RGBA8 }, { 1, FrameBufferColorFormat::RGBA8 } };
@@ -334,10 +301,8 @@ namespace Chonps
 		frameBufferSpec.depthAttachment = &fbDepthAttachment;
 		frameBufferSpec.textureFilter = TexFilter::Nearest;
 		frameBufferSpec.textureWrap = TexWrap::ClampToEdge;
-		frameBufferSpec.pShaders = &m_FBOShader;
-		frameBufferSpec.shaderCount = 1;
 
-		m_FBO = createFrameBuffer(frameBufferSpec);
+		m_FBO = createFrameBuffer(frameBufferSpec, 1);
 
 		// Pipelines
 		RenderPass renderPass = retrieveRenderPass(m_FBO);
@@ -368,7 +333,7 @@ namespace Chonps
 			{ 2, 2, SDT::Float, sizeof(vertex), (void*)(6 * sizeof(float)) },
 		};
 
-		DescriptorLayoutIncludes layoutInclude = { 1, DescriptorLayoutOption::TextureArray };
+		DescriptorImageLayoutIncludes layoutInclude = { 1, ImageLayoutOption::TextureImages };
 
 		PipelineLayoutInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.bindingDescription = sizeof(vertex);
@@ -382,7 +347,7 @@ namespace Chonps
 		pipelineLayoutInfo.pipelineSpecification;
 		pipelineLayoutInfo.pipelineSpecification = &pipelineSpec;
 
-		bindPipelineToShader(m_Shader, &pipelineLayoutInfo);
+		m_Shader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/shader_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/shader_frag.spv", &pipelineLayoutInfo);
 
 		// Cubemap Pipeline
 		std::vector<VertexLayout> cubemapLayout =
@@ -390,20 +355,20 @@ namespace Chonps
 			{ 0, 3, SDT::Float, 3 * sizeof(float), (void*)0 },
 		};
 
-		DescriptorLayoutIncludes cubemaplayoutInclude = { 1, DescriptorLayoutOption::CubemapImages };
+		DescriptorImageLayoutIncludes cubemaplayoutInclude = { 1, ImageLayoutOption::CubemapImages };
 
 		PipelineLayoutInfo cubemappipelineLayoutInfo{};
 		cubemappipelineLayoutInfo.bindingDescription = 3 * sizeof(float);
 		cubemappipelineLayoutInfo.vertexLayoutLinkInfo.layoutCount = static_cast<uint32_t>(cubemapLayout.size());
 		cubemappipelineLayoutInfo.vertexLayoutLinkInfo.pLayouts = cubemapLayout.data();
 		cubemappipelineLayoutInfo.bufferLayoutsCount = 1;
-		cubemappipelineLayoutInfo.pBufferLayouts = &cubemapBufferLayout;
+		cubemappipelineLayoutInfo.pBufferLayouts = &bufferLayout;
 		cubemappipelineLayoutInfo.layoutIncludeCount = 1;
 		cubemappipelineLayoutInfo.pLayoutIncludes = &cubemaplayoutInclude;
 		cubemappipelineLayoutInfo.renderPass = &renderPass;
 		cubemappipelineLayoutInfo.pipelineSpecification = &pipelineSpec;
 
-		bindPipelineToShader(m_CubemapShader, &cubemappipelineLayoutInfo);
+		m_CubemapShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/cubemap_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/cubemap_frag.spv", &cubemappipelineLayoutInfo);
 
 		// Framebuffer Pipeline
 		std::vector<VertexLayout> FBlayouts =
@@ -412,18 +377,18 @@ namespace Chonps
 			{ 1, 2, SDT::Float, 4 * sizeof(float), (void*)(2 * sizeof(float)) },
 		};
 
-		DescriptorLayoutIncludes FBlayoutInclude = { 1, DescriptorLayoutOption::FrameBufferImages };
+		DescriptorImageLayoutIncludes FBlayoutInclude = { 1, ImageLayoutOption::FrameBufferImages };
 
 		PipelineLayoutInfo FBpipelineLayoutInfo{};
 		FBpipelineLayoutInfo.bindingDescription = 4 * sizeof(float);
 		FBpipelineLayoutInfo.vertexLayoutLinkInfo.layoutCount = static_cast<uint32_t>(FBlayouts.size());
 		FBpipelineLayoutInfo.vertexLayoutLinkInfo.pLayouts = FBlayouts.data();
 		FBpipelineLayoutInfo.bufferLayoutsCount = 1;
-		FBpipelineLayoutInfo.pBufferLayouts = &FBbufferLayout;
+		FBpipelineLayoutInfo.pBufferLayouts = &bufferLayout;
 		FBpipelineLayoutInfo.layoutIncludeCount = 1;
 		FBpipelineLayoutInfo.pLayoutIncludes = &FBlayoutInclude;
 
-		bindPipelineToShader(m_FBOShader, &FBpipelineLayoutInfo);
+		m_FBOShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/FBOshader_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/FBOshader_frag.spv", &FBpipelineLayoutInfo);
 
 		// PreStencil Pipeline
 		std::vector<VertexLayout> guilayouts =
@@ -451,12 +416,12 @@ namespace Chonps
 		preStencilPipelineLayoutInfo.vertexLayoutLinkInfo.layoutCount = static_cast<uint32_t>(guilayouts.size());
 		preStencilPipelineLayoutInfo.vertexLayoutLinkInfo.pLayouts = guilayouts.data();
 		preStencilPipelineLayoutInfo.bufferLayoutsCount = 1;
-		preStencilPipelineLayoutInfo.pBufferLayouts = &guiBufferLayout;
+		preStencilPipelineLayoutInfo.pBufferLayouts = &bufferLayout;
 		preStencilPipelineLayoutInfo.layoutIncludeCount = 0;
 		preStencilPipelineLayoutInfo.pLayoutIncludes = nullptr;
 		preStencilPipelineLayoutInfo.pipelineSpecification = &preStencilPipelineSpec;
 
-		bindPipelineToShader(m_PreStencilShader, &preStencilPipelineLayoutInfo);
+		m_PreStencilShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/preStencil_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/preStencil_frag.spv", &preStencilPipelineLayoutInfo);
 
 		// GUI Pipeline
 		PipelineSpecification guiPipelineSpec = getStandardPipelineSpecification();
@@ -465,7 +430,7 @@ namespace Chonps
 		guiPipelineSpec.depthstencil.stencil.compareOp = CompareOperation::Equal;
 		guiPipelineSpec.depthstencil.stencil.failOp = StencilOperation::Keep;
 		guiPipelineSpec.depthstencil.stencil.depthFailOp = StencilOperation::Keep;
-		guiPipelineSpec.depthstencil.stencil.passOp = StencilOperation::Replace;
+		guiPipelineSpec.depthstencil.stencil.passOp = StencilOperation::IncrementAndClamp;
 		guiPipelineSpec.depthstencil.stencil.reference = 1;
 		guiPipelineSpec.depthstencil.stencil.compareMask = 0xff;
 		guiPipelineSpec.depthstencil.stencil.writeMask = 0x00;
@@ -476,22 +441,21 @@ namespace Chonps
 		guipipelineLayoutInfo.vertexLayoutLinkInfo.layoutCount = static_cast<uint32_t>(guilayouts.size());
 		guipipelineLayoutInfo.vertexLayoutLinkInfo.pLayouts = guilayouts.data();
 		guipipelineLayoutInfo.bufferLayoutsCount = 1;
-		guipipelineLayoutInfo.pBufferLayouts = &guiBufferLayout;
+		guipipelineLayoutInfo.pBufferLayouts = &bufferLayout;
 		guipipelineLayoutInfo.layoutIncludeCount = 0;
 		guipipelineLayoutInfo.pLayoutIncludes = nullptr;
 		guipipelineLayoutInfo.pipelineSpecification = &guiPipelineSpec;
 
-		bindPipelineToShader(m_GuiShader, &guipipelineLayoutInfo);
+		m_GuiShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/gui_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/gui_frag.spv", &guipipelineLayoutInfo);
+		gui::SetShader(m_PreStencilShader, m_GuiShader, m_CameraUniformBuffer);
 
-		renderPrepareDraw();
 	}
 
 	void ChonpsEditor::OnDetach()
 	{
 		m_UniformBuffer->Delete();
-		m_FBOUniformBuffer->Delete();
-		m_CubemapUniformBuffer->Delete();
-		m_GuiUniformBuffer->Delete();
+		m_CameraUniformBuffer->Delete();
+		m_SceneCameraUniformBuffer->Delete();
 		m_Cubemap->Delete();
 		m_Shader->Delete();
 		m_FBOShader->Delete();
@@ -502,8 +466,7 @@ namespace Chonps
 		m_VAO2->Delete();
 		m_VBO2->Delete();
 		m_IBO2->Delete();
-		m_Texture->Delete();
-		m_Texture2->Delete();
+		m_TextureLayout->Delete();
 		m_FBO->Delete();
 		m_Font.Delete();
 
@@ -567,7 +530,7 @@ namespace Chonps
 		m_SceneCamera.UpdateMatrix();
 
 		renderBeginNextFrame();
-		
+
 		m_FBO->Resize(m_Window->GetWidth(), m_Window->GetHeight());
 		m_FBO->Viewport(m_ViewportX, m_ViewportY, m_ViewportWidth, m_ViewportHeight);
 		m_FBO->Begin();
@@ -581,15 +544,15 @@ namespace Chonps
 
 		m_CubemapShader->Bind();
 
-		renderBindBufferSet(m_CubemapShader, m_CubemapUniformBuffer, 0);
+		renderBindBufferSet(m_CubemapShader, m_SceneCameraUniformBuffer, 0);
 
 		glm::mat4 view = glm::mat4(glm::mat3(m_SceneCamera.GetViewMatrix()));
 		glm::mat4 projection = m_SceneCamera.GetProjectionMatrix();
 
 		camUBO.camMatrix = projection * view;
-		m_CubemapUniformBuffer->Bind(&camUBO, sizeof(camUBO), 0);
+		m_SceneCameraUniformBuffer->Bind(&camUBO, sizeof(camUBO), 0);
 
-		m_Cubemap->Draw();
+		m_Cubemap->Bind(m_CubemapShader);
 
 		// Render Objects
 		m_Shader->Bind();
@@ -602,7 +565,7 @@ namespace Chonps
 				UBO.camMatrix = m_SceneCamera.GetProjectionViewMatrix() * glm::translate(glm::mat4(1.0f), glm::vec3(3.0f * i, 3.0f * j, 0.0f));
 				for (auto& mesh : m_Meshes)
 				{
-					UBO.texIndex = mesh.material.albedo->id();
+					UBO.texIndex = 0;
 					m_UniformBuffer->Bind(&UBO, sizeof(UBO), sizeof(UBO) * drawCallCount);
 
 					drawCallCount++;
@@ -611,30 +574,30 @@ namespace Chonps
 		}
 
 		m_Meshes[0].vertexArray->Bind();
-		m_Meshes[0].material.albedo->Bind();
+		m_Meshes[0].textures->Bind(m_Shader);
 		renderDrawIndexedInstanced(m_Meshes[0].vertexArray->GetIndexCount(), drawCallCount, 0);
 
 		m_FBO->End();
-		
+
 		renderPassBegin();
-		
+
 		renderClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
 		m_FBOShader->Bind();
 
-		renderBindBufferSet(m_FBOShader, m_FBOUniformBuffer, 0);
+		renderBindBufferSet(m_FBOShader, m_CameraUniformBuffer, 0);
 
 		camUBO.camMatrix = m_Camera.GetProjectionViewMatrix();
 
-		m_FBOUniformBuffer->Bind(&camUBO, sizeof(camUBO), 0);
+		m_CameraUniformBuffer->Bind(&camUBO, sizeof(camUBO), 0);
 
-		m_FBO->Draw();
+		m_FBO->Draw(m_FBOShader);
 
 		gui::BeginDraw();
 
 		camUBO.camMatrix = m_Camera.GetProjectionViewMatrix();
-		m_GuiUniformBuffer->Bind(&camUBO, sizeof(camUBO), 0);
-		renderBindBufferSet(m_PreStencilShader, m_GuiUniformBuffer, 0);
+		m_CameraUniformBuffer->Bind(&camUBO, sizeof(camUBO), 0);
+		renderBindBufferSet(m_PreStencilShader, m_CameraUniformBuffer, 0);
 
 		float change = std::abs(std::sin(getTimeSeconds()));
 

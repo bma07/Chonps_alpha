@@ -52,16 +52,14 @@ namespace Chonps
 		Sample samples = Sample::SampleCount_1_Bit;
 		TexWrap textureWrap = TexWrap::ClampToEdge;
 		TexFilter textureFilter = TexFilter::Nearest;
-		Shader** pShaders;
-		uint32_t shaderCount;
 	};
 	
 	class FrameBuffer
 	{
 	public:
-		FrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo) {}
+		FrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo, uint32_t setIndex) {}
 
-		virtual void Draw(uint32_t index = 0) = 0;
+		virtual void Draw(Shader* shader, uint32_t index = 0) = 0;
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		virtual void Viewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
 		
@@ -85,9 +83,9 @@ namespace Chonps
 	};
 	typedef FrameBuffer FBO;
 
-	std::shared_ptr<FrameBuffer> createFrameBufferSp(FrameBufferSpecificationInfo frameBufferSpecificationInfo);
+	std::shared_ptr<FrameBuffer> createFrameBufferSp(FrameBufferSpecificationInfo frameBufferSpecificationInfo, uint32_t setIndex);
 
-	FrameBuffer* createFrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo);
+	FrameBuffer* createFrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo, uint32_t setIndex);
 
 	RenderPass retrieveRenderPass(FrameBuffer* frameBuffer);
 }

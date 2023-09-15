@@ -8,7 +8,7 @@
 
 namespace Chonps
 {
-	std::shared_ptr<FrameBuffer> createFrameBufferSp(FrameBufferSpecificationInfo frameBufferSpecificationInfo)
+	std::shared_ptr<FrameBuffer> createFrameBufferSp(FrameBufferSpecificationInfo frameBufferSpecificationInfo, uint32_t setIndex)
 	{
 		switch (getGraphicsAPI())
 		{
@@ -18,9 +18,9 @@ namespace Chonps
 				break;
 			}
 
-			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLFrameBuffer>(frameBufferSpecificationInfo); }
+			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLFrameBuffer>(frameBufferSpecificationInfo, setIndex); }
 
-			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanFrameBuffer>(frameBufferSpecificationInfo); }
+			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanFrameBuffer>(frameBufferSpecificationInfo, setIndex); }
 
 			case GraphicsAPI::DirectX:
 			{
@@ -31,7 +31,7 @@ namespace Chonps
 		return nullptr;
 	}
 
-	FrameBuffer* createFrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo)
+	FrameBuffer* createFrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo, uint32_t setIndex)
 	{
 		switch (getGraphicsAPI())
 		{
@@ -41,9 +41,9 @@ namespace Chonps
 				break;
 			}
 
-			case GraphicsAPI::OpenGL: { return new OpenGLFrameBuffer(frameBufferSpecificationInfo); }
+			case GraphicsAPI::OpenGL: { return new OpenGLFrameBuffer(frameBufferSpecificationInfo, setIndex); }
 
-			case GraphicsAPI::Vulkan: { return new VulkanFrameBuffer(frameBufferSpecificationInfo); }
+			case GraphicsAPI::Vulkan: { return new VulkanFrameBuffer(frameBufferSpecificationInfo, setIndex); }
 
 			case GraphicsAPI::DirectX:
 			{

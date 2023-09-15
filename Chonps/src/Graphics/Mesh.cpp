@@ -139,6 +139,16 @@ namespace Chonps
 		m_IndexBuffer->Unbind();
 
 		sortTexturesToMaterial(p_textures, material);
+
+		std::vector<TextureCreateInfo> textureCreateInfos{};
+		uint32_t slot = 0;
+		for (auto* texture : m_Textures)
+			textureCreateInfos.push_back({ texture, slot++ });
+
+		if (slot >= getRendererBackends()->maxTextureBindingSlots)
+			CHONPS_CORE_ERROR("ERROR: MESH: Mesh cannot be loaded because it has more texture slots than the current max texture binding slots: {0}", getRendererBackends()->maxTextureBindingSlots);
+		else
+			textures = createTextureLayout(textureCreateInfos.data(), textureCreateInfos.size(), 1);
 	}
 
 	Mesh::Mesh(VertexArray* p_vertexArray, std::vector<Texture*> p_textures)

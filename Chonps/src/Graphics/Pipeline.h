@@ -258,18 +258,18 @@ namespace Chonps
 		DepthStencil depthstencil;
 	};
 
-	enum class DescriptorLayoutOption
+	enum class ImageLayoutOption
 	{
 		None = 0,
-		TextureArray,
+		TextureImages,
 		FrameBufferImages,
 		CubemapImages
 	};
 
-	struct DescriptorLayoutIncludes
+	struct DescriptorImageLayoutIncludes
 	{
 		uint32_t setIndex;
-		DescriptorLayoutOption layoutOption;
+		ImageLayoutOption imageLayoutOption;
 	};
 
 	struct PipelineLayoutInfo
@@ -278,7 +278,7 @@ namespace Chonps
 		uint32_t bindingDescription;
 		BufferLayout* pBufferLayouts;
 		uint32_t bufferLayoutsCount;
-		DescriptorLayoutIncludes* pLayoutIncludes = nullptr;
+		DescriptorImageLayoutIncludes* pLayoutIncludes = nullptr;
 		uint32_t layoutIncludeCount = 0;
 		PushConstantRange* pPushConstants;
 		uint32_t pushConstantCount;

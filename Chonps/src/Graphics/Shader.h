@@ -8,7 +8,7 @@ namespace Chonps
 	class Shader
 	{
 	public:
-		Shader(const std::string& vertex, const std::string& fragment) {}
+		Shader(const std::string& vertex, const std::string& fragment, PipelineLayoutInfo* pipelineInfo) {}
 		virtual ~Shader() {}
 
 		virtual void Bind() const = 0;
@@ -19,10 +19,10 @@ namespace Chonps
 	};
 
 	// Creates Shader from two seperate vertex and fragment files
-	std::shared_ptr<Shader> createShaderSp(const std::string& vertex, const std::string& fragment);
+	std::shared_ptr<Shader> createShaderSp(const std::string& vertex, const std::string& fragment, PipelineLayoutInfo* pipelineInfo);
 
 	// Creates Shader from two seperate vertex and fragment files
-	Shader* createShader(const std::string& vertex, const std::string& fragment);
+	Shader* createShader(const std::string& vertex, const std::string& fragment, PipelineLayoutInfo* pipelineInfo);
 
 	class ShaderLibrary
 	{
@@ -31,8 +31,6 @@ namespace Chonps
 	private:
 		std::unordered_map<std::string, std::shared_ptr<Shader>> m_Shaders;
 	};
-
-	void bindPipelineToShader(Shader* shader, PipelineLayoutInfo* pipelineLayout);
 
 	namespace ogls
 	{

@@ -192,8 +192,8 @@ namespace Chonps
 		glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, texType, id, 0);
 	}
 
-	OpenGLFrameBuffer::OpenGLFrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo)
-		: FrameBuffer(frameBufferSpecificationInfo)
+	OpenGLFrameBuffer::OpenGLFrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo, uint32_t setIndex)
+		: FrameBuffer(frameBufferSpecificationInfo, setIndex)
 	{
 		m_FrameBufferSpecificationInfo = frameBufferSpecificationInfo;
 
@@ -352,7 +352,7 @@ namespace Chonps
 		}
 	}
 
-	void OpenGLFrameBuffer::Draw(uint32_t index /*= 0*/)
+	void OpenGLFrameBuffer::Draw(Shader* shader, uint32_t index /*= 0*/)
 	{
 		glBindVertexArray(m_VAO);
 		glBindTexture(GL_TEXTURE_2D, m_ColorAttachments[index]);

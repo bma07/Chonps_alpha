@@ -3,6 +3,8 @@
 
 #include <stb_image.h>
 
+#include "VulkanShader.h"
+
 namespace Chonps
 {
 	float vkImplCubemapVertices[] =
@@ -40,8 +42,8 @@ namespace Chonps
 		7, 2, 6
 	};
 
-	VulkanCubemap::VulkanCubemap(CubemapCreateInfo cubemapInfo)
-		: Cubemap(cubemapInfo)
+	VulkanCubemap::VulkanCubemap(CubemapCreateInfo cubemapInfo, uint32_t setIndex)
+		: Cubemap(cubemapInfo, setIndex), m_SetIndex(setIndex)
 	{
 		VulkanBackends* vkBackends = getVulkanBackends();
 		VmaAllocator vmaAllocator = getVmaAllocator();
@@ -172,9 +174,6 @@ namespace Chonps
 		for (uint32_t i = 0; i < vkBackends->maxFramesInFlight; i++)
 			UpdateDescriptorSets(i);
 
-		for (uint32_t i = 0; i < cubemapInfo.shaderCount; i++)
-			vkBackends->pipelineCubemapImagesDescriptors[cubemapInfo.pShaders[i]->id()] = m_DescriptorSets;
-
 		// Vertex Buffer
 		VkDeviceSize bufferSize = sizeof(vkImplCubemapVertices);
 
@@ -214,11 +213,14 @@ namespace Chonps
 		vmaFreeMemory(vmaAllocator, indexStagingBufferMemory);
 	}
 
-	void VulkanCubemap::Draw()
+	void VulkanCubemap::Bind(Shader* shader)
 	{
 		VulkanBackends* vkBackends = getVulkanBackends();
 		if (vkBackends->windowWidth == 0 || vkBackends->windowHeight == 0)
 			return;
+
+		VkPipelineLayout pipelineLayout = static_cast<VulkanShader*>(shader)->getNativePipelineLayout();
+		vkCmdBindDescriptorSets(vkBackends->commandBuffers[vkBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, m_SetIndex, 1, &m_DescriptorSets[vkBackends->currentFrame], 0, nullptr);
 
 		VkDeviceSize offsets[] = {0};
 		vkCmdBindVertexBuffers(vkBackends->commandBuffers[vkBackends->currentFrame], 0, 1, &m_VertexBuffer, offsets);

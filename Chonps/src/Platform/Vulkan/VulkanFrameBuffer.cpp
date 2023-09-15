@@ -1,6 +1,8 @@
 #include "cepch.h"
 #include "VulkanFrameBuffer.h"
 
+#include "VulkanShader.h"
+
 namespace Chonps
 {
 	float screenVkImpl[] =
@@ -338,8 +340,8 @@ namespace Chonps
 		vkUpdateDescriptorSets(vkBackends->device, 1, &descriptorWrite, 0, nullptr);
 	}
 
-	VulkanFrameBuffer::VulkanFrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo)
-		: FrameBuffer(frameBufferSpecificationInfo), m_FrameBufferSpecificationInfo(frameBufferSpecificationInfo)
+	VulkanFrameBuffer::VulkanFrameBuffer(FrameBufferSpecificationInfo frameBufferSpecificationInfo, uint32_t setIndex)
+		: FrameBuffer(frameBufferSpecificationInfo, setIndex), m_FrameBufferSpecificationInfo(frameBufferSpecificationInfo), m_SetIndex(setIndex)
 	{
 		m_OffscreenPass.width = frameBufferSpecificationInfo.width;
 		m_OffscreenPass.height = frameBufferSpecificationInfo.height;
@@ -535,17 +537,17 @@ namespace Chonps
 
 		for (uint32_t i = 0; i < vkBackends->maxFramesInFlight; i++)
 			UpdateFrameBufferImage(i);
-
-		for (uint32_t i = 0; i < frameBufferSpecificationInfo.shaderCount; i++)
-			vkBackends->pipelineFrameBufferImagesDescriptors[frameBufferSpecificationInfo.pShaders[i]->id()] = m_DescriptorSets;
 	}
 
-	void VulkanFrameBuffer::Draw(uint32_t index)
+	void VulkanFrameBuffer::Draw(Shader* shader, uint32_t index)
 	{
 		VulkanBackends* vkBackends = getVulkanBackends();
 		glfwGetFramebufferSize(vkBackends->currentWindow, &vkBackends->windowWidth, &vkBackends->windowHeight);
 		if (vkBackends->windowWidth == 0 || vkBackends->windowHeight == 0)
 			return;
+
+		VkPipelineLayout pipelineLayout = static_cast<VulkanShader*>(shader)->getNativePipelineLayout();
+		vkCmdBindDescriptorSets(vkBackends->commandBuffers[vkBackends->currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, m_SetIndex, 1, &m_DescriptorSets[vkBackends->currentFrame], 0, nullptr);
 
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(vkBackends->commandBuffers[vkBackends->currentFrame], 0, 1, &m_VertexBuffer, offsets);
@@ -607,12 +609,54 @@ namespace Chonps
 
 	void VulkanFrameBuffer::Bind()
 	{
+		VulkanBackends* vkBackends = getVulkanBackends();
+		glfwGetFramebufferSize(vkBackends->currentWindow, &vkBackends->windowWidth, &vkBackends->windowHeight);
+		if (vkBackends->windowWidth == 0 || vkBackends->windowHeight == 0)
+			return;
 
+		VkRenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = m_OffscreenPass.renderPass;
+		renderPassInfo.framebuffer = m_OffscreenPass.framebuffer.framebuffer;
+		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.extent.width = m_OffscreenPass.width;
+		renderPassInfo.renderArea.extent.height = m_OffscreenPass.height;
+
+		for (auto& attachment : m_ColorAttachments)
+			m_ClearValues[attachment.index].color = vkBackends->clearColor.color;
+
+		if (m_DepthAttached)
+			m_ClearValues[m_DepthAttachment.index].depthStencil = { 1.0f, 0 };
+
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(m_ClearValues.size());
+		renderPassInfo.pClearValues = m_ClearValues.data();
+
+		VkViewport viewport{};
+		viewport.x = static_cast<float>(m_VPx);
+		viewport.y = static_cast<float>(m_OffscreenPass.height - m_VPy);
+		viewport.width = static_cast<float>(m_VPWidth);
+		viewport.height = -static_cast<float>(m_VPHeight);
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(vkBackends->commandBuffers[vkBackends->currentFrame], 0, 1, &viewport);
+
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		scissor.extent.width = m_OffscreenPass.width;
+		scissor.extent.height = m_OffscreenPass.height;
+		vkCmdSetScissor(vkBackends->commandBuffers[vkBackends->currentFrame], 0, 1, &scissor);
+
+		vkCmdBeginRenderPass(vkBackends->commandBuffers[vkBackends->currentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 	}
 
 	void VulkanFrameBuffer::Unbind()
 	{
+		VulkanBackends* vkBackends = getVulkanBackends();
+		glfwGetFramebufferSize(vkBackends->currentWindow, &vkBackends->windowWidth, &vkBackends->windowHeight);
+		if (vkBackends->windowWidth == 0 || vkBackends->windowHeight == 0)
+			return;
 
+		vkCmdEndRenderPass(vkBackends->commandBuffers[vkBackends->currentFrame]);
 	}
 
 	void VulkanFrameBuffer::Begin()

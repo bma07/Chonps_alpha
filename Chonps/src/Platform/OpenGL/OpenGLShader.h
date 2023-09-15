@@ -19,7 +19,7 @@ namespace Chonps
 	class OpenGLShader : public Shader
 	{
 	public:
-		OpenGLShader(const std::string& vertexFile, const std::string& fragmentFile);
+		OpenGLShader(const std::string& vertexFile, const std::string& fragmentFile, PipelineLayoutInfo* pipelineInfo);
 		virtual ~OpenGLShader() {}
 
 		virtual void Bind() const override;
@@ -30,13 +30,13 @@ namespace Chonps
 
 		operator uint32_t& () { return m_ID; }
 
-		void BindPipeline(PipelineLayoutInfo* pipelineLayout);
 
 	private:
 		uint32_t m_ID;
 		PipelineLayoutInfo m_LayoutInfo;
-
 		OpenGLPipelines m_Pipeline;
+
+		void BindPipeline(PipelineLayoutInfo* pipelineLayout);
 	};
 
 	namespace ogls
