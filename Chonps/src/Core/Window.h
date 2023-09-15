@@ -1,6 +1,8 @@
 #ifndef HG_CHONPS_WINDOW_H
 #define HG_CHONPS_WINDOW_H
 
+#include <functional>
+
 #include "Events/Event.h"
 
 namespace Chonps

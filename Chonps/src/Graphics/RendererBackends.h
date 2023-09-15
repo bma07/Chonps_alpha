@@ -6,6 +6,20 @@
 
 namespace Chonps
 {
+	struct OpenGLSpecific
+	{
+		const char*				textureLayoutUniformName = "u_Textures";
+	};
+
+	struct VulkanSpecific
+	{
+		uint32_t				textureBinding;
+		uint32_t				samplerBinding;
+		uint32_t				frameBufferBinding;
+		uint32_t				cubemapBinding;
+		bool					enableValidationLayers = false;
+	};
+
 	struct RendererBackends
 	{
 		bool					enableColorBlend;
@@ -17,10 +31,7 @@ namespace Chonps
 		RenderCullFrontFace		cullFrontFace;
 		CompareOperation		depthOpCompare;
 		StencilAttachment		stencil;
-		uint32_t				textureBinding;
-		uint32_t				samplerBinding;
-		uint32_t				frameBufferBinding;
-		uint32_t				cubemapBinding;
+		
 		QueueChain<uint32_t>	fontIDsQueue = QueueChain<uint32_t>(0x01, 0xff);
 		uint32_t				maxFramesInFlight = 3;
 		bool					enableGammaCorrection = false;
@@ -32,7 +43,8 @@ namespace Chonps
 		uint32_t				maxGuiVerticesPerObjectHint = 0x200;
 		uint32_t				maxGuiIndicesPerObjectHint = 0x400;
 		bool					enableMultiThreading = false;
-		bool					enableValidationLayers = false;
+		OpenGLSpecific			ogls;
+		VulkanSpecific			vks;
 
 		void standardInit()
 		{
@@ -43,10 +55,10 @@ namespace Chonps
 			cullFaceMode = CullFaceMode::Back;
 			cullFrontFace = CullFrontFace::CounterClockwise;
 			topologyType = TopologyType::Triangle;
-			textureBinding = 0;
-			samplerBinding = 1;
-			frameBufferBinding = 0;
-			cubemapBinding = 0;
+			vks.textureBinding = 0;
+			vks.samplerBinding = 1;
+			vks.frameBufferBinding = 0;
+			vks.cubemapBinding = 0;
 		}
 	};
 	

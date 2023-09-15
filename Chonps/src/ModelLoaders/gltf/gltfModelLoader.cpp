@@ -116,37 +116,53 @@ namespace Chonps
 
 	void gltfModel::loadMesh(unsigned int meshIndex, glm::mat4 matrix /*= glm::mat4(1.0f)*/)
 	{
-		for (unsigned int i = 0; i < JSON["meshes"][meshIndex]["primitives"].size(); i++)
+		for (uint32_t i = 0; i < JSON["meshes"][meshIndex]["primitives"].size(); i++)
 		{
-			unsigned int meshPosIndex = JSON["meshes"][meshIndex]["primitives"][i]["attributes"]["POSITION"];
-			unsigned int meshNormalIndex = JSON["meshes"][meshIndex]["primitives"][i]["attributes"]["NORMAL"];
-			unsigned int meshTexIndex = JSON["meshes"][meshIndex]["primitives"][i]["attributes"]["TEXCOORD_0"];
-			unsigned int meshIndicesIndex = JSON["meshes"][meshIndex]["primitives"][i]["indices"];
-			unsigned int meshMaterialIndex = JSON["meshes"][meshIndex]["primitives"][i]["material"];
+			int meshPosIndex = JSON["meshes"][meshIndex]["primitives"][i]["attributes"]["POSITION"];
+			int meshNormalIndex = JSON["meshes"][meshIndex]["primitives"][i]["attributes"].value("NORMAL", -1);
+			int meshTexIndex = JSON["meshes"][meshIndex]["primitives"][i]["attributes"].value("TEXCOORD_0", -1);
+			int meshIndicesIndex = JSON["meshes"][meshIndex]["primitives"][i]["indices"];
+			int meshMaterialIndex = JSON["meshes"][meshIndex]["primitives"][i]["material"];
 
 			// Get Pos mesh data
 			std::vector<glm::vec3> position;
 			std::vector<float> posRaw = getFloats(JSON["accessors"][meshPosIndex]);
-			for (unsigned int i = 0; i < posRaw.size() / 3; i++)
-				position.push_back(glm::vec3(posRaw[(i * 3)], posRaw[(i * 3) + 1], posRaw[(i * 3) + 2]));
+			for (uint32_t j = 0; j < posRaw.size() / 3; j++)
+				position.push_back(glm::vec3(posRaw[(j * 3)], posRaw[(j * 3) + 1], posRaw[(j * 3) + 2]));
 			
 			// Get Color mesh data
 			std::vector<glm::vec3> colors;
 			glm::vec3 colorRaw = getColors(JSON["materials"][meshMaterialIndex]);
-			for (unsigned int i = 0; i < posRaw.size() / 3; i++)
+			for (uint32_t j = 0; j < position.size(); j++)
 				colors.push_back(colorRaw);
 
 			// Get Normal mesh data
 			std::vector<glm::vec3> normals;
-			std::vector<float> normalsRaw = getFloats(JSON["accessors"][meshNormalIndex]);
-			for (unsigned int i = 0; i < normalsRaw.size() / 3; i++)
-				normals.push_back(glm::vec3(normalsRaw[(i * 3)], normalsRaw[(i * 3) + 1], normalsRaw[(i * 3) + 2]));
+			if (meshNormalIndex >= 0)
+			{
+				std::vector<float> normalsRaw = getFloats(JSON["accessors"][meshNormalIndex]);
+				for (uint32_t j = 0; j < normalsRaw.size() / 3; j++)
+					normals.push_back(glm::vec3(normalsRaw[(j * 3)], normalsRaw[(j * 3) + 1], normalsRaw[(j * 3) + 2]));
+			}
+			else // Mesh has no normals
+			{
+				for (uint32_t j = 0; j < position.size(); j++)
+					normals.push_back(glm::vec3(0.0f));
+			}
 
 			// Get texUV mesh data
 			std::vector<glm::vec2> texCoord;
-			std::vector<float> texCoordRaw = getFloats(JSON["accessors"][meshTexIndex]);
-			for (unsigned int i = 0; i < texCoordRaw.size() / 2; i++)
-				texCoord.push_back(glm::vec2(texCoordRaw[(i * 2)], texCoordRaw[(i * 2) + 1]));
+			if (meshTexIndex >= 0)
+			{
+				std::vector<float> texCoordRaw = getFloats(JSON["accessors"][meshTexIndex]);
+				for (int j = 0; j < texCoordRaw.size() / 2; j++)
+					texCoord.push_back(glm::vec2(texCoordRaw[(j * 2)], texCoordRaw[(j * 2) + 1]));
+			}
+			else
+			{
+				for (uint32_t j = 0; j < position.size(); j++)
+					texCoord.push_back(glm::vec2(0.0f, 0.0f));
+			}
 
 			// Get Mesh Indices
 			std::vector<uint32_t> indices;
@@ -155,15 +171,15 @@ namespace Chonps
 
 			// Combine all mesh data and Get Model data
 			std::vector<vertex> vertices;
-			for (unsigned int i = 0; i < position.size(); i++)
+			for (int j = 0; j < position.size(); j++)
 			{
 				vertices.emplace_back(
 					vertex
 					{
-						position[i],
-						colors[i],
-						texCoord[i],
-						normals[i],
+						position[j],
+						colors[j],
+						texCoord[j],
+						normals[j],
 					}
 				);
 			}

@@ -1,6 +1,12 @@
 #include <Chonps.h>
 #include "ChonpsEditor.h"
 
+#ifdef CHONPS_DEBUG
+	#define CHONPS_ENABLE_VALIDATION_LAYERS true
+#else
+	#define CHONPS_ENABLE_VALIDATION_LAYERS false
+#endif
+
 int main()
 {
 	Chonps::logInit();
@@ -19,11 +25,11 @@ int main()
 	rendererBackends.cullFrontFace = Chonps::CullFrontFace::CounterClockwise;
 	rendererBackends.topologyType = Chonps::TopologyType::Triangle;
 	rendererBackends.depthOpCompare = Chonps::CompareOperation::LessOrEqual;
-	rendererBackends.textureBinding = 0;
-	rendererBackends.samplerBinding = 1;
-	rendererBackends.frameBufferBinding = 0;
-	rendererBackends.cubemapBinding = 0;
-	rendererBackends.enableValidationLayers = true;
+	rendererBackends.vks.textureBinding = 0;
+	rendererBackends.vks.samplerBinding = 1;
+	rendererBackends.vks.frameBufferBinding = 0;
+	rendererBackends.vks.cubemapBinding = 0;
+	rendererBackends.vks.enableValidationLayers = CHONPS_ENABLE_VALIDATION_LAYERS;
 
 	Chonps::createRendererAPI(&rendererBackends);
 

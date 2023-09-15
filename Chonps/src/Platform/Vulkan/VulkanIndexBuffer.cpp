@@ -62,7 +62,7 @@ namespace Chonps
 		VmaAllocator vmaAllocator = getVmaAllocator();
 		m_ID = vkBackends->vertexBufferCountIDs.take_next();
 
-		VkDeviceSize bufferSize = static_cast<VkDeviceSize>(sizeof(vertex) * indices.size());
+		VkDeviceSize bufferSize = static_cast<VkDeviceSize>(sizeof(uint32_t) * indices.size());
 		m_IndexBufferSize = bufferSize;
 
 		// If buffer is set to dynamic, we skip the staging buffer part and instead use the buffer on CPU memory

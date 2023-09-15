@@ -241,9 +241,15 @@ namespace Chonps
 	OpenGLTextureLayout::OpenGLTextureLayout(TextureCreateInfo* pTextures, uint32_t textureCount, uint32_t setIndex)
 		: TextureLayout(pTextures, textureCount, setIndex)
 	{
+		RendererBackends* backends = getRendererBackends();
+
+		CHONPS_CORE_ASSERT(textureCount < backends->maxTextureBindingSlots, "cannot have more textures than the max texture binding slot!");
+
 		for (uint32_t i = 0; i < textureCount; i++)
 		{
 			TextureCreateInfo textureInfo = pTextures[i];
+			
+			CHONPS_CORE_ASSERT(textureInfo.slot < backends->maxTextureBindingSlots, "cannot have texture slot that is above the max texture binding slot!");
 
 			if (m_Textures.find(textureInfo.slot) == m_Textures.end())
 			{
@@ -251,6 +257,9 @@ namespace Chonps
 			}
 			else CHONPS_CORE_WARN("WARNING: TEXTURE_LAYOUT: Texture with slot {0} already exists! Ignoring second texture slot", textureInfo.slot);
 		}
+
+		for (uint32_t i = 0; i < backends->maxTextureBindingSlots; i++)
+			m_TextureSlots.push_back(i);
 	}
 
 	void OpenGLTextureLayout::insert(Texture* texture, uint32_t slot)
@@ -272,10 +281,11 @@ namespace Chonps
 
 	void OpenGLTextureLayout::Bind(Shader* shader) const
 	{
+		glUniform1iv(glGetUniformLocation(shader->id(), getRendererBackends()->ogls.textureLayoutUniformName), m_Textures.size(), m_TextureSlots.data());
+
 		for (auto& texture : m_Textures)
 		{
-			glActiveTexture(GL_TEXTURE0 + texture.first);
-			glBindTexture(GL_TEXTURE_2D, texture.second->id());
+			glBindTextureUnit(texture.first, texture.second->id());
 		}
 	}
 

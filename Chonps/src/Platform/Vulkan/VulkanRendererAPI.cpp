@@ -280,12 +280,12 @@ namespace Chonps
 		m_VulkanBackends->maxFramesInFlight = rendererBackends->maxFramesInFlight;
 		m_VulkanBackends->maxObjectIDs = rendererBackends->maxObjectIDs;
 		m_VulkanBackends->multithreadingEnabled = rendererBackends->enableMultiThreading;
-		m_VulkanBackends->enableValidationLayers = rendererBackends->enableValidationLayers;
+		m_VulkanBackends->enableValidationLayers = rendererBackends->vks.enableValidationLayers;
 
-		s_TextureDescriptorBindings.textureBinding = rendererBackends->textureBinding;
-		s_TextureDescriptorBindings.samplerBinding = rendererBackends->samplerBinding;
-		s_TextureDescriptorBindings.frameBufferBinding = rendererBackends->frameBufferBinding;
-		s_TextureDescriptorBindings.cubemapBinding = rendererBackends->cubemapBinding;
+		s_TextureDescriptorBindings.textureBinding = rendererBackends->vks.textureBinding;
+		s_TextureDescriptorBindings.samplerBinding = rendererBackends->vks.samplerBinding;
+		s_TextureDescriptorBindings.frameBufferBinding = rendererBackends->vks.frameBufferBinding;
+		s_TextureDescriptorBindings.cubemapBinding = rendererBackends->vks.cubemapBinding;
 
 		PipelineSpecification pipelineSpec = getStandardPipelineSpecification();
 		pipelineSpec.rasterizer.cullMode = rendererBackends->cullFaceMode;

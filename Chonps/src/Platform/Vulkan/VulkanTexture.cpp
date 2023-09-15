@@ -378,7 +378,9 @@ namespace Chonps
 		: TextureLayout(pTextures, textureCount, setIndex), m_SetIndex(setIndex)
 	{
 		VulkanBackends* vkBackends = getVulkanBackends();
-		
+
+		CHONPS_CORE_ASSERT(textureCount < vkBackends->maxTextureBindingSlots, "cannot have more textures than the max texture binding slot!");
+
 		for (uint32_t i = 0; i < textureCount; i++)
 		{
 			TextureCreateInfo textureInfo = pTextures[i];

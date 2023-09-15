@@ -9,7 +9,7 @@ out vec4 fragColor;
 out vec2 fragTexUV;
 out flat int fragTexIndex;
 
-layout(std140, binding = 0) uniform inUniforms
+layout(std140, binding = 2) uniform inUniforms
 {
 	mat4 camMatrix;
 };

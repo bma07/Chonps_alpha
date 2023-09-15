@@ -264,7 +264,7 @@ namespace Chonps
 		gui::AddFontFromTTF(m_Font);
 
 		// Mesh
-		m_Meshes = loadModel("D:/Dev/Chonps/ChonpsEditor/res/models/gltf/wall/wall.gltf");
+		m_Meshes = loadModel("D:/Dev/Chonps/ChonpsEditor/res/models/gltf/saul_goodmans_office/scene.gltf");
 
 		// Textures
 		Texture* texture = createTexture("D:/Dev/Chonps/ChonpsEditor/res/textures/brick.png", TexType::Diffuse);
@@ -558,24 +558,19 @@ namespace Chonps
 		m_Shader->Bind();
 		renderBindBufferSet(m_Shader, m_UniformBuffer, 0);
 
-		for (int i = -30; i <= 30; i++)
+
+		UBO.camMatrix = m_SceneCamera.GetProjectionViewMatrix() * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		for (auto& mesh : m_Meshes)
 		{
-			for (int j = -30; j <= 30; j++)
-			{
-				UBO.camMatrix = m_SceneCamera.GetProjectionViewMatrix() * glm::translate(glm::mat4(1.0f), glm::vec3(3.0f * i, 3.0f * j, 0.0f));
-				for (auto& mesh : m_Meshes)
-				{
-					UBO.texIndex = 0;
-					m_UniformBuffer->Bind(&UBO, sizeof(UBO), sizeof(UBO) * drawCallCount);
+			UBO.texIndex = 0;
+			m_UniformBuffer->Bind(&UBO, sizeof(UBO), sizeof(UBO) * drawCallCount);
 
-					drawCallCount++;
-				}
-			}
+			mesh.vertexArray->Bind();
+			mesh.textures->Bind(m_Shader);
+			renderDrawIndexedInstanced(mesh.vertexArray->GetIndexCount(), 1, drawCallCount);
+
+			drawCallCount++;
 		}
-
-		m_Meshes[0].vertexArray->Bind();
-		m_Meshes[0].textures->Bind(m_Shader);
-		renderDrawIndexedInstanced(m_Meshes[0].vertexArray->GetIndexCount(), drawCallCount, 0);
 
 		m_FBO->End();
 

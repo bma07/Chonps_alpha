@@ -52,6 +52,7 @@ namespace Chonps
 
 	private:
 		std::map<uint32_t, Texture*> m_Textures;
+		std::vector<int32_t> m_TextureSlots;
 	};
 }
 
