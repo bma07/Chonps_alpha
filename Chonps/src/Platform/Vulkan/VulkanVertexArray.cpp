@@ -22,7 +22,7 @@ namespace Chonps
 				else if (numComponents == 2) return VK_FORMAT_R32G32_SFLOAT;
 				else if (numComponents == 3) return VK_FORMAT_R32G32B32_SFLOAT;
 				else if (numComponents == 4) return VK_FORMAT_R32G32B32A32_SFLOAT;
-				else CHONPS_CORE_ERROR("ERROR: VULKAN: Could not find the corresponding shader data type given the numComponents!");
+				else CHONPS_CORE_LOG_ERROR(Vulkan:VertexArray:ShaderDataType, "Could not find the corresponding shader data type given the numComponents!");
 				return VK_FORMAT_UNDEFINED;
 			}
 			case Chonps::ShaderDataType::Mat2:
@@ -43,7 +43,7 @@ namespace Chonps
 				else if (numComponents == 2) return VK_FORMAT_R32G32_SINT;
 				else if (numComponents == 3) return VK_FORMAT_R32G32B32_SINT;
 				else if (numComponents == 4) return VK_FORMAT_R32G32B32A32_SINT;
-				else CHONPS_CORE_ERROR("ERROR: VULKAN: Could not find the corresponding shader data type given the numComponents!");
+				else CHONPS_CORE_LOG_ERROR(Vulkan:VertexArray:ShaderDataType, "Could not find the corresponding shader data type given the numComponents!");
 				return VK_FORMAT_UNDEFINED;
 			}
 			case Chonps::ShaderDataType::Bool:

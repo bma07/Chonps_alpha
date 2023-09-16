@@ -19,7 +19,7 @@ namespace Chonps
 			getRendererAPI()->Init();
 			s_Init = true;
 		}
-		else CHONPS_CORE_WARN("WARNING: Attempting to call renderInit more than once! renderInit must be called only one time to initialize rendering.");
+		else CHONPS_CORE_LOG_WARN(RendererAPI, "Attempting to call renderInit more than once! renderInit must be called only one time to initialize rendering.");
 	}
 
 	// Clear function clears the window viewport with all of the vertices drawn on it

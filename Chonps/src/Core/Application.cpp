@@ -17,7 +17,7 @@ namespace Chonps
 
 		if (getGraphicsAPI() == GraphicsAPI::None)
 		{
-			CHONPS_CORE_WARN("WARNING: APPLICATION: Graphics API was not set before hand! Automatically setting up API...");
+			CHONPS_CORE_LOG_WARN(Application, "Graphics API was not set before hand! Automatically setting up API...");
 			setRenderContext(GraphicsAPI::OpenGL);
 		}
 
@@ -36,7 +36,7 @@ namespace Chonps
 
 		if (getGraphicsAPI() == GraphicsAPI::None)
 		{
-			CHONPS_CORE_WARN("WARNING: APPLICATION: Graphics API was not set before hand! Automatically setting up API...");
+			CHONPS_CORE_LOG_WARN(Application, "Graphics API was not set before hand! Automatically setting up API...");
 			setRenderContext(GraphicsAPI::OpenGL);
 		}
 

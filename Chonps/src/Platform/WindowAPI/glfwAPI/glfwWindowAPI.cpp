@@ -17,7 +17,7 @@ namespace Chonps
 
 	static void GLFWerrorCallback(int error, const char* descripion)
 	{
-		CHONPS_CORE_ERROR("GLFW ERROR ({0}): {1}", error, descripion);
+		CHONPS_CORE_LOG_ERROR(glfw, "({0}): {1}", error, descripion);
 	}
 
 	void glfwInitWindowContext()
@@ -29,7 +29,7 @@ namespace Chonps
 			glfwSetErrorCallback(GLFWerrorCallback);
 			s_glfwInit = true;
 		}
-		else CHONPS_CORE_WARN("glfw already initialized");
+		else CHONPS_CORE_LOG_WARN(glfw, "glfw already initialized");
 	}
 
 	void glfwTerminateWindowContext()
@@ -40,7 +40,7 @@ namespace Chonps
 			s_glfwInit = false;
 		}
 		else
-			CHONPS_CORE_WARN("glfw already terminated!");
+			CHONPS_CORE_LOG_WARN(glfw, "glfw already terminated!");
 	}
 
 	void glfwImplSetWindowContextRenderTarget(Window* window)
@@ -71,7 +71,7 @@ namespace Chonps
 
 			default:
 			{
-				CHONPS_CORE_ERROR("Cannot find the graphics API selected!");
+				CHONPS_CORE_LOG_ERROR(glfw, "Cannot find the graphics API selected!");
 				break;
 			}
 		}

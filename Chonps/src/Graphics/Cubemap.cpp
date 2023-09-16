@@ -17,7 +17,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: TEXTURE: createCubemapSp(cubeMapFaces) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Cubemap:Texture, "createCubemapSp(cubeMapFaces) - No graphics API selected beforehand!");
 				break;
 			}
 			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLCubemap>(createInfo, setIndex); }
@@ -27,7 +27,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: CUBEMAP: Could not create Cubemap!");
+		CHONPS_CORE_LOG_ERROR(Cubemap, "Could not create Cubemap!");
 		return nullptr;
 	}
 
@@ -37,7 +37,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: TEXTURE: createCubemapSp(cubeMapFaces) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Cubemap:Texture, "createCubemapSp(cubeMapFaces) - No graphics API selected beforehand!");
 				break;
 			}
 			case GraphicsAPI::OpenGL: { return new OpenGLCubemap(createInfo, setIndex); }
@@ -47,7 +47,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: CUBEMAP: Could not create Cubemap!");
+		CHONPS_CORE_LOG_ERROR(Cubemap, "Could not create Cubemap!");
 		return nullptr;
 	}
 }

@@ -15,7 +15,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: SHADER: createShaderSp(vertex, fragment, pipelineInfo) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Shader, "createShaderSp(vertex, fragment, pipelineInfo) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -28,7 +28,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: SHADER: Could not create Shader!");
+		CHONPS_CORE_LOG_ERROR(Shader, "Could not create Shader!");
 		return nullptr;
 	}
 
@@ -38,7 +38,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: SHADER: createShader(vertex, fragment, pipelineInfo) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Shader, "createShader(vertex, fragment, pipelineInfo) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -51,7 +51,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: SHADER: Could not create Shader!");
+		CHONPS_CORE_LOG_ERROR(Shader, "Could not create Shader!");
 		return nullptr;
 	}
 

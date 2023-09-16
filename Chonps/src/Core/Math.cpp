@@ -106,7 +106,7 @@ namespace Chonps
 	{
 		if (r > n)
 		{
-			CHONPS_CORE_ERROR("ARITHMETIC ERROR: Permutation: r ({0}) greater than n ({1}). r must not be greater than n", r, n);
+			CHONPS_CORE_LOG_ERROR(Arithmetic, "Permutation: r ({0}) greater than n ({1}). r must not be greater than n", r, n);
 			return 0;
 		}
 
@@ -117,7 +117,7 @@ namespace Chonps
 	{
 		if (r > n)
 		{
-			CHONPS_CORE_ERROR("ARITHMETIC ERROR: Combination: r ({0}) greater than n ({1}). r must not be greater than n", r, n);
+			CHONPS_CORE_LOG_ERROR(Arithmetic, "Combination: r ({0}) greater than n ({1}). r must not be greater than n", r, n);
 			return 0;
 		}
 

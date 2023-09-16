@@ -14,7 +14,7 @@ namespace Chonps
 		{
 			case Chonps::TexFormat::None:
 			{
-				CHONPS_CORE_ERROR("ERROR: TEXTURE: Unable to find Texture Format!");
+				CHONPS_CORE_LOG_ERROR(OpenGL:Texture, "Unable to find Texture Format!");
 				break;
 			}
 			case Chonps::TexFormat::RGB8:
@@ -49,21 +49,21 @@ namespace Chonps
 			}
 			case Chonps::TexFormat::RGB64F:
 			{
-				CHONPS_CORE_WARN("WARNING: TEXTURE: RGB64F format is unsupported on OpenGL! Reverting texture to RGB8 format.");
+				CHONPS_CORE_LOG_WARN(OpenGL:Texture, "RGB64F format is unsupported on OpenGL! Reverting texture to RGB8 format.");
 				gammaCorrect && (texType != TexType::Specular && texType != TexType::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB8;
 				dataFormat = GL_RGB;
 				break;
 			}
 			case Chonps::TexFormat::RGB64I:
 			{
-				CHONPS_CORE_WARN("WARNING: TEXTURE: RGB64I format is unsupported on OpenGL! Reverting texture to RGB8 format.");
+				CHONPS_CORE_LOG_WARN(OpenGL:Texture, "RGB64I format is unsupported on OpenGL! Reverting texture to RGB8 format.");
 				gammaCorrect && (texType != TexType::Specular && texType != TexType::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB8;
 				dataFormat = GL_RGB;
 				break;
 			}
 			case Chonps::TexFormat::RGB64UI:
 			{
-				CHONPS_CORE_WARN("WARNING: TEXTURE: RGB64UI format is unsupported on OpenGL! Reverting texture to RGB8 format.");
+				CHONPS_CORE_LOG_WARN(OpenGL:Texture, "RGB64UI format is unsupported on OpenGL! Reverting texture to RGB8 format.");
 				gammaCorrect && (texType != TexType::Specular && texType != TexType::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB8;
 				dataFormat = GL_RGB;
 				break;
@@ -100,21 +100,21 @@ namespace Chonps
 			}
 			case Chonps::TexFormat::RGBA64F:
 			{
-				CHONPS_CORE_WARN("WARNING: TEXTURE: RGBA64F format is unsupported on OpenGL! Reverting texture to RGBA8 format.");
+				CHONPS_CORE_LOG_WARN(OpenGL:Texture, "RGBA64F format is unsupported on OpenGL! Reverting texture to RGBA8 format.");
 				gammaCorrect && (texType != TexType::Specular && texType != TexType::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA8;
 				dataFormat = GL_RGBA;
 				break;
 			}
 			case Chonps::TexFormat::RGBA64I:
 			{
-				CHONPS_CORE_WARN("WARNING: TEXTURE: RGBA64I format is unsupported on OpenGL! Reverting texture to RGBA8 format.");
+				CHONPS_CORE_LOG_WARN(OpenGL:Texture, "RGBA64I format is unsupported on OpenGL! Reverting texture to RGBA8 format.");
 				gammaCorrect && (texType != TexType::Specular && texType != TexType::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA8;
 				dataFormat = GL_RGBA;
 				break;
 			}
 			case Chonps::TexFormat::RGBA64UI:
 			{
-				CHONPS_CORE_WARN("WARNING: TEXTURE: RGBA64UI format is unsupported on OpenGL! Reverting texture to RGBA8 format.");
+				CHONPS_CORE_LOG_WARN(OpenGL:Texture, "RGBA64UI format is unsupported on OpenGL! Reverting texture to RGBA8 format.");
 				gammaCorrect && (texType != TexType::Specular && texType != TexType::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA8;
 				dataFormat = GL_RGBA;
 				break;
@@ -128,7 +128,7 @@ namespace Chonps
 	{
 		int channels;
 		stbi_uc* data = stbi_load(filepath.c_str(), &m_Width, &m_Height, &channels, STBI_rgb_alpha);
-		if (!data) CHONPS_CORE_ERROR("ERROR: TEXTURE: Failed to load texture data: {0}", filepath);
+		if (!data) CHONPS_CORE_LOG_ERROR(OpenGL:Texture, "Failed to load texture data: {0}", filepath);
 
 		bool gammaCorrect = renderGetGammaCorrection();
 
@@ -151,7 +151,7 @@ namespace Chonps
 		{
 		case TexFilter::Linear: magFilter = GL_LINEAR; break;
 		case TexFilter::Nearest: magFilter = GL_NEAREST; break;
-		default: CHONPS_CORE_WARN("WARNING: TEXTURE: Use of texture filter unsupported in mag filter\n Mag filter only accepts Linear or Nearest"); break;
+		default: CHONPS_CORE_LOG_WARN(OpenGL:Texture, "Use of texture filter unsupported in mag filter\n Mag filter only accepts Linear or Nearest"); break;
 		}
 
 		// Get texture wrap mode format
@@ -206,7 +206,7 @@ namespace Chonps
 		{
 		case TexFilter::Linear: magFilter = GL_LINEAR; break;
 		case TexFilter::Nearest: magFilter = GL_NEAREST; break;
-		default: CHONPS_CORE_WARN("WARNING: TEXTURE: Use of texture filter unsupported in mag filter\n Mag filter only accepts Linear or Nearest"); break;
+		default: CHONPS_CORE_LOG_WARN(OpenGL:Texture, "Use of texture filter unsupported in mag filter\n Mag filter only accepts Linear or Nearest"); break;
 		}
 		// Get texture wrap mode format
 		GLenum wrapFormat = GL_REPEAT;
@@ -255,7 +255,7 @@ namespace Chonps
 			{
 				m_Textures[textureInfo.slot] = std::move(textureInfo.texture);
 			}
-			else CHONPS_CORE_WARN("WARNING: TEXTURE_LAYOUT: Texture with slot {0} already exists! Ignoring second texture slot", textureInfo.slot);
+			else CHONPS_CORE_LOG_WARN(OpenGL:TextureLayout, "Texture with slot {0} already exists! Ignoring second texture slot", textureInfo.slot);
 		}
 
 		for (uint32_t i = 0; i < backends->maxTextureBindingSlots; i++)
@@ -268,13 +268,13 @@ namespace Chonps
 		{
 			m_Textures[slot] = std::move(texture);
 		}
-		else CHONPS_CORE_WARN("WARNING: TEXTURE_LAYOUT: Texture with slot {0} already exists! Ignoring second texture slot", slot);
+		else CHONPS_CORE_LOG_WARN(OpenGL:TextureLayout, "Texture with slot {0} already exists! Ignoring second texture slot", slot);
 	}
 
 	void OpenGLTextureLayout::erase(uint32_t slot)
 	{
 		if (m_Textures.find(slot) == m_Textures.end())
-			CHONPS_CORE_WARN("WARNING: TEXTURE_LAYOUT: No texture was found at slot {0}! texture cannot be removed because it does not exist!", slot);
+			CHONPS_CORE_LOG_WARN(OpenGL:TextureLayout, "No texture was found at slot {0}! texture cannot be removed because it does not exist!", slot);
 		else
 			m_Textures.erase(slot);
 	}

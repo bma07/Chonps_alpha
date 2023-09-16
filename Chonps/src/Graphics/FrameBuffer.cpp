@@ -14,7 +14,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: FBO: createFrameBufferSp() - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(FrameBuffer, "createFrameBufferSp() - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -27,7 +27,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: FBO: Could not create FBO!");
+		CHONPS_CORE_LOG_ERROR(FrameBuffer, "Could not create FBO!");
 		return nullptr;
 	}
 
@@ -37,7 +37,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: FBO: createFrameBuffer() - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(FrameBuffer, "createFrameBuffer() - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -50,7 +50,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: FBO: Could not create FBO!");
+		CHONPS_CORE_LOG_ERROR(FrameBuffer, "Could not create FBO!");
 		return nullptr;
 	}
 

@@ -13,7 +13,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: EBO: createIndexBufferSp(indices, size) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(IndexBuffer, "createIndexBufferSp(indices, size) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -26,7 +26,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: EBO: Could not create EBO!");
+		CHONPS_CORE_LOG_ERROR(IndexBuffer, "Could not create EBO!");
 		return nullptr;
 	}
 
@@ -36,7 +36,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: EBO: createIndexBufferSp(indices) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(IndexBuffer, "createIndexBufferSp(indices) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -49,7 +49,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: EBO: Could not create EBO!");
+		CHONPS_CORE_LOG_ERROR(IndexBuffer, "Could not create EBO!");
 		return nullptr;
 	}
 
@@ -59,7 +59,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: EBO: createIndexBuffer(indices, size) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(IndexBuffer, "createIndexBuffer(indices, size) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -72,7 +72,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: EBO: Could not create EBO!");
+		CHONPS_CORE_LOG_ERROR(IndexBuffer, "Could not create EBO!");
 		return nullptr;
 	}
 
@@ -82,7 +82,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: EBO: createIndexBuffer(indices) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(IndexBuffer, "createIndexBuffer(indices) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -96,7 +96,7 @@ namespace Chonps
 			}
 
 		}
-		CHONPS_CORE_ERROR("ERROR: EBO: Could not create EBO!");
+		CHONPS_CORE_LOG_ERROR(IndexBuffer, "Could not create EBO!");
 		return nullptr;
 	}
 }

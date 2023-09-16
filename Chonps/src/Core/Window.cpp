@@ -16,7 +16,7 @@ namespace Chonps
 		
 		if (api == WindowAPI::None)
 		{
-			CHONPS_CORE_WARN("No Windows API selected!");
+			CHONPS_CORE_LOG_WARN(Window, "lected!");
 			return false;
 		}
 
@@ -24,7 +24,7 @@ namespace Chonps
 		{
 			case Chonps::WindowAPI::None:
 			{
-				CHONPS_CORE_WARN("No Windows API initialized!");
+				CHONPS_CORE_LOG_WARN(Window, "itialized!");
 				break;
 			}
 			case Chonps::WindowAPI::Glfw:
@@ -39,7 +39,7 @@ namespace Chonps
 			}
 			default:
 			{
-				CHONPS_CORE_ERROR("ERROR: WINDOW: windowInitAPI(api) - Cannot find the Windows API selected!");
+				CHONPS_CORE_LOG_ERROR(Window, "windowInitAPI(api) - Cannot find the Windows API selected!");
 				break;
 			}
 		}
@@ -56,7 +56,7 @@ namespace Chonps
 		{
 			case Chonps::WindowAPI::None:
 			{
-				CHONPS_CORE_WARN("No Windows API initialized!");
+				CHONPS_CORE_LOG_WARN(Window, "itialized!");
 				return false;
 			}
 			case Chonps::WindowAPI::Glfw:
@@ -71,7 +71,7 @@ namespace Chonps
 			}
 			default:
 			{
-				CHONPS_CORE_ERROR("ERROR: WINDOW: windowTerminateAPI() - Cannot find the Windows API selected!");
+				CHONPS_CORE_LOG_ERROR(Window, "windowTerminateAPI() - Cannot find the Windows API selected!");
 				return false;
 			}
 		}
@@ -95,7 +95,7 @@ namespace Chonps
 			case Chonps::WindowAPI::Win32: return "WIN32";
 		}
 
-		CHONPS_CORE_ERROR("ERROR: WINDOW: getWindowContextName() - Cannot find the Windows API selected!");
+		CHONPS_CORE_LOG_ERROR(Window, "getWindowContextName() - Cannot find the Windows API selected!");
 		return "null";
 	}
 
@@ -105,7 +105,7 @@ namespace Chonps
 		{
 			case WindowAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: WINDOW: setWindowContextRenderTarget() - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Window, "setWindowContextRenderTarget() - No graphics API selected beforehand!");
 				break;
 			}
 			case WindowAPI::Glfw:
@@ -139,7 +139,7 @@ namespace Chonps
 		{
 			case WindowAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: WINDOW: createWindowSp() - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Window, "createWindowSp() - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -151,7 +151,7 @@ namespace Chonps
 			}
 		}
 
-		CHONPS_CORE_ERROR("ERROR: WINDOW: Could not create Window!");
+		CHONPS_CORE_LOG_ERROR(Window, "Could not create Window!");
 		return nullptr;
 	}
 
@@ -161,7 +161,7 @@ namespace Chonps
 		{
 			case WindowAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: WINDOW: createWindow() - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Window, "createWindow() - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -173,7 +173,7 @@ namespace Chonps
 			}
 		}
 
-		CHONPS_CORE_ERROR("ERROR: WINDOW: Could not create Window!");
+		CHONPS_CORE_LOG_ERROR(Window, "Could not create Window!");
 		return nullptr;
 	}
 
@@ -183,7 +183,7 @@ namespace Chonps
 		{
 			case WindowAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: WINDOW: createWindowSp() - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Window, "createWindowSp() - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -195,7 +195,7 @@ namespace Chonps
 			}
 		}
 
-		CHONPS_CORE_ERROR("ERROR: WINDOW: Could not create Window!");
+		CHONPS_CORE_LOG_ERROR(Window, "Could not create Window!");
 		return nullptr;
 	}
 
@@ -205,7 +205,7 @@ namespace Chonps
 		{
 			case WindowAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: WINDOW: createWindow() - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Window, "createWindow() - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -217,7 +217,7 @@ namespace Chonps
 			}
 		}
 
-		CHONPS_CORE_ERROR("ERROR: WINDOW: Could not create Window!");
+		CHONPS_CORE_LOG_ERROR(Window, "Could not create Window!");
 		return nullptr;
 	}
 }

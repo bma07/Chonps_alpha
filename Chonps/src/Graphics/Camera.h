@@ -21,8 +21,8 @@ namespace Chonps
 		void SetFormat(glm::vec3 inPosition, glm::vec3 _orientation, float inFOVdeg, float inNearPlane, float inFarPlane);
 		void SetDimensions(int width, int height) { m_Width = width < 0 ? -width : width; m_Height = height < 0 ? -height : height; }
 		void SetPosition(glm::vec3 inPosition) { position = inPosition; }
-		void SetOrientation(glm::vec3 inOrientation) { orientation = glm::normalize(inOrientation); if (inOrientation == glm::vec3(0.0f)) CHONPS_CORE_WARN("WARNING: CAMERA: Orientation vector is set to zero, Camera has no direction vector to look at!"); }
-		void SetUpVector(glm::vec3 Up) { upVector = Up; if (Up == glm::vec3(0.0f)) CHONPS_CORE_WARN("WARNING: CAMERA: Up vector is set to zero, Camera has no Up vector to distinguish from!"); }
+		void SetOrientation(glm::vec3 inOrientation) { orientation = glm::normalize(inOrientation); if (inOrientation == glm::vec3(0.0f)) CHONPS_CORE_LOG_WARN(Camera, "Orientation vector is set to zero, Camera has no direction vector to look at!"); }
+		void SetUpVector(glm::vec3 Up) { upVector = Up; if (Up == glm::vec3(0.0f)) CHONPS_CORE_LOG_WARN(Camera, "Up vector is set to zero, Camera has no Up vector to distinguish from!"); }
 		void SetFOV(float inFOVdeg, float inNearPlane, float inFarPlane);
 
 		const glm::mat4& GetProjectionViewMatrix() const { return m_CameraMatrix; }

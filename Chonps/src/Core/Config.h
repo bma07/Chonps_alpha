@@ -59,8 +59,8 @@
 #endif
 
 #ifdef CHONPS_ENABLE_ASSERTS
-	#define CHONPS_ASSERT(x, ...) { if(!(x)) { CHONPS_ERROR("Assertion Failed: {0}", __VA_ARGS__); CHONPS_ASSERT_BREAK; } }
-	#define CHONPS_CORE_ASSERT(x, ...) { if(!(x)) { CHONPS_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); CHONPS_ASSERT_BREAK; } }
+	#define CHONPS_ASSERT(x, ...) { if(!(x)) { CHONPS_ERROR(__VA_ARGS__); CHONPS_ASSERT_BREAK; } }
+	#define CHONPS_CORE_ASSERT(x, ...) { if(!(x)) { CHONPS_CORE_ERROR(__VA_ARGS__); CHONPS_ASSERT_BREAK; } }
 #else	
 	#define CHONPS_ASSERT(x, ...) { if(!(x)) { CHONPS_ERROR("ERROR: {0}", __VA_ARGS__); } }
 	#define CHONPS_CORE_ASSERT(x, ...) { if(!(x)) { CHONPS_CORE_ERROR("ERROR: {0}", __VA_ARGS__); } }

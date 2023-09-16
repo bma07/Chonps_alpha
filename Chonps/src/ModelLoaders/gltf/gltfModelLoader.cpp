@@ -225,7 +225,7 @@ namespace Chonps
 		else if (type == "VEC3") typeNum = 3;
 		else if (type == "VEC4") typeNum = 4;
 		else
-			CHONPS_CORE_ERROR("ERROR: MODEL: GLTF: JSON: Unkown float type! Type does not match with one of the following: VEC2 VEC3 VEC4 SCALER");
+			CHONPS_CORE_LOG_ERROR(Model:gltf:json, "Unkown float type! Type does not match with one of the following: VEC2 VEC3 VEC4 SCALER");
 
 		unsigned int begginingOfData = accByteOffset + BVbyteOffset;
 		unsigned int lengthOfData = count * sizeof(float) * typeNum;
@@ -298,7 +298,7 @@ namespace Chonps
 			}
 		}
 		else
-			CHONPS_CORE_ERROR("ERROR: MODEL: GLTF: JSON: Unkown component type! Component type does not match with one of the following:\n'5125' (UNSIGNED_INT)\n'5123' (UNSIGNED_SHORT)\n'5122' (SHORT)\n");
+			CHONPS_CORE_LOG_ERROR(Model:gltf:json, "Unkown component type! Component type does not match with one of the following:\n'5125' (UNSIGNED_INT)\n'5123' (UNSIGNED_SHORT)\n'5122' (SHORT)\n");
 
 		return indices;
 	}

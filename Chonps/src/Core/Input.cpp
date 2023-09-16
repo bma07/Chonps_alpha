@@ -15,7 +15,7 @@ namespace Chonps
 		{
 			case Chonps::WindowAPI::None:
 			{
-				CHONPS_CORE_WARN("No Windows API initialized!");
+				CHONPS_CORE_LOG_WARN(WindowAPI, "No Windows API initialized!");
 				break;
 			}
 			case Chonps::WindowAPI::Glfw:
@@ -30,7 +30,7 @@ namespace Chonps
 			}
 			default:
 			{
-				CHONPS_CORE_ERROR("ERROR: WINDOW: windowInputInit() - Cannot find the Windows API selected!");
+				CHONPS_CORE_LOG_ERROR(WindowAPI, "windowInputInit() - Cannot find the Windows API selected!");
 				break;
 			}
 		}

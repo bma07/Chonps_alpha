@@ -38,7 +38,7 @@ namespace Chonps
 	{
 		if (index > m_LayerInsertIndex)
 		{
-			CHONPS_CORE_WARN("Cannot add layers into overlay layers: (index: {0} must be less than {1})", index, m_LayerInsertIndex);
+			CHONPS_CORE_LOG_WARN(Layer, "Cannot add layers into overlay layers: (index: {0} must be less than {1})", index, m_LayerInsertIndex);
 			return;
 		}
 

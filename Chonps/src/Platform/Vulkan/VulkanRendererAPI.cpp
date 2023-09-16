@@ -59,7 +59,7 @@ namespace Chonps
 			}
 			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
 			{
-				CHONPS_CORE_WARN("VULKAN: Validation Layer: {0}", pCallbackData->pMessage);
+				CHONPS_CORE_WARN("Validation Layer: {0}", pCallbackData->pMessage);
 				break;
 			}
 			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
@@ -435,7 +435,7 @@ namespace Chonps
 		if (vkCreateInstance(&createInfo, nullptr, &m_VulkanBackends->instance) == VK_SUCCESS)
 			CHONPS_CORE_INFO("Vulkan Instance Created");
 		else
-			CHONPS_CORE_ERROR("ERROR: VULKAN: Failed to Initialize Instance!");
+			CHONPS_CORE_LOG_ERROR(Vulkan-Instance, "Failed to Initialize Instance!");
 	}
 
 	bool VulkanRendererAPI::SetUpDebugMessenger()
@@ -1684,7 +1684,7 @@ namespace Chonps
 				case Chonps::Sample::SampleCount_Max_Bit: { return VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM; }
 				default:
 				{
-					CHONPS_CORE_WARN("WARNING: Could not find sample, returning default sample!");
+					CHONPS_CORE_LOG_WARN(Vulkan, "Could not find sample, returning default sample!");
 					return VK_SAMPLE_COUNT_1_BIT;
 				}
 			}
@@ -1704,7 +1704,7 @@ namespace Chonps
 				case VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM: { return 0x7FFFFFFF; }
 				default:
 				{
-					CHONPS_CORE_WARN("WARNING: Could not find sample match!");
+					CHONPS_CORE_LOG_WARN(Vulkan, "Could not find sample match!");
 					return 1;
 				}
 			}
@@ -1720,7 +1720,7 @@ namespace Chonps
 
 			if (fbCount > maxCount)
 			{
-				CHONPS_CORE_WARN("WARNING: Specified FrameBuffer Sample count ({0}) is higher than the max sample count that is supported by the device ({1}); Using supported sample count instead!", fbCount, maxCount);
+				CHONPS_CORE_LOG_WARN(Vulkan, "Specified Sample count ({0}) is higher than the max sample count that is supported by the device ({1}); Using supported sample count instead!", fbCount, maxCount);
 				return maxSampleCount;
 			}
 			else
@@ -1739,7 +1739,7 @@ namespace Chonps
 				case RenderTopologyType::None: return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 			}
 
-			CHONPS_CORE_ERROR("ERROR: VULKAN: No topology was chosen, cannot get topology type!");
+			CHONPS_CORE_LOG_ERROR(Vulkan, "No topology was chosen, cannot get topology type!");
 			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		}
 
@@ -1753,7 +1753,7 @@ namespace Chonps
 				case RenderCullFaceMode::Both: return VK_CULL_MODE_FRONT_AND_BACK;
 			}
 
-			CHONPS_CORE_ERROR("ERROR: VULKAN: No cull face mode was chosen, cannot get cull face mode!");
+			CHONPS_CORE_LOG_ERROR(Vulkan, "No cull face mode was chosen, cannot get cull face mode!");
 			return VK_CULL_MODE_NONE;
 		}
 
@@ -1765,7 +1765,7 @@ namespace Chonps
 				case RenderCullFrontFace::CounterClockwise: return VK_FRONT_FACE_COUNTER_CLOCKWISE;
 			}
 
-			CHONPS_CORE_ERROR("ERROR: VULKAN: No cull front face was chosen, cannot get cull front face!");
+			CHONPS_CORE_LOG_ERROR(Vulkan, "No cull front face was chosen, cannot get cull front face!");
 			return VK_FRONT_FACE_CLOCKWISE;
 		}
 
@@ -1806,7 +1806,7 @@ namespace Chonps
 				case ColorBlendFactor::OneMinusSrc1Alpha: { return VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA; }
 				default:
 				{
-					CHONPS_CORE_ERROR("ERROR: PIPELINE: Could not find matching color blend factor!");
+					CHONPS_CORE_LOG_ERROR(Vulkan, "Could not find matching color blend factor!");
 					return VK_BLEND_FACTOR_ZERO;
 				}
 			}
@@ -1869,7 +1869,7 @@ namespace Chonps
 				case ColorBlendOperation::BlueExt: { return VK_BLEND_OP_BLUE_EXT; }
 				default:
 				{
-					CHONPS_CORE_ERROR("ERROR: PIPELINE: Could not find matching blend operation!");
+					CHONPS_CORE_LOG_ERROR(Vulkan, "Could not find matching blend operation!");
 					return VK_BLEND_OP_ADD;
 				}
 			}
@@ -1889,7 +1889,7 @@ namespace Chonps
 				case CompareOperation::Always: { return VK_COMPARE_OP_ALWAYS; }
 				default:
 				{
-					CHONPS_CORE_ERROR("ERROR: PIPELINE: Could not find matching compare operation!");
+					CHONPS_CORE_LOG_ERROR(Vulkan, "Could not find matching compare operation!");
 					return VK_COMPARE_OP_NEVER;
 				}
 			}
@@ -1909,7 +1909,7 @@ namespace Chonps
 				case StencilOperation::DecrementAndWrap: { return VK_STENCIL_OP_DECREMENT_AND_WRAP; }
 				default:
 				{
-					CHONPS_CORE_ERROR("ERROR: PIPELINE: Could not find matching stencil operation!");
+					CHONPS_CORE_LOG_ERROR(Vulkan, "Could not find matching stencil operation!");
 					return VK_STENCIL_OP_KEEP;
 				}
 			}

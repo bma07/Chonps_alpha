@@ -15,7 +15,7 @@ namespace Chonps
 		if (type == "vertex") return GL_VERTEX_SHADER;
 		if (type == "fragment" || type == "pixel") return GL_FRAGMENT_SHADER;
 
-		CHONPS_CORE_ERROR("ERROR: SHADER: Unkown shader type: {0}", type);
+		CHONPS_CORE_LOG_ERROR(OpenGL:Shader, "Unkown shader type: {0}", type);
 		return 0;
 	}
 
@@ -109,7 +109,7 @@ namespace Chonps
 				else if (type == GL_FRAGMENT_SHADER)
 					shaderType = "FRAGMENT";
 				glGetShaderInfoLog(shader, 1024, 0, infoLog);
-				CHONPS_CORE_ERROR("ERROR: SHADER: {0}: {1} - SHADER_COMPILATION_ERROR!\nInfolog: {2}", shaderType, shaderFile, infoLog);
+				CHONPS_CORE_LOG_ERROR(OpenGL:Shader, "{0}: {1} - SHADER_COMPILATION_ERROR!\nInfolog: {2}", shaderType, shaderFile, infoLog);
 				glDeleteShader(shader);
 			}
 		}
@@ -119,7 +119,7 @@ namespace Chonps
 			if (hasCompiled == GL_FALSE)
 			{
 				glGetShaderInfoLog(shader, 1024, 0, infoLog);
-				CHONPS_CORE_ERROR("ERROR: SHADER: {0}: {1} - SHADER_LINKING_ERROR!\nInfolog: {2}", "PROGRAM", shaderFile, infoLog);
+				CHONPS_CORE_LOG_ERROR(OpenGL:Shader, "{0}: {1} - SHADER_LINKING_ERROR!\nInfolog: {2}", "PROGRAM", shaderFile, infoLog);
 				glDeleteProgram(shader);
 			}
 		}

@@ -59,7 +59,7 @@ namespace Chonps
 			meshes = loadgltfModel(filepath);
 			return meshes;
 		}
-		else CHONPS_CORE_ERROR("ERROR: MODEL: Could not load model! Model file type not supported: {0}", modelTypeName);
+		else CHONPS_CORE_LOG_ERROR(Model, "Could not load model! Model file type not supported: {0}", modelTypeName);
 
 		return meshes;
 	}
@@ -79,7 +79,7 @@ namespace Chonps
 		{
 			return loadgltfModelBatched(filepath);
 		}
-		else CHONPS_CORE_ERROR("ERROR: MODEL: Could not load model! Model file type not supported: {0}", modelTypeName);
+		else CHONPS_CORE_LOG_ERROR(Model, "Could not load model! Model file type not supported: {0}", modelTypeName);
 
 		return Mesh();
 	}

@@ -17,7 +17,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: TEXTURE: createTextureSp(filepath, texType, texFilter, texWrap) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Texture, "createTextureSp(filepath, texType, texFilter, texWrap) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -36,7 +36,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: TEXTURE: Could not create Texture!");
+		CHONPS_CORE_LOG_ERROR(Texture, "Could not create Texture!");
 		return nullptr;
 	}
 
@@ -49,7 +49,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: TEXTURE: createTextureSp(width, height, data, texType, texFilter, texWrap) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Texture, "createTextureSp(width, height, data, texType, texFilter, texWrap) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -68,7 +68,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: TEXTURE: Could not create Texture!");
+		CHONPS_CORE_LOG_ERROR(Texture, "Could not create Texture!");
 		return nullptr;
 	}
 
@@ -81,7 +81,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: TEXTURE: createTexture(filepath, texType, texFilter, texWrap) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Texture, "createTexture(filepath, texType, texFilter, texWrap) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -100,7 +100,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: TEXTURE: Could not create Texture!");
+		CHONPS_CORE_LOG_ERROR(Texture, "Could not create Texture!");
 		return nullptr;
 	}
 
@@ -113,7 +113,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: TEXTURE: createTexture(width, height, data, texType, texFilter, texWrap) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Texture, "createTexture(width, height, data, texType, texFilter, texWrap) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -132,7 +132,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: TEXTURE: Could not create Texture!");
+		CHONPS_CORE_LOG_ERROR(Texture, "Could not create Texture!");
 		return nullptr;
 	}
 
@@ -142,7 +142,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: TEXTURE: createTextureLayout(pTextures, textureCount, setIndex) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Texture, "createTextureLayout(pTextures, textureCount, setIndex) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -161,7 +161,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: TEXTURE: Could not create Texture!");
+		CHONPS_CORE_LOG_ERROR(Texture, "Could not create Texture!");
 		return nullptr;
 	}
 
@@ -171,7 +171,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: TEXTURE: createTextureLayout(pTextures, textureCount) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Texture, "createTextureLayout(pTextures, textureCount) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -190,7 +190,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: TEXTURE: Could not create Texture!");
+		CHONPS_CORE_LOG_ERROR(Texture, "Could not create Texture!");
 		return nullptr;
 	}
 }

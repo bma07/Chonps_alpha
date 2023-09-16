@@ -3,7 +3,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-#define CHONPS_TEXTURE_WARN(t1, t2) CHONPS_CORE_WARN("WARNING: MESH: Material Texture with the same texture type included twice! ({0}) and ({1})", t1, t2);
+#define CHONPS_TEXTURE_WARN(t1, t2) CHONPS_CORE_LOG_WARN(Mesh, "Material Texture with the same texture type included twice! ({0}) and ({1})", t1, t2);
 
 namespace Chonps
 {
@@ -146,7 +146,7 @@ namespace Chonps
 			textureCreateInfos.push_back({ texture, slot++ });
 
 		if (slot >= getRendererBackends()->maxTextureBindingSlots)
-			CHONPS_CORE_ERROR("ERROR: MESH: Mesh cannot be loaded because it has more texture slots than the current max texture binding slots: {0}", getRendererBackends()->maxTextureBindingSlots);
+			CHONPS_CORE_LOG_ERROR(Mesh, "Mesh cannot be loaded because it has more texture slots than the current max texture binding slots: {0}", getRendererBackends()->maxTextureBindingSlots);
 		else
 			textures = createTextureLayout(textureCreateInfos.data(), textureCreateInfos.size(), 1);
 	}

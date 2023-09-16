@@ -63,7 +63,7 @@ namespace Chonps
 
 			if (!texFaces[i])
 			{
-				CHONPS_CORE_ERROR("ERROR: TEXTURE: Failed to load texture data: {0}", cubeMapFaces[i]);
+				CHONPS_CORE_LOG_ERROR(Vulkan:Cubemap:Texture, "Failed to load texture data: {0}", cubeMapFaces[i]);
 				CHONPS_CORE_ASSERT(false, "Failed to load texture");
 			}
 

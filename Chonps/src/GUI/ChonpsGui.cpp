@@ -45,7 +45,7 @@ namespace Chonps
 			
 			if (s_GuiInstance)
 			{
-				CHONPS_CORE_ERROR("ERROR: GUI: Attempting to call gui Init twice even though gui has already been intialized!");
+				CHONPS_CORE_LOG_ERROR(GUI, "Attempting to call gui Init twice even though gui has already been intialized!");
 				return;
 			}
 			s_GuiInstance = true;

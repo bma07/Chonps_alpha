@@ -15,7 +15,7 @@ namespace Chonps
 		bool nonGammaTexture = texType != TexType::Specular && texType != TexType::Normal;
 		VkFormat format = gammaCorrect == true ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
 		if (texFormat != TexFormat::None && texFormat != TexFormat::RGB8 && texFormat != TexFormat::RGBA8 && gammaCorrect)
-			CHONPS_CORE_WARN("WARNING: TEXTURE: Loaded texture with format that is not 'RGB8' or 'RGBA8' will not be gamma corrected!");
+			CHONPS_CORE_LOG_WARN(Vulkan:Texture:Format, "Loaded texture with format that is not 'RGB8' or 'RGBA8' will not be gamma corrected!");
 
 		switch (texFormat)
 		{
@@ -123,7 +123,7 @@ namespace Chonps
 
 		if (!texData)
 		{
-			CHONPS_CORE_ERROR("ERROR: TEXTURE: Failed to load texture data: {0}", filepath);
+			CHONPS_CORE_LOG_ERROR(Texture, "Failed to load texture data: {0}", filepath);
 			CHONPS_CORE_ASSERT(false, "Failed to load texture");
 		}
 
@@ -190,7 +190,7 @@ namespace Chonps
 		case TexFilter::Nearest_Mipmap_Nearest: { minFilter = VK_FILTER_NEAREST; break; }
 		default:
 		{
-			CHONPS_CORE_ERROR("ERROR: TEXTURE: Given texture min filter not supported!");
+			CHONPS_CORE_LOG_ERROR(Texture, "Given texture min filter not supported!");
 		}
 		}
 
@@ -200,7 +200,7 @@ namespace Chonps
 		case TexFilter::Nearest: { magFilter = VK_FILTER_NEAREST; break; }
 		default:
 		{
-			CHONPS_CORE_ERROR("ERROR: TEXTURE: Given texture mag filter not supported!");
+			CHONPS_CORE_LOG_ERROR(Texture, "Given texture mag filter not supported!");
 		}
 		}
 
@@ -306,7 +306,7 @@ namespace Chonps
 		case TexFilter::Nearest_Mipmap_Nearest: { minFilter = VK_FILTER_NEAREST; break; }
 		default:
 		{
-			CHONPS_CORE_ERROR("ERROR: TEXTURE: Given texture min filter not supported!");
+			CHONPS_CORE_LOG_ERROR(Texture, "Given texture min filter not supported!");
 		}
 		}
 
@@ -316,7 +316,7 @@ namespace Chonps
 		case TexFilter::Nearest: { magFilter = VK_FILTER_NEAREST; break; }
 		default:
 		{
-			CHONPS_CORE_ERROR("ERROR: TEXTURE: Given texture mag filter not supported!");
+			CHONPS_CORE_LOG_ERROR(Texture, "Given texture mag filter not supported!");
 		}
 		}
 
@@ -391,7 +391,7 @@ namespace Chonps
 			{
 				m_Textures[textureInfo.slot] = std::move(textureInfo.texture);
 			}
-			else CHONPS_CORE_WARN("WARNING: TEXTURE_LAYOUT: Texture with slot {0} already exists! Ignoring second texture slot", textureInfo.slot);
+			else CHONPS_CORE_LOG_WARN(Vulkan:TextureLayout, "Texture with slot {0} already exists! Ignoring second texture slot", textureInfo.slot);
 		}
 
 		// Create Descriptor Set for texture array to contain all textures
@@ -445,13 +445,13 @@ namespace Chonps
 		{
 			m_Textures[slot] = std::move(texture);
 		}
-		else CHONPS_CORE_WARN("WARNING: TEXTURE_LAYOUT: Texture with slot {0} already exists! Ignoring second texture slot", slot);
+		else CHONPS_CORE_LOG_WARN(Vulkan:TextureLayout, "Texture with slot {0} already exists! Ignoring second texture slot", slot);
 	}
 
 	void VulkanTextureLayout::erase(uint32_t slot)
 	{
 		if (m_Textures.find(slot) == m_Textures.end())
-			CHONPS_CORE_WARN("WARNING: TEXTURE_LAYOUT: No texture was found at slot {0}! texture cannot be removed because it does not exist!", slot);
+			CHONPS_CORE_LOG_WARN(Vulkan:TextureLayout, "No texture was found at slot {0}! texture cannot be removed because it does not exist!", slot);
 		else
 			m_Textures.erase(slot);
 	}

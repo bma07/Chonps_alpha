@@ -30,7 +30,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: UBO: createUniformBufferSp(binding, size) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(UniformBuffer, "createUniformBufferSp(binding, size) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -43,7 +43,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: UBO: Could not create Uniform Buffer!");
+		CHONPS_CORE_LOG_ERROR(UniformBuffer, "Could not create Uniform Buffer!");
 		return nullptr;
 	}
 
@@ -53,7 +53,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: UBO: createUniformBuffer(binding, size) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(UniformBuffer, "createUniformBuffer(binding, size) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -66,7 +66,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: UBO: Could not create Uniform Buffer!");
+		CHONPS_CORE_LOG_ERROR(UniformBuffer, "Could not create Uniform Buffer!");
 		return nullptr;
 	}
 }

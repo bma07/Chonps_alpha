@@ -45,7 +45,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: VBO: createVertexBufferSp(vertices, size) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(VertexBuffer, "createVertexBufferSp(vertices, size) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -58,7 +58,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: VBO: Could not create VBO!");
+		CHONPS_CORE_LOG_ERROR(VertexBuffer, "Could not create VBO!");
 		return nullptr;
 	}
 
@@ -68,7 +68,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: VBO: createVertexBufferSp(vertices) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(VertexBuffer, "createVertexBufferSp(vertices) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -81,7 +81,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: VBO: Could not create VBO!");
+		CHONPS_CORE_LOG_ERROR(VertexBuffer, "Could not create VBO!");
 		return nullptr;
 	}
 
@@ -91,7 +91,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: VBO: createVertexBuffer(vertices, size) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(VertexBuffer, "createVertexBuffer(vertices, size) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -104,7 +104,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: VBO: Could not create VBO!");
+		CHONPS_CORE_LOG_ERROR(VertexBuffer, "Could not create VBO!");
 		return nullptr;
 	}
 
@@ -114,7 +114,7 @@ namespace Chonps
 		{
 			case GraphicsAPI::None:
 			{
-				CHONPS_CORE_WARN("WANRING: VBO: createVertexBuffer(vertices) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(VertexBuffer, "createVertexBuffer(vertices) - No graphics API selected beforehand!");
 				break;
 			}
 
@@ -127,7 +127,7 @@ namespace Chonps
 				break;
 			}
 		}
-		CHONPS_CORE_ERROR("ERROR: VBO: Could not create VBO!");
+		CHONPS_CORE_LOG_ERROR(VertexBuffer, "Could not create VBO!");
 		return nullptr;
 	}
 }

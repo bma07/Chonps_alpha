@@ -18,7 +18,7 @@ namespace Chonps
 		{
 			case Chonps::BufferType::None:
 			{
-				CHONPS_CORE_ERROR("ERROR: UNIFORM_BUFFER: No bufferType was chosen!");
+				CHONPS_CORE_LOG_ERROR(Vulkan:UniformBuffer, "No bufferType was chosen!");
 				break;
 			}
 			case Chonps::BufferType::Uniform:

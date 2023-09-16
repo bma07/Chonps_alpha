@@ -20,7 +20,7 @@ namespace Chonps
 			case CullFaceMode::Both: { return GL_FRONT_AND_BACK; }
 			default:
 			{
-				CHONPS_CORE_ERROR("ERROR: Cannot find matching cull face mode!");
+				CHONPS_CORE_LOG_ERROR(OpenGL, "Cannot find matching cull face mode!");
 				return GL_NONE;
 			}
 		}
@@ -34,7 +34,7 @@ namespace Chonps
 			case CullFrontFace::CounterClockwise: { return GL_CCW; }
 			default:
 			{
-				CHONPS_CORE_ERROR("ERROR: Cannot find matching cull face front mode!");
+				CHONPS_CORE_LOG_ERROR(OpenGL, "Cannot find matching cull face front mode!");
 				return GL_CW;
 			}
 		}
@@ -52,7 +52,7 @@ namespace Chonps
 			case TopologyType::TriangleStrip: { return GL_TRIANGLE_STRIP; }
 			default:
 			{
-				CHONPS_CORE_ERROR("ERROR: Cannot find matching topology type!");
+				CHONPS_CORE_LOG_ERROR(OpenGL, "Cannot find matching topology type!");
 				return GL_NONE;
 			}
 		}
@@ -87,7 +87,7 @@ namespace Chonps
 		m_TopologyType = getTopologyType(m_RendererBackends->topologyType);
 
 		if (m_RendererBackends->enableMultiThreading)
-			CHONPS_CORE_WARN("WARNING: OpenGL does not support multithreading; Multithreading capabilities will not be used!");
+			CHONPS_CORE_LOG_WARN(OpenGL, "OpenGL does not support multithreading; Multithreading capabilities will not be used!");
 
 		ogls::initStandardOglPipelineSpecification();
 
@@ -225,7 +225,7 @@ namespace Chonps
 				case Chonps::ColorBlendFactor::OneMinusSrc1Alpha: { return GL_ONE_MINUS_SRC1_ALPHA; }
 				default:
 				{
-					CHONPS_CORE_ERROR("ERROR: Could not find matching color blend factor!");
+					CHONPS_CORE_LOG_ERROR(OpenGL, "Could not find matching color blend factor!");
 					return GL_ZERO;
 				}
 			}
@@ -241,7 +241,7 @@ namespace Chonps
 				case CullFaceMode::Both: { return GL_FRONT_AND_BACK; }
 				default:
 				{
-					CHONPS_CORE_ERROR("ERROR: Cannot find matching cull face mode!");
+					CHONPS_CORE_LOG_ERROR(OpenGL, "Cannot find matching cull face mode!");
 					return GL_NONE;
 				}
 			}
@@ -255,7 +255,7 @@ namespace Chonps
 				case CullFrontFace::CounterClockwise: { return GL_CCW; }
 				default:
 				{
-					CHONPS_CORE_ERROR("ERROR: Cannot find matching cull face front mode!");
+					CHONPS_CORE_LOG_ERROR(OpenGL, "Cannot find matching cull face front mode!");
 					return GL_CW;
 				}
 			}
@@ -275,7 +275,7 @@ namespace Chonps
 				case CompareOperation::Always: { return GL_ALWAYS; }
 				default:
 				{
-					CHONPS_CORE_ERROR("ERROR: Cannot find matching compare operation!");
+					CHONPS_CORE_LOG_ERROR(OpenGL, "Cannot find matching compare operation!");
 					return GL_NEVER;
 			}
 			}
@@ -295,7 +295,7 @@ namespace Chonps
 				case StencilOperation::DecrementAndWrap: { return GL_DECR_WRAP; }
 				default:
 				{
-					CHONPS_CORE_ERROR("ERROR: Cannot find matching stencil operation!");
+					CHONPS_CORE_LOG_ERROR(OpenGL, "Cannot find matching stencil operation!");
 					return GL_KEEP;
 				}
 			}

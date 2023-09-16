@@ -16,7 +16,7 @@ namespace Chonps
 			in.close();
 			return(contents);
 		}
-		CHONPS_CORE_ERROR("ERROR: FILE: Cannot open file: {0}", filename);
+		CHONPS_CORE_LOG_ERROR(File, "Cannot open file: {0}", filename);
 		return std::string();
 	}
 
@@ -34,7 +34,7 @@ namespace Chonps
 			*source = contents;
 			return true;
 		}
-		CHONPS_CORE_ERROR("ERROR: FILE: Cannot open file: {0}", filename);
+		CHONPS_CORE_LOG_ERROR(File, "Cannot open file: {0}", filename);
 		return false;
 	}
 
@@ -44,7 +44,7 @@ namespace Chonps
 
 		if (!file.is_open())
 		{
-			CHONPS_CORE_ERROR("ERROR: FILE: Cannot open file: {0}", filename);
+			CHONPS_CORE_LOG_ERROR(File, "Cannot open file: {0}", filename);
 			return std::vector<char>();
 		}
 

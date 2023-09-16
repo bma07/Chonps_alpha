@@ -51,7 +51,7 @@ namespace Chonps
 			}
 			default:
 			{
-				CHONPS_CORE_WARN("WARNING: FRAMEBUFFER: No options matched FrameBufferColorFormat that are available for color format, defaulting to standard texture format!");
+				CHONPS_CORE_LOG_WARN(Vulkan:FrameBuffer:ColorFormat, "No options matched FrameBufferColorFormat that are available for color format, defaulting to standard texture format!");
 				return VK_FORMAT_R8G8B8A8_UNORM;
 			}
 		}
@@ -71,7 +71,7 @@ namespace Chonps
 			}
 			default:
 			{
-				CHONPS_CORE_WARN("WARNING: FRAMEBUFFER: No options matched FrameBufferDepthFormat that are available for depth format, defaulting to standard texture format!");
+				CHONPS_CORE_LOG_WARN(Vulkan:FrameBuffer:DepthFormat, "No options matched FrameBufferDepthFormat that are available for depth format, defaulting to standard texture format!");
 				return vks::findDepthFormat();
 			}
 		}
@@ -91,8 +91,8 @@ namespace Chonps
 			}
 			default:
 			{
-				CHONPS_CORE_ERROR("ERROR: TEXTURE: Given texture filter not supported!");
-				CHONPS_CORE_WARN("WARNING: TEXTURE: texture mag filter not found, using default filter instead!");
+				CHONPS_CORE_LOG_ERROR(Vulkan:FrameBuffer:TextureFilter, "Given texture filter not supported!");
+				CHONPS_CORE_LOG_WARN(Vulkan:FrameBuffer:TextureFilter, "texture mag filter not found, using default filter instead!");
 				return VK_FILTER_NEAREST;
 			}
 		}
@@ -120,8 +120,8 @@ namespace Chonps
 			}
 			default:
 			{
-				CHONPS_CORE_ERROR("ERROR: TEXTURE: Given texture wrap not supported!");
-				CHONPS_CORE_WARN("WARNING: TEXTURE: texture wrap not found, using default wrap instead!");
+				CHONPS_CORE_LOG_ERROR(Vulkan:FrameBuffer:TextureWrap, "Given texture wrap not supported!");
+				CHONPS_CORE_LOG_WARN(Vulkan:FrameBuffer:TextureWrap, "texture wrap not found, using default wrap instead!");
 				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 			}
 		}
@@ -500,7 +500,7 @@ namespace Chonps
 		sampler.minLod = 0.0f;
 		sampler.maxLod = 1.0f;
 		sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-		CHONPS_CORE_ASSERT(vkCreateSampler(vkBackends->device, &sampler, nullptr, &m_OffscreenPass.sampler) == VK_SUCCESS, "Failed to FrameBuffer");
+		CHONPS_CORE_ASSERT(vkCreateSampler(vkBackends->device, &sampler, nullptr, &m_OffscreenPass.sampler) == VK_SUCCESS, "Failed to create FrameBuffer");
 
 		// Create FrameBuffer
 		CreateFrameBuffer(m_OffscreenPass.renderPass, &m_OffscreenPass.framebuffer, frameBufferSpecificationInfo);

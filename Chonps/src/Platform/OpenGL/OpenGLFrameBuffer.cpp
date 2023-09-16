@@ -51,7 +51,7 @@ namespace Chonps
 			}
 			default:
 			{
-				CHONPS_CORE_WARN("WARNING: FRAMEBUFFER: No options matched FrameBufferColorFormat that are available for color format, defaulting to standard texture format!");
+				CHONPS_CORE_LOG_WARN(OpenGL:FrameBuffer, "No options matched FrameBufferColorFormat that are available for color format, defaulting to standard texture format!");
 				return GL_RGBA8;
 			}
 		}
@@ -91,7 +91,7 @@ namespace Chonps
 			}
 			default:
 			{
-				CHONPS_CORE_WARN("WARNING: FRAMEBUFFER: No options matched FrameBufferColorFormat that are available for color format, defaulting to standard texture format!");
+				CHONPS_CORE_LOG_WARN(OpenGL:FrameBuffer, "No options matched FrameBufferColorFormat that are available for color format, defaulting to standard texture format!");
 				return GL_RGBA;
 			}
 		}
@@ -123,7 +123,7 @@ namespace Chonps
 			case TexFilter::Nearest: return GL_NEAREST;
 			default: 
 			{
-				CHONPS_CORE_WARN("WARNING: FRAMEBUFFER: Cannot create texture with unsupported texture filter\nFramebuffer only supports Linear or Nearest");
+				CHONPS_CORE_LOG_WARN(OpenGL:FrameBuffer, "Cannot create texture with unsupported texture filter\nFramebuffer only supports Linear or Nearest");
 				return GL_NEAREST;
 			}
 		}
@@ -145,7 +145,7 @@ namespace Chonps
 			case Sample::SampleCount_Max_Bit: { return 0x7FFFFFFF; }
 			default:
 			{
-				CHONPS_CORE_WARN("WARNING: FRAMEBUFFER: Could not find sample value, returning default sample value!");
+				CHONPS_CORE_LOG_WARN(OpenGL:FrameBuffer, "Could not find sample value, returning default sample value!");
 				return 1;
 			}
 		}
@@ -284,7 +284,7 @@ namespace Chonps
 
 		auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE)
-			CHONPS_CORE_ERROR("ERROR: FRAMEBUFFER: FrameBuffer is not complete! FrameBuffer error: {0}", status);
+			CHONPS_CORE_LOG_ERROR(OpenGLFrameBuffer, "FrameBuffer is not complete! FrameBuffer error: {0}", status);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -341,7 +341,7 @@ namespace Chonps
 			// Error checking framebuffer
 			auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
-				CHONPS_CORE_ERROR("ERROR: FRAMEBUFFER: FrameBuffer is not complete! Post-Processing Framebuffer error: {0}", status);
+				CHONPS_CORE_LOG_ERROR(OpenGLFrameBuffer, "FrameBuffer is not complete! Post-Processing Framebuffer error: {0}", status);
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
@@ -446,7 +446,7 @@ namespace Chonps
 	uint32_t OpenGLFrameBuffer::GetTexID(uint32_t index /*= 0*/) const
 	{
 		if (index < m_ColorAttachments.size()) return m_ColorAttachments[index];
-		CHONPS_CORE_ERROR("ERROR: FBO: Texture ID index out of bounds! ID must be within range: {0} | Index given: {1}", m_ColorAttachments.size(), index);
+		CHONPS_CORE_LOG_ERROR(OpenGLFrameBuffer, "Texture ID index out of bounds! ID must be within range: {0} | Index given: {1}", m_ColorAttachments.size(), index);
 		return 0;
 	}
 }

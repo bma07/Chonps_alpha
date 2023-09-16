@@ -1,7 +1,6 @@
 #ifndef HG_CHONPS_EVENT_H
 #define HG_CHONPS_EVENT_H
 
-#include <sstream>
 #include "Core/Config.h"
 
 namespace Chonps

@@ -107,7 +107,7 @@ namespace Chonps
 			}
 			else
 			{
-				CHONPS_CORE_ERROR("ERROR: CUBEMAP: TEXTURE: Failed to load texture: {0}", cubeMapFaces[i]);
+				CHONPS_CORE_LOG_ERROR(Cubemap:Texture, "Failed to load texture: {0}", cubeMapFaces[i]);
 				stbi_image_free(data);
 			}
 		}
