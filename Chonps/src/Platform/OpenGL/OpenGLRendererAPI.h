@@ -31,7 +31,6 @@ namespace Chonps
 		virtual void RenderPassBegin() override;
 		virtual void RenderPassEnd() override;
 
-		virtual void PushConstant(uint32_t size, uint32_t offset, ShaderStage shaderStage, const void* pValues) override;
 		virtual void BindBufferSet(Shader* shader, UniformBuffer* buffer, uint32_t setIndex) override;
 
 	private:

@@ -41,19 +41,19 @@ namespace Chonps
 
 	std::shared_ptr<VertexBuffer> createVertexBufferSp(float* vertices, uint32_t size, BufferState bufferState)
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
 				CHONPS_CORE_LOG_WARN(VertexBuffer, "createVertexBufferSp(vertices, size) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLVertexBuffer>(vertices, size, bufferState); }
+			case GraphicsContext::OpenGL: { return std::make_shared<OpenGLVertexBuffer>(vertices, size, bufferState); }
 
-			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanVertexBuffer>(vertices, size, bufferState); }
+			case GraphicsContext::Vulkan: { return std::make_shared<VulkanVertexBuffer>(vertices, size, bufferState); }
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}
@@ -64,19 +64,19 @@ namespace Chonps
 
 	std::shared_ptr<VertexBuffer> createVertexBufferSp(std::vector<vertex>& vertices, BufferState bufferState)
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
 				CHONPS_CORE_LOG_WARN(VertexBuffer, "createVertexBufferSp(vertices) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLVertexBuffer>(vertices, bufferState); }
+			case GraphicsContext::OpenGL: { return std::make_shared<OpenGLVertexBuffer>(vertices, bufferState); }
 
-			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanVertexBuffer>(vertices, bufferState); }
+			case GraphicsContext::Vulkan: { return std::make_shared<VulkanVertexBuffer>(vertices, bufferState); }
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}
@@ -87,19 +87,19 @@ namespace Chonps
 
 	VertexBuffer* createVertexBuffer(float* vertices, uint32_t size, BufferState bufferState)
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
 				CHONPS_CORE_LOG_WARN(VertexBuffer, "createVertexBuffer(vertices, size) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL: { return new OpenGLVertexBuffer(vertices, size, bufferState); }
+			case GraphicsContext::OpenGL: { return new OpenGLVertexBuffer(vertices, size, bufferState); }
 
-			case GraphicsAPI::Vulkan: { return new VulkanVertexBuffer(vertices, size, bufferState); }
+			case GraphicsContext::Vulkan: { return new VulkanVertexBuffer(vertices, size, bufferState); }
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}
@@ -110,19 +110,19 @@ namespace Chonps
 
 	VertexBuffer* createVertexBuffer(std::vector<vertex>& vertices, BufferState bufferState)
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
 				CHONPS_CORE_LOG_WARN(VertexBuffer, "createVertexBuffer(vertices) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL: { return new OpenGLVertexBuffer(vertices, bufferState); }
+			case GraphicsContext::OpenGL: { return new OpenGLVertexBuffer(vertices, bufferState); }
 
-			case GraphicsAPI::Vulkan: { return new VulkanVertexBuffer(vertices, bufferState); }
+			case GraphicsContext::Vulkan: { return new VulkanVertexBuffer(vertices, bufferState); }
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}

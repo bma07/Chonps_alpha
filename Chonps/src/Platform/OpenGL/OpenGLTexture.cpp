@@ -8,13 +8,30 @@
 
 namespace Chonps
 {
-	void getDataFormats(GLenum& dataFormat, GLenum& internalFormat, TexFormat texFormat, TexType texType, bool gammaCorrect)
+	void getDataFormats(GLenum& dataFormat, GLenum& internalFormat, TexFormat texFormat, TexType texType, uint32_t channels, bool gammaCorrect)
 	{
 		switch (texFormat)
 		{
 			case Chonps::TexFormat::None:
 			{
-				CHONPS_CORE_LOG_ERROR(OpenGL:Texture, "Unable to find Texture Format!");
+				switch (channels)
+				{
+				case 1:
+					internalFormat = GL_RED;
+					dataFormat = GL_RED;
+					break;
+				case 3:
+					gammaCorrect && (texType != TexType::Specular && texType != TexType::Normal) ? internalFormat = GL_SRGB8 : internalFormat = GL_RGB8;
+					dataFormat = GL_RGB;
+					break;
+				case 4:
+					gammaCorrect && (texType != TexType::Specular && texType != TexType::Normal) ? internalFormat = GL_SRGB8_ALPHA8 : internalFormat = GL_RGBA8;
+					dataFormat = GL_RGBA;
+					break;
+				default:
+					CHONPS_CORE_LOG_ERROR(OpenGL:Texture, "Unable to find Texture Format with given channel: {0}", channels);
+					break;
+				}
 				break;
 			}
 			case Chonps::TexFormat::RGB8:
@@ -134,7 +151,7 @@ namespace Chonps
 
 		// Get color channel format
 		GLenum internalFormat = GL_RGBA8, dataFormat = GL_RGBA;
-		getDataFormats(dataFormat, internalFormat, TexFormat::RGBA8, texType, gammaCorrect);
+		getDataFormats(dataFormat, internalFormat, TexFormat::RGBA8, texType, channels, gammaCorrect);
 
 		// Get texture filter mode
 		GLenum magFilter = GL_NEAREST, minFilter = GL_LINEAR;
@@ -161,6 +178,8 @@ namespace Chonps
 		else if (m_TexWrap == TexWrap::ClampToEdge) wrapFormat = GL_CLAMP_TO_EDGE;
 		CHONPS_CORE_ASSERT(wrapFormat, "Format not supported!");
 
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
 		glTextureStorage2D(m_ID, 1, internalFormat, m_Width, m_Height);
 
@@ -170,16 +189,14 @@ namespace Chonps
 		glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, wrapFormat);
 		glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, wrapFormat);
 
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
 		glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		stbi_image_free(data);
 	}
 
-	OpenGLTexture::OpenGLTexture(uint32_t width, uint32_t height, const void* data, TexType texType, TexFilterPair texFilter, TexWrap texWrap)
-		: Texture(width, height, data, texType, texFilter, texWrap),
+	OpenGLTexture::OpenGLTexture(uint32_t width, uint32_t height, uint32_t channels, const void* data, TexType texType, TexFilterPair texFilter, TexWrap texWrap)
+		: Texture(width, height, channels, data, texType, texFilter, texWrap),
 		m_Width(width), m_Height(height),
 		m_TexType(texType),
 		m_TexFilter(texFilter),
@@ -189,7 +206,7 @@ namespace Chonps
 
 		// Get color channel format
 		GLenum internalFormat = GL_RGBA8, dataFormat = GL_RGBA;
-		getDataFormats(dataFormat, internalFormat, TexFormat::RGBA8, texType, gammaCorrect);
+		getDataFormats(dataFormat, internalFormat, TexFormat::Auto, texType, channels, gammaCorrect);
 
 		// Get texture filter mode
 		GLenum magFilter = GL_NEAREST, minFilter = GL_LINEAR;
@@ -217,20 +234,16 @@ namespace Chonps
 
 		CHONPS_CORE_ASSERT(internalFormat && dataFormat, "Format not supported!");
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
-		glTextureStorage2D(m_ID, 1, internalFormat, width, height);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glGenTextures(1, &m_ID);
+		glBindTexture(GL_TEXTURE_2D, m_ID);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
 
-		glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, minFilter);
-		glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, magFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
 
-		glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, wrapFormat);
-		glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, wrapFormat);
-
-		glTextureSubImage2D(m_ID, 0, 0, 0, width, height, dataFormat, GL_UNSIGNED_BYTE, data);
-
-		m_TexType = TexType::Diffuse;
-		m_TexFilter = { TexFilter::Nearest, TexFilter::Nearest };
-		m_TexWrap = TexWrap::Repeat;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapFormat);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapFormat);
 	}
 
 	void OpenGLTexture::Delete()

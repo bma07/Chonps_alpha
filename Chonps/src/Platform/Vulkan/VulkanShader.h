@@ -20,7 +20,7 @@ namespace Chonps
 	class VulkanShader : public Shader
 	{
 	public:
-		VulkanShader(const std::string& vertexFile, const std::string& fragmentFile, PipelineLayoutInfo* pipelineInfo);
+		VulkanShader(const std::string& vertex, const std::string& fragment, PipelineLayoutInfo* pipelineInfo);
 		virtual ~VulkanShader();
 
 		virtual void Bind() const override;
@@ -47,6 +47,13 @@ namespace Chonps
 
 		void BindPipeline(PipelineLayoutInfo* pipelineLayout);
 	};
+
+	namespace vks
+	{
+		void vkImplSetUsePushConstant(bool use);
+		void vkImplSetPushConstantRange(PushConstantRange* pushConstant, uint32_t count);
+		void vkImplRenderPushConstant(Shader* shader, ShaderStage shaderStage, uint32_t size, uint32_t offset, void* pValues);
+	}
 }
 
 #endif

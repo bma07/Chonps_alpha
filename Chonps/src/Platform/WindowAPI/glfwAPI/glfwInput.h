@@ -8,6 +8,8 @@ namespace Chonps
 	class glfwInput : public Input
 	{
 	public:
+		glfwInput();
+
 		virtual bool KeyPressed(Window* window, int keycode) override;
 		virtual bool KeyReleased(Window* window, int keycode) override;
 		virtual bool MouseButtonPressed(Window* window, int button) override;
@@ -26,6 +28,7 @@ namespace Chonps
 		virtual void GetWindowSize(Window* window, int* width, int* height) override;
 
 		virtual void SetMouseModeHide(Window* window, bool hide) override;
+		virtual void SetMouseCursor(Window* window, int cursor) override;
 
 		virtual float GetTimestep() override;
 	};

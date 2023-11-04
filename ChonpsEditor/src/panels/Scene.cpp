@@ -79,41 +79,41 @@ namespace Chonps
 
 	void Scene::CameraInputs(Camera& camera, float dt /*= 1.0f*/)
 	{
-		if (Chonps::mouseButtonPressed(m_Window, CHONPS_MOUSE_BUTTON_3))
+		if (Chonps::mouseButtonPressed(m_Window, ChonpsMouseButton_3))
 		{
 			glm::vec3 camPos = camera.GetPosition();
 			glm::vec3 camOri = camera.GetOrientation();
 
 			// Handles key inputs
-			if (Chonps::keyPressed(m_Window, CHONPS_KEY_W))
+			if (Chonps::keyPressed(m_Window, ChonpsKeyCode_W))
 			{
 				camPos += (m_CameraSpeed * camOri) * dt;
 			}
-			if (Chonps::keyPressed(m_Window, CHONPS_KEY_A))
+			if (Chonps::keyPressed(m_Window, ChonpsKeyCode_A))
 			{
 				camPos += (m_CameraSpeed * -glm::normalize(glm::cross(camOri, camera.GetUpVector()))) * dt;
 			}
-			if (Chonps::keyPressed(m_Window, CHONPS_KEY_S))
+			if (Chonps::keyPressed(m_Window, ChonpsKeyCode_S))
 			{
 				camPos += (m_CameraSpeed * -camOri) * dt;
 			}
-			if (Chonps::keyPressed(m_Window, CHONPS_KEY_D))
+			if (Chonps::keyPressed(m_Window, ChonpsKeyCode_D))
 			{
 				camPos += (m_CameraSpeed * glm::normalize(glm::cross(camOri, camera.GetUpVector()))) * dt;
 			}
-			if (Chonps::keyPressed(m_Window, CHONPS_KEY_SPACE))
+			if (Chonps::keyPressed(m_Window, ChonpsKeyCode_Space))
 			{
 				camPos += (m_CameraSpeed * camera.GetUpVector()) * dt;
 			}
-			if (Chonps::keyPressed(m_Window, CHONPS_KEY_LEFT_CONTROL))
+			if (Chonps::keyPressed(m_Window, ChonpsKeyCode_LeftControl))
 			{
 				camPos += (m_CameraSpeed * -camera.GetUpVector()) * dt;
 			}
-			if (Chonps::keyPressed(m_Window, CHONPS_KEY_LEFT_SHIFT))
+			if (Chonps::keyPressed(m_Window, ChonpsKeyCode_LeftShift))
 			{
 				m_CameraSpeed = 8.0f;
 			}
-			else if (Chonps::keyReleased(m_Window, CHONPS_KEY_LEFT_CONTROL))
+			else if (Chonps::keyReleased(m_Window, ChonpsKeyCode_LeftControl))
 			{
 				m_CameraSpeed = 4.0f;
 			}
@@ -168,7 +168,7 @@ namespace Chonps
 				m_LastY = m_Window->GetHeight() - 2.0f;
 			}
 		}
-		else if (Chonps::mouseButtonReleased(m_Window, CHONPS_MOUSE_BUTTON_3))
+		else if (Chonps::mouseButtonReleased(m_Window, ChonpsMouseButton_3))
 		{
 			m_CameraFirstClick = true;
 		}

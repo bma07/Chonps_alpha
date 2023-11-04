@@ -143,3 +143,8 @@ target_include_directories(msdfgen
 	${PROJECT_SOURCE_DIR}/Chonps/Dependencies/libpng/include
 	${PROJECT_SOURCE_DIR}/Chonps/Dependencies/msdfgen/include
 )
+
+target_link_libraries(msdfgen 
+	PRIVATE
+		libpng 
+)

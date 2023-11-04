@@ -183,11 +183,6 @@ namespace Chonps
 
 	}
 
-	void OpenGLRendererAPI::PushConstant(uint32_t size, uint32_t offset, ShaderStage shaderStage, const void* pValues)
-	{
-
-	}
-
 	void OpenGLRendererAPI::BindBufferSet(Shader* shader, UniformBuffer* buffer, uint32_t setIndex)
 	{
 

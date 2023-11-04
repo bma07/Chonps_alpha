@@ -22,7 +22,6 @@ namespace Chonps
 
 	struct PushConstantRange
 	{
-		void* pcData;
 		uint32_t size, offset;
 		ShaderStage shaderStage;
 	};
@@ -56,8 +55,6 @@ namespace Chonps
 	UniformBuffer* createUniformBuffer(uint32_t binding, uint32_t size, BufferType bufferType = BufferType::None);
 
 	BufferLayout createBufferLayout(BufferBindingCreateLayoutsInfo* bufferBindings, uint32_t setIndex);
-
-	PushConstantRange createPushConstantRange(uint32_t size, uint32_t offset, ShaderStage shaderStage);
 }
 
 #endif

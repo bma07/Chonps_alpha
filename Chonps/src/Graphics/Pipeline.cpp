@@ -8,21 +8,21 @@ namespace Chonps
 {
 	void setStandardPipelineSpecification(const PipelineSpecification& pipelineSpecification)
 	{
-		GraphicsAPI api = getGraphicsAPI();
+		GraphicsContext api = getGraphicsContext();
 
-		if (api == GraphicsAPI::OpenGL)
+		if (api == GraphicsContext::OpenGL)
 			ogls::setStandardOglPipelineSpecification(pipelineSpecification);
-		else if (api == GraphicsAPI::Vulkan)
+		else if (api == GraphicsContext::Vulkan)
 			vks::vkImplSetStandardVulkanPipelineSpecification(pipelineSpecification);
 	}
 
 	PipelineSpecification getStandardPipelineSpecification()
 	{
-		GraphicsAPI api = getGraphicsAPI();
+		GraphicsContext api = getGraphicsContext();
 
-		if (api == GraphicsAPI::OpenGL)
+		if (api == GraphicsContext::OpenGL)
 			return ogls::getStandardOglPipelineSpecification();
-		else if (api == GraphicsAPI::Vulkan)
+		else if (api == GraphicsContext::Vulkan)
 			return vks::vkImplGetStandardVulkanPipelineSpecification();
 
 		return PipelineSpecification();

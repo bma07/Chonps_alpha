@@ -14,7 +14,7 @@ namespace Chonps
 			TexFilterPair texFilter, 
 			TexWrap texWrap);
 
-		VulkanTexture(uint32_t width, uint32_t height, const void* data,
+		VulkanTexture(uint32_t width, uint32_t height, uint32_t channels, const void* data,
 			TexType texType = TexType::Diffuse, 
 			TexFilterPair texFilter = { TexFilter::Nearest, TexFilter::Nearest }, 
 			TexWrap texWrap = TexWrap::Repeat);

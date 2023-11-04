@@ -185,29 +185,5 @@ namespace Chonps
 
 			return layout;
 		}
-
-		PushConstantRange vkImplCreatePushConstantRange(uint32_t size, uint32_t offset, ShaderStage shaderStage)
-		{
-			VkShaderStageFlags shaderStageFlags = VK_SHADER_STAGE_ALL;
-			if (shaderStage == ShaderStage::Vertex)
-				shaderStageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-			else if (shaderStage == ShaderStage::Fragment)
-				shaderStageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-			else if (shaderStage == ShaderStage::All)
-				shaderStageFlags = VK_SHADER_STAGE_ALL;
-
-			VkPushConstantRange pushConstant{};
-			pushConstant.size = size;
-			pushConstant.offset = offset;
-			pushConstant.stageFlags = shaderStageFlags;
-
-			PushConstantRange pc{};
-			pc.pcData = &pushConstant;
-			pc.size = size;
-			pc.offset = offset;
-			pc.shaderStage = shaderStage;
-
-			return pc;
-		}
 	}
 }

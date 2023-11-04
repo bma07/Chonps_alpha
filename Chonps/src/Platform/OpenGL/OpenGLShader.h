@@ -19,7 +19,7 @@ namespace Chonps
 	class OpenGLShader : public Shader
 	{
 	public:
-		OpenGLShader(const std::string& vertexFile, const std::string& fragmentFile, PipelineLayoutInfo* pipelineInfo);
+		OpenGLShader(const std::string& vertex, const std::string& fragment, PipelineLayoutInfo* pipelineInfo);
 		virtual ~OpenGLShader() {}
 
 		virtual void Bind() const override;

@@ -14,7 +14,7 @@ int main()
 	CHONPS_INFO("Initialized Log");
 
 	Chonps::setWindowContext(Chonps::WindowAPI::Glfw);
-	Chonps::setRenderContext(Chonps::GraphicsAPI::Vulkan);
+	Chonps::setGraphicsContext(Chonps::GraphicsContext::Vulkan);
 
 	Chonps::RendererBackends rendererBackends{};
 	rendererBackends.enableColorBlend = true;
@@ -29,7 +29,7 @@ int main()
 	rendererBackends.vks.samplerBinding = 1;
 	rendererBackends.vks.frameBufferBinding = 0;
 	rendererBackends.vks.cubemapBinding = 0;
-	rendererBackends.vks.enableValidationLayers = CHONPS_ENABLE_VALIDATION_LAYERS;
+	rendererBackends.vks.enableValidationLayers = true;
 
 	Chonps::createRendererAPI(&rendererBackends);
 

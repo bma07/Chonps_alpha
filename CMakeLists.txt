@@ -213,8 +213,9 @@ set(SOURCES
 	Chonps/src/Imgui/ImguiWindow.cpp
 		
 	# GUI
-	Chonps/src/GUI/ChonpsGui.cpp
-	Chonps/src/GUI/ChonpsGui.h
+	Chonps/src/GUI/ChonpsGuiContext.cpp
+	Chonps/src/GUI/ChonpsGuiContext.h
+	Chonps/src/GUI/ChonpsGuiShaders.h
 	Chonps/src/GUI/GuiWindow.cpp
 	Chonps/src/GUI/GuiWindow.h
 
@@ -282,8 +283,8 @@ target_compile_definitions(Chonps PRIVATE
 target_precompile_headers(Chonps PRIVATE Chonps/src/cepch.h)
 
 # Find VulkanSDK
-set(VULKAN_VERSION 1.3.236.0)
-find_package(Vulkan ${VULKAN_VERSION} REQUIRED)
+set(MIN_VULKAN_VERSION 1.3)
+find_package(Vulkan ${MIN_VULKAN_VERSION} REQUIRED COMPONENTS shaderc_combined)
 
 if(Vulkan_FOUND)
     message ("Vulkan found")
@@ -291,8 +292,15 @@ else()
     message (FATAL_ERROR "Cannot find Vulkan")
 endif()
 
+if(Vulkan_shaderc_combined_FOUND)
+    message ("shaderc_combined library found")
+else()
+    message (FATAL_ERROR "Cannot find shaderc_combined library")
+endif()
+
 set(VULKAN_LIB_DIR
 	Vulkan::Vulkan
+	Vulkan::shaderc_combined
 )
 
 target_link_libraries(Chonps 
@@ -300,7 +308,6 @@ target_link_libraries(Chonps
 		freetype
 		glfw
 		glad
-		opengl32
 		msdfgen
 		${VULKAN_LIB_DIR}
 	PUBLIC

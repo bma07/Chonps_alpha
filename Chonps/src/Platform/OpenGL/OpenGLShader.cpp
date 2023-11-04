@@ -125,26 +125,23 @@ namespace Chonps
 		}
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& vertexFile, const std::string& fragmentFile, PipelineLayoutInfo* pipelineInfo)
-		: Shader(vertexFile, fragmentFile, pipelineInfo)
+	OpenGLShader::OpenGLShader(const std::string& vertex, const std::string& fragment, PipelineLayoutInfo* pipelineInfo)
+		: Shader(vertex, fragment, pipelineInfo)
 	{
-		std::string vertexCode = get_file_contents(vertexFile.c_str());
-		std::string fragmentCode = get_file_contents(fragmentFile.c_str());
-
-		const char* vertexSource = vertexCode.c_str();
-		const char* fragmentSource = fragmentCode.c_str();
+		const char* vertexSource = vertex.c_str();
+		const char* fragmentSource = fragment.c_str();
 
 		// Create Vertex Shader
 		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertexShader, 1, &vertexSource, 0);
 		glCompileShader(vertexShader);
-		compileErrors(vertexShader, GL_VERTEX_SHADER, vertexFile.c_str());
+		compileErrors(vertexShader, GL_VERTEX_SHADER, vertex.c_str());
 
 		// Create Fragment Shader
 		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fragmentShader, 1, &fragmentSource, 0);
 		glCompileShader(fragmentShader);
-		compileErrors(fragmentShader, GL_FRAGMENT_SHADER, fragmentFile.c_str());
+		compileErrors(fragmentShader, GL_FRAGMENT_SHADER, fragment.c_str());
 
 		// Create Shader Program
 		m_ID = glCreateProgram();

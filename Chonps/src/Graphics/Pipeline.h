@@ -280,8 +280,6 @@ namespace Chonps
 		uint32_t bufferLayoutsCount;
 		DescriptorImageLayoutIncludes* pLayoutIncludes = nullptr;
 		uint32_t layoutIncludeCount = 0;
-		PushConstantRange* pPushConstants;
-		uint32_t pushConstantCount;
 		RenderPass* renderPass = nullptr;
 		PipelineSpecification* pipelineSpecification;
 	};

@@ -9,14 +9,14 @@ layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragTexUV;
 layout(location = 2) out flat int fragTexIndex;
 
-layout (std140, set = 0, binding = 2) uniform ObjectBuffer 
+layout(push_constant) uniform constants
 {
 	mat4 matrix;
-} ubo;
+} pc;
 
 void main()
 {
-    gl_Position = ubo.matrix * vec4(inPos, 0.0, 1.0);
+    gl_Position = pc.matrix * vec4(inPos, 0.0, 1.0);
     fragColor = inColor;
     fragTexUV = inTexUV;
     fragTexIndex = int(texIndex);

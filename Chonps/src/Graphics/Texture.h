@@ -50,7 +50,7 @@ namespace Chonps
 			TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, 
 			TexWrap texWrap = TexWrap::Repeat) {}
 
-		Texture(uint32_t width, uint32_t height, const void* data,
+		Texture(uint32_t width, uint32_t height, uint32_t channels, const void* data,
 			TexType texType = TexType::Diffuse, 
 			TexFilterPair texFilter = { TexFilter::Nearest, TexFilter::Nearest }, 
 			TexWrap texWrap = TexWrap::Repeat) {}
@@ -93,7 +93,7 @@ namespace Chonps
 		TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest }, 
 		TexWrap texWrap = TexWrap::Repeat);
 	
-	Texture* createTexture(uint32_t width, uint32_t height, const void* data,
+	Texture* createTexture(uint32_t width, uint32_t height, uint32_t channels, const void* data,
 		TexType texType = TexType::Diffuse,
 		TexFilterPair texFilter = { TexFilter::Nearest, TexFilter::Nearest },
 		TexWrap texWrap = TexWrap::Repeat);
@@ -103,7 +103,7 @@ namespace Chonps
 		TexFilterPair texFilter = { TexFilter::Linear, TexFilter::Nearest },
 		TexWrap texWrap = TexWrap::Repeat);
 
-	std::shared_ptr<Texture> createTextureSp(uint32_t width, uint32_t height, const void* data,
+	std::shared_ptr<Texture> createTextureSp(uint32_t width, uint32_t height, uint32_t channels, const void* data,
 		TexType texType = TexType::Diffuse, 
 		TexFilterPair texFilter = { TexFilter::Nearest, TexFilter::Nearest }, 
 		TexWrap texWrap = TexWrap::Repeat);

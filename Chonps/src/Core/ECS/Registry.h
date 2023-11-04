@@ -69,7 +69,7 @@ namespace Chonps
 			m_SystemManager->signature_changed(entity, *signature);
 		}
 
-		void remove_component(Entity entity, const type_info* compType)
+		void remove_component(Entity entity, const std::type_info* compType)
 		{
 			m_ComponentManager->remove(entity, compType);
 
@@ -88,7 +88,7 @@ namespace Chonps
 		std::vector<std::shared_ptr<BaseComponentArray>> get_all_components()
 		{
 			std::vector<std::shared_ptr<BaseComponentArray>> components;
-			std::unordered_map<const type_info*, std::shared_ptr<BaseComponentArray>> componentArrays = m_ComponentManager->get_component_arrays();
+			std::unordered_map<const std::type_info*, std::shared_ptr<BaseComponentArray>> componentArrays = m_ComponentManager->get_component_arrays();
 			for (auto& component : componentArrays)
 				components.emplace_back(component.second);
 			return components;
@@ -106,7 +106,7 @@ namespace Chonps
 			return m_ComponentManager->has<T>(entity);
 		}
 
-		bool has_component(Entity entity, const type_info* component)
+		bool has_component(Entity entity, const std::type_info* component)
 		{
 			return m_ComponentManager->has(entity, component);
 		}

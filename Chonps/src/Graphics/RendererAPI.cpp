@@ -10,40 +10,40 @@
 
 namespace Chonps
 {
-	static GraphicsAPI s_GraphicsAPI = GraphicsAPI::None;
+	static GraphicsContext s_GraphicsContext = GraphicsContext::None;
 
 	// Create the renderering API that holds the renderering context and implementation
 	static RendererAPI* s_RendererAPI = nullptr;
 
-	bool setRenderContext(GraphicsAPI api)
+	bool setGraphicsContext(GraphicsContext api)
 	{
-		s_GraphicsAPI = api;
+		s_GraphicsContext = api;
 
-		if (api == GraphicsAPI::None)
+		if (api == GraphicsContext::None)
 		{
-			CHONPS_CORE_LOG_WARN(GraphicsAPI, "No graphics API selected!");
+			CHONPS_CORE_LOG_WARN(GraphicsContext, "No graphics API selected!");
 			return false;
 		}
-		CHONPS_CORE_INFO("Rendering Context Initialized: {0}", getGraphicsAPIName());
+		CHONPS_CORE_INFO("Rendering Context Initialized: {0}", getGraphicsContextName());
 		return true;
 	}
 
-	GraphicsAPI getGraphicsAPI()
+	GraphicsContext getGraphicsContext()
 	{
-		return s_GraphicsAPI;
+		return s_GraphicsContext;
 	}
 
-	std::string getGraphicsAPIName()
+	std::string getGraphicsContextName()
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case Chonps::GraphicsAPI::None: return "None";
-			case Chonps::GraphicsAPI::OpenGL: return "OpenGL";
-			case Chonps::GraphicsAPI::Vulkan: return "Vulkan";
-			case Chonps::GraphicsAPI::DirectX: return "DirectX";
+			case Chonps::GraphicsContext::None: return "None";
+			case Chonps::GraphicsContext::OpenGL: return "OpenGL";
+			case Chonps::GraphicsContext::Vulkan: return "Vulkan";
+			case Chonps::GraphicsContext::DirectX: return "DirectX";
 		}
 
-		CHONPS_CORE_LOG_ERROR(GraphicsAPI, "Cannot find the graphics API selected!");
+		CHONPS_CORE_LOG_ERROR(GraphicsContext, "Cannot find the graphics API selected!");
 		return "null";
 	}
 
@@ -65,27 +65,27 @@ namespace Chonps
 		else
 			setRendererBackends(*rendererBackends);
 
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
-				CHONPS_CORE_LOG_WARN(GraphicsAPI, "createRendererAPI() - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(GraphicsContext, "createRendererAPI() - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
+			case GraphicsContext::OpenGL:
 			{
 				renderAPI = new OpenGLRendererAPI();
 				break;
 			}
 
-			case GraphicsAPI::Vulkan:
+			case GraphicsContext::Vulkan:
 			{
 				renderAPI = new VulkanRendererAPI();
 				break;
 			}
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}
@@ -101,18 +101,25 @@ namespace Chonps
 		return true;
 	}
 
-	void destroyRendererAPI()
+	bool destroyRendererAPI()
 	{
 		if (s_RendererAPI != nullptr)
+		{
 			delete s_RendererAPI;
-		else CHONPS_CORE_LOG_WARN(RendererAPI, "RendererAPI is nullptr! Cannot destroy RendererAPI!");
+			return true;
+		}
+		else
+		{
+			CHONPS_CORE_LOG_WARN(RendererAPI, "RendererAPI is nullptr! Cannot destroy RendererAPI!");
+			return false;
+		}
 	}
 
 	void textureBinding(uint32_t textureBinding, uint32_t samplerBinding, uint32_t frameBufferBinding, uint32_t cubemapBinding)
 	{
-		GraphicsAPI GraphicsAPI = getGraphicsAPI();
+		GraphicsContext GraphicsContext = getGraphicsContext();
 
-		if (GraphicsAPI == GraphicsAPI::Vulkan)
+		if (GraphicsContext == GraphicsContext::Vulkan)
 			vks::vkImplTextureBinding(textureBinding, samplerBinding, frameBufferBinding, cubemapBinding);
 	}
 }

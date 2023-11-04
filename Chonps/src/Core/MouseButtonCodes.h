@@ -2,30 +2,38 @@
 #define HG_CHONPS_MOUSE_BUTTON_CODES_H
 
 
-// From glfw3.h
-#define CHONPS_MOUSE_BUTTON_1         0
-#define CHONPS_MOUSE_BUTTON_2         1
-#define CHONPS_MOUSE_BUTTON_3         2
-#define CHONPS_MOUSE_BUTTON_4         3
-#define CHONPS_MOUSE_BUTTON_5         4
-#define CHONPS_MOUSE_BUTTON_6         5
-#define CHONPS_MOUSE_BUTTON_7         6
-#define CHONPS_MOUSE_BUTTON_8         7
-#define CHONPS_MOUSE_BUTTON_LAST      CHONPS_MOUSE_BUTTON_8
-#define CHONPS_MOUSE_BUTTON_LEFT      CHONPS_MOUSE_BUTTON_1
-#define CHONPS_MOUSE_BUTTON_RIGHT     CHONPS_MOUSE_BUTTON_2
-#define CHONPS_MOUSE_BUTTON_MIDDLE    CHONPS_MOUSE_BUTTON_3
+enum ChonpsMouseButtonCodes
+{
+	ChonpsMouseButton_1         = 0,
+	ChonpsMouseButton_2         = 1,
+	ChonpsMouseButton_3         = 2,
+	ChonpsMouseButton_4         = 3,
+	ChonpsMouseButton_5         = 4,
+	ChonpsMouseButton_6         = 5,
+	ChonpsMouseButton_7         = 6,
+	ChonpsMouseButton_8         = 7,
+	ChonpsMouseButton_Last      = ChonpsMouseButton_8,
+	ChonpsMouseButton_Left      = ChonpsMouseButton_1,
+	ChonpsMouseButton_Right     = ChonpsMouseButton_2,
+	ChonpsMouseButton_Middle    = ChonpsMouseButton_3,
+};
 
-#define CHONPS_ARROW_CURSOR   0x00036001
-#define CHONPS_IBEAM_CURSOR   0x00036002
-#define CHONPS_CROSSHAIR_CURSOR   0x00036003
-#define CHONPS_POINTING_HAND_CURSOR   0x00036004
-#define CHONPS_RESIZE_EW_CURSOR   0x00036005
-#define CHONPS_RESIZE_NS_CURSOR   0x00036006
-#define CHONPS_RESIZE_NWSE_CURSOR   0x00036007
-#define CHONPS_RESIZE_NESW_CURSOR   0x00036008
-#define CHONPS_RESIZE_ALL_CURSOR   0x00036009
-#define CHONPS_NOT_ALLOWED_CURSOR   0x0003600A
-
+enum ChonpsMouseModes
+{
+	ChonpsMouseCursor_Arrow			= 0,
+	ChonpsMouseCursor_Ibeam			= 1,
+	ChonpsMouseCursor_Crosshair		= 2,
+	ChonpsMouseCursor_PointingHand	= 3,
+	ChonpsMouseCursor_ResizeEW		= 4,
+	ChonpsMouseCursor_ResizeNS		= 5,
+	ChonpsMouseCursor_ResizeNWSE	= 6,
+	ChonpsMouseCursor_ResizeNESW	= 7,
+	ChonpsMouseCursor_ResizeAll		= 8,
+	ChonpsMouseCursor_NotAllowed	= 9,
+	ChonpsMouseCursor_HResize		= ChonpsMouseCursor_ResizeEW,
+	ChonpsMouseCursor_VRrsize		= ChonpsMouseCursor_ResizeNS,
+	ChonpsMouseCursor_Hand			= ChonpsMouseCursor_PointingHand,
+	ChonpsMouseCursor_Max			= 10
+};
 
 #endif

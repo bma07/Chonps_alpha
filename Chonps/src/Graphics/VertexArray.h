@@ -44,7 +44,6 @@ namespace Chonps
 
 		virtual uint32_t id() const = 0;
 	};
-	typedef VertexArray VAO;
 
 	std::shared_ptr<VertexArray> createVertexArraySp();
 	VertexArray* createVertexArray();

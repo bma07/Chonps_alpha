@@ -57,6 +57,8 @@ namespace Chonps
 
 	unsigned int combination(unsigned int n, unsigned int r);
 
+	unsigned int roundNumPowerSqared(unsigned int num);
+
 	// Approximates the deravitave value of the functions at point x using central difference formula
 	// func must have parameter of double and return type double
 	// x is the value given to func
@@ -68,6 +70,12 @@ namespace Chonps
 	bool within(T num, T within, T range)
 	{
 		return num <= (within + range) && num >= (within - range);
+	}
+	
+	template<typename T>
+	bool within(T num, T within, T lowerRange, T upperRange)
+	{
+		return num <= (within + upperRange) && num >= (within - lowerRange);
 	}
 
 	template <typename T>

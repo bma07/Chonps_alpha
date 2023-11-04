@@ -2,12 +2,27 @@
 #include "glfwInput.h"
 
 #include "Core/Window.h"
-#include <GLFW/glfw3.h>
+#include <glfw/glfw3.h>
 
-static float s_ScrollX = 0.0f, s_ScrollY = 0.0f;
 
 namespace Chonps
 {
+	static GLFWcursor* s_CursorImages[ChonpsMouseCursor_Max];
+
+	glfwInput::glfwInput()
+	{
+		s_CursorImages[ChonpsMouseCursor_Arrow] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
+		s_CursorImages[ChonpsMouseCursor_Ibeam] = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
+		s_CursorImages[ChonpsMouseCursor_Crosshair] = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR);
+		s_CursorImages[ChonpsMouseCursor_PointingHand] = glfwCreateStandardCursor(GLFW_POINTING_HAND_CURSOR);
+		s_CursorImages[ChonpsMouseCursor_ResizeEW] = glfwCreateStandardCursor(GLFW_RESIZE_EW_CURSOR);
+		s_CursorImages[ChonpsMouseCursor_ResizeNS] = glfwCreateStandardCursor(GLFW_RESIZE_NS_CURSOR);
+		s_CursorImages[ChonpsMouseCursor_ResizeNWSE] = glfwCreateStandardCursor(GLFW_RESIZE_NWSE_CURSOR);
+		s_CursorImages[ChonpsMouseCursor_ResizeNESW] = glfwCreateStandardCursor(GLFW_RESIZE_NESW_CURSOR);
+		s_CursorImages[ChonpsMouseCursor_ResizeAll] = glfwCreateStandardCursor(GLFW_RESIZE_ALL_CURSOR);
+		s_CursorImages[ChonpsMouseCursor_NotAllowed] = glfwCreateStandardCursor(GLFW_NOT_ALLOWED_CURSOR);
+	}
+
 	bool glfwInput::KeyPressed(Window* window, int keycode)
 	{
 		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
@@ -104,6 +119,12 @@ namespace Chonps
 		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
 		int mode = hide ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL;
 		glfwSetInputMode(glfwWin, GLFW_CURSOR, mode);
+	}
+
+	void glfwInput::SetMouseCursor(Window* window, int cursor)
+	{
+		GLFWwindow* glfwWin = static_cast<GLFWwindow*>(window->GetNativeWindow());
+		glfwSetCursor(glfwWin, s_CursorImages[cursor]);
 	}
 
 	float glfwInput::GetTimestep()

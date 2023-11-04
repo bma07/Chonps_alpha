@@ -3,27 +3,31 @@
 
 #include "Renderer.h"
 #include "RendererAPI.h"
+#include "Core/File.h"
 
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Platform/Vulkan/VulkanShader.h"
 
 namespace Chonps
 {
-	std::shared_ptr<Shader> createShaderSp(const std::string& vertex, const std::string& fragment, PipelineLayoutInfo* pipelineInfo)
+	Shader* createShader(const std::string& vertexFile, const std::string& fragmentFile, PipelineLayoutInfo* pipelineInfo)
 	{
-		switch (getGraphicsAPI())
+		std::string vertexSrc = get_file_contents(vertexFile.c_str());
+		std::string fragmentSrc = get_file_contents(fragmentFile.c_str());
+
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
-				CHONPS_CORE_LOG_WARN(Shader, "createShaderSp(vertex, fragment, pipelineInfo) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Shader, "createShader(vertex, fragment, pipelineInfo) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLShader>(vertex, fragment, pipelineInfo); }
+			case GraphicsContext::OpenGL: { return new OpenGLShader(vertexSrc, fragmentSrc, pipelineInfo); }
 
-			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanShader>(vertex, fragment, pipelineInfo); }
+			case GraphicsContext::Vulkan: { return new VulkanShader(vertexSrc, fragmentSrc, pipelineInfo); }
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}
@@ -32,27 +36,94 @@ namespace Chonps
 		return nullptr;
 	}
 
-	Shader* createShader(const std::string& vertex, const std::string& fragment, PipelineLayoutInfo* pipelineInfo)
+	std::shared_ptr<Shader> createShaderSp(const std::string& vertexFile, const std::string& fragmentFile, PipelineLayoutInfo* pipelineInfo)
 	{
-		switch (getGraphicsAPI())
+		std::string vertexSrc = get_file_contents(vertexFile.c_str());
+		std::string fragmentSrc = get_file_contents(fragmentFile.c_str());
+
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
-				CHONPS_CORE_LOG_WARN(Shader, "createShader(vertex, fragment, pipelineInfo) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Shader, "createShaderSp(vertex, fragment, pipelineInfo) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL: { return new OpenGLShader(vertex, fragment, pipelineInfo); }
+			case GraphicsContext::OpenGL: { return std::make_shared<OpenGLShader>(vertexSrc, fragmentSrc, pipelineInfo); }
 
-			case GraphicsAPI::Vulkan: { return new VulkanShader(vertex, fragment, pipelineInfo); }
+			case GraphicsContext::Vulkan: { return std::make_shared<VulkanShader>(vertexSrc, fragmentSrc, pipelineInfo); }
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}
 		}
 		CHONPS_CORE_LOG_ERROR(Shader, "Could not create Shader!");
 		return nullptr;
+	}
+
+	Shader* createShaderSrc(const std::string& vertexSrc, const std::string& fragmentSrc, PipelineLayoutInfo* pipelineInfo)
+	{
+		switch (getGraphicsContext())
+		{
+			case GraphicsContext::None:
+			{
+				CHONPS_CORE_LOG_WARN(Shader, "createShader(vertex, fragment, pipelineInfo) - No graphics API selected beforehand!");
+				break;
+			}
+
+			case GraphicsContext::OpenGL: { return new OpenGLShader(vertexSrc, fragmentSrc, pipelineInfo); }
+
+			case GraphicsContext::Vulkan: { return new VulkanShader(vertexSrc, fragmentSrc, pipelineInfo); }
+
+			case GraphicsContext::DirectX:
+			{
+				break;
+			}
+		}
+		CHONPS_CORE_LOG_ERROR(Shader, "Could not create Shader!");
+		return nullptr;
+	}
+
+	std::shared_ptr<Shader> createShaderSrcSp(const std::string& vertexSrc, const std::string& fragmentSrc, PipelineLayoutInfo* pipelineInfo)
+	{
+		switch (getGraphicsContext())
+		{
+			case GraphicsContext::None:
+			{
+				CHONPS_CORE_LOG_WARN(Shader, "createShaderSp(vertex, fragment, pipelineInfo) - No graphics API selected beforehand!");
+				break;
+			}
+
+			case GraphicsContext::OpenGL: { return std::make_shared<OpenGLShader>(vertexSrc, fragmentSrc, pipelineInfo); }
+
+			case GraphicsContext::Vulkan: { return std::make_shared<VulkanShader>(vertexSrc, fragmentSrc, pipelineInfo); }
+
+			case GraphicsContext::DirectX:
+			{
+				break;
+			}
+		}
+		CHONPS_CORE_LOG_ERROR(Shader, "Could not create Shader!");
+		return nullptr;
+	}
+
+	namespace vks
+	{
+		void setUsePushConstant(bool use)
+		{
+			vks::vkImplSetUsePushConstant(use);
+		}
+
+		void setPushConstantRange(PushConstantRange* pushConstant, uint32_t count)
+		{
+			vks::vkImplSetPushConstantRange(pushConstant, count);
+		}
+
+		void renderPushConstant(Shader* shader, ShaderStage shaderStage, uint32_t size, uint32_t offset, void* pValues)
+		{
+			vks::vkImplRenderPushConstant(shader, shaderStage, size, offset, pValues);
+		}
 	}
 
 	namespace ogls

@@ -26,7 +26,6 @@ namespace Chonps
 
 		virtual uint32_t id() const = 0;
 	};
-	typedef IndexBuffer IBO;
 
 	std::shared_ptr<IndexBuffer> createIndexBufferSp(uint32_t* indices, uint32_t size, BufferState bufferState = BufferState::Static);
 	std::shared_ptr<IndexBuffer> createIndexBufferSp(std::vector<uint32_t>& indices, BufferState bufferState = BufferState::Static);

@@ -106,6 +106,11 @@ namespace Chonps
 		s_Input->SetMouseModeHide(window, hide);
 	}
 
+	void setMouseCursor(Window* window, int cursor)
+	{
+		s_Input->SetMouseCursor(window, cursor);
+	}
+
 	float getTimeSeconds()
 	{
 		return s_Input->GetTimestep();

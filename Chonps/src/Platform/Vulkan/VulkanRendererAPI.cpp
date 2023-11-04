@@ -3,6 +3,7 @@
 
 #include "Core/File.h"
 #include "VulkanPipeline.h"
+#include "VulkanShader.h"
 #include "VulkanVertexBuffer.h"
 
 #include <optional>
@@ -1240,31 +1241,6 @@ namespace Chonps
 		vkCmdEndRenderPass(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame]);
 	}
 
-	void VulkanRendererAPI::PushConstant(uint32_t size, uint32_t offset, ShaderStage shaderStage, const void* pValues)
-	{
-		VkShaderStageFlags shaderStageFlags = VK_SHADER_STAGE_ALL;
-		switch (shaderStage)
-		{
-			case ShaderStage::Vertex:
-			{
-				shaderStageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-				break;
-			}
-			case ShaderStage::Fragment:
-			{
-				shaderStageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-				break;
-			}
-			case ShaderStage::All:
-			{
-				shaderStageFlags = VK_SHADER_STAGE_ALL;
-				break;
-			}
-		}
-
-		vkCmdPushConstants(m_VulkanBackends->commandBuffers[m_VulkanBackends->currentFrame], m_VulkanBackends->graphicsPipeline[m_VulkanBackends->currentBindedGraphicsPipeline].pipelineLayout, shaderStageFlags, offset, size, &pValues);
-	}
-
 	void VulkanRendererAPI::BindBufferSet(Shader* shader, UniformBuffer* buffer, uint32_t setIndex)
 	{
 		glfwGetFramebufferSize(s_CurrentWindow, &m_VulkanBackends->windowWidth, &m_VulkanBackends->windowHeight);
@@ -1913,6 +1889,32 @@ namespace Chonps
 					return VK_STENCIL_OP_KEEP;
 				}
 			}
+		}
+
+		void vkImplRenederPushConstant(Shader* shader, ShaderStage shaderStage, uint32_t size, uint32_t offset, const void* pValues)
+		{
+			VkShaderStageFlags shaderStageFlags = VK_SHADER_STAGE_ALL;
+			switch (shaderStage)
+			{
+				case ShaderStage::Vertex:
+				{
+					shaderStageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+					break;
+				}
+				case ShaderStage::Fragment:
+				{
+					shaderStageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+					break;
+				}
+				case ShaderStage::All:
+				{
+					shaderStageFlags = VK_SHADER_STAGE_ALL;
+					break;
+				}
+			}
+
+			VkPipelineLayout pipelineLayout = static_cast<VulkanShader*>(shader)->getNativePipelineLayout();
+			vkCmdPushConstants(s_VulkanBackends->commandBuffers[s_VulkanBackends->currentFrame], pipelineLayout, shaderStageFlags, offset, size, &pValues);
 		}
 	}
 }

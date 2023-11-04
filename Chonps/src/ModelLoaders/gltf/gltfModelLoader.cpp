@@ -344,7 +344,7 @@ namespace Chonps
 		else // White Texture if no Diffuse Texture was found
 		{
 			uint32_t whiteTextureData = 0xffffffff;
-			Texture* texture = createTexture(1, 1, &whiteTextureData);
+			Texture* texture = createTexture(1, 1, 4, &whiteTextureData);
 			textures.emplace_back(texture);
 		}
 		if (material["pbrMetallicRoughness"].find("metallicRoughnessTexture") != material["pbrMetallicRoughness"].end()) // Metallic Roughness

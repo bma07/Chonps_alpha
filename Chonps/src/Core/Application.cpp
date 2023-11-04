@@ -4,7 +4,6 @@
 #include "Graphics/Graphics.h"
 
 #include "Timer.h"
-#include "GUI/ChonpsGui.h"
 
 namespace Chonps
 {
@@ -15,10 +14,10 @@ namespace Chonps
 		CHONPS_CORE_ASSERT(!s_Instance, "Application already exists! Cannot create more than one Application!");
 		s_Instance = this;
 
-		if (getGraphicsAPI() == GraphicsAPI::None)
+		if (getGraphicsContext() == GraphicsContext::None)
 		{
 			CHONPS_CORE_LOG_WARN(Application, "Graphics API was not set before hand! Automatically setting up API...");
-			setRenderContext(GraphicsAPI::OpenGL);
+			setGraphicsContext(GraphicsContext::OpenGL);
 		}
 
 		m_Window = createWindow(width, height, title, fullscreen, resizable, minWidth, minHeight);
@@ -34,10 +33,10 @@ namespace Chonps
 		CHONPS_CORE_ASSERT(!s_Instance, "Application already exists! Cannot create more than one Application!");
 		s_Instance = this;
 
-		if (getGraphicsAPI() == GraphicsAPI::None)
+		if (getGraphicsContext() == GraphicsContext::None)
 		{
 			CHONPS_CORE_LOG_WARN(Application, "Graphics API was not set before hand! Automatically setting up API...");
-			setRenderContext(GraphicsAPI::OpenGL);
+			setGraphicsContext(GraphicsContext::OpenGL);
 		}
 
 		m_Window = createWindow(winCreateInfo);

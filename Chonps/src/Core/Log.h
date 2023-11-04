@@ -15,8 +15,8 @@ namespace Chonps
 	void setLoggerPattern(const std::string& pattern);
 }
 
-#define CHONPS_CORE_LOG(name, type, msg, ...)		::Chonps::getCoreLogger()->type(#name "-" #type ": " msg, __VA_ARGS__)
-#define CHONPS_LOG(name, type, msg, ...)			::Chonps::getClientLogger()->type(#name "-" #type ": " msg, __VA_ARGS__)
+#define CHONPS_CORE_LOG(name, type, msg, ...)		::Chonps::getCoreLogger()->type(#name "-" #type ": " msg, ##__VA_ARGS__)
+#define CHONPS_LOG(name, type, msg, ...)			::Chonps::getClientLogger()->type(#name "-" #type ": " msg, ##__VA_ARGS__)
 
 #define CHONPS_FUNCTION_PROPERTIES(func, ...)		#func, fmt::ptr(&func), #__VA_ARGS__
 #define CHONPS_VARIABLE_PROPERTIES(var, ...)		#var, fmt::ptr(&var), #__VA_ARGS__
@@ -29,11 +29,11 @@ namespace Chonps
 #define CHONPS_CORE_ERROR(...)						::Chonps::getCoreLogger()->error(__VA_ARGS__)
 #define CHONPS_CORE_CRITICAL(...)					::Chonps::getCoreLogger()->critical(__VA_ARGS__)
 
-#define CHONPS_CORE_LOG_TRACE(name, msg, ...)		::Chonps::getCoreLogger()->trace(#name "-trace: " msg, __VA_ARGS__)
-#define CHONPS_CORE_LOG_INFO(name, msg, ...)		::Chonps::getCoreLogger()->info(#name "-info: " msg, __VA_ARGS__)
-#define CHONPS_CORE_LOG_WARN(name, msg, ...)		::Chonps::getCoreLogger()->warn(#name "-warning: " msg, __VA_ARGS__)
-#define CHONPS_CORE_LOG_ERROR(name, msg, ...)		::Chonps::getCoreLogger()->error(#name "-error: " msg, __VA_ARGS__)
-#define CHONPS_CORE_LOG_CRITICAL(name, msg, ...)	::Chonps::getCoreLogger()->critical(#name "-critical: " msg, __VA_ARGS__)
+#define CHONPS_CORE_LOG_TRACE(name, msg, ...)		::Chonps::getCoreLogger()->trace(#name "-trace: " msg, ##__VA_ARGS__)
+#define CHONPS_CORE_LOG_INFO(name, msg, ...)		::Chonps::getCoreLogger()->info(#name "-info: " msg, ##__VA_ARGS__)
+#define CHONPS_CORE_LOG_WARN(name, msg, ...)		::Chonps::getCoreLogger()->warn(#name "-warning: " msg, ##__VA_ARGS__)
+#define CHONPS_CORE_LOG_ERROR(name, msg, ...)		::Chonps::getCoreLogger()->error(#name "-error: " msg, ##__VA_ARGS__)
+#define CHONPS_CORE_LOG_CRITICAL(name, msg, ...)	::Chonps::getCoreLogger()->critical(#name "-critical: " msg, ##__VA_ARGS__)
 
 
 // Client Log macros
@@ -43,11 +43,11 @@ namespace Chonps
 #define CHONPS_ERROR(...)							::Chonps::getClientLogger()->error(__VA_ARGS__)
 #define CHONPS_CRITICAL(...)						::Chonps::getClientLogger()->critical(__VA_ARGS__)
 
-#define CHONPS_LOG_TRACE(name, msg, ...)			::Chonps::getClientLogger()->trace(#name "-trace: " msg, __VA_ARGS__)
-#define CHONPS_LOG_INFO(name, msg, ...)				::Chonps::getClientLogger()->info(#name "-info: " msg, __VA_ARGS__)
-#define CHONPS_LOG_WARN(name, msg, ...)				::Chonps::getClientLogger()->warn(#name "-warning: " msg, __VA_ARGS__)
-#define CHONPS_LOG_ERROR(name, msg, ...)			::Chonps::getClientLogger()->error(#name "-error: " msg, __VA_ARGS__)
-#define CHONPS_LOG_CRITICAL(name, msg, ...)			::Chonps::getClientLogger()->critical(#name "-critical: " msg, __VA_ARGS__)
+#define CHONPS_LOG_TRACE(name, msg, ...)			::Chonps::getClientLogger()->trace(#name "-trace: " msg, ##__VA_ARGS__)
+#define CHONPS_LOG_INFO(name, msg, ...)				::Chonps::getClientLogger()->info(#name "-info: " msg, ##__VA_ARGS__)
+#define CHONPS_LOG_WARN(name, msg, ...)				::Chonps::getClientLogger()->warn(#name "-warning: " msg, ##__VA_ARGS__)
+#define CHONPS_LOG_ERROR(name, msg, ...)			::Chonps::getClientLogger()->error(#name "-error: " msg, ##__VA_ARGS__)
+#define CHONPS_LOG_CRITICAL(name, msg, ...)			::Chonps::getClientLogger()->critical(#name "-critical: " msg, ##__VA_ARGS__)
 
 #endif
 

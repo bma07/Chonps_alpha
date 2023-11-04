@@ -19,10 +19,12 @@ namespace Chonps
 	};
 
 	// Creates Shader from two seperate vertex and fragment files
-	std::shared_ptr<Shader> createShaderSp(const std::string& vertex, const std::string& fragment, PipelineLayoutInfo* pipelineInfo);
+	std::shared_ptr<Shader> createShaderSp(const std::string& vertexFile, const std::string& fragmentFile, PipelineLayoutInfo* pipelineInfo);
+	Shader* createShader(const std::string& vertexFile, const std::string& fragmentFile, PipelineLayoutInfo* pipelineInfo);
 
-	// Creates Shader from two seperate vertex and fragment files
-	Shader* createShader(const std::string& vertex, const std::string& fragment, PipelineLayoutInfo* pipelineInfo);
+	// Creates Shader from two seperate vertex and fragment dirrect sources
+	Shader* createShaderSrc(const std::string& vertexSrc, const std::string& fragmentSrc, PipelineLayoutInfo* pipelineInfo);
+	std::shared_ptr<Shader> createShaderSrcSp(const std::string& vertexSrc, const std::string& fragmentSrc, PipelineLayoutInfo* pipelineInfo);
 
 	class ShaderLibrary
 	{
@@ -31,6 +33,13 @@ namespace Chonps
 	private:
 		std::unordered_map<std::string, std::shared_ptr<Shader>> m_Shaders;
 	};
+
+	namespace vks
+	{
+		void setUsePushConstant(bool use);
+		void setPushConstantRange(PushConstantRange* pushConstant, uint32_t count);
+		void renderPushConstant(Shader* shader, ShaderStage shaderStage, uint32_t size, uint32_t offset, void* pValues);
+	}
 
 	namespace ogls
 	{

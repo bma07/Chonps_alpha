@@ -45,7 +45,6 @@ namespace Chonps
 
 		virtual uint32_t id() const = 0;
 	};
-	typedef VertexBuffer VBO;
 
 	std::shared_ptr<VertexBuffer> createVertexBufferSp(float* vertices, uint32_t size, BufferState bufferState = BufferState::Static);
 	std::shared_ptr<VertexBuffer> createVertexBufferSp(std::vector<vertex>& vertices, BufferState bufferState = BufferState::Static);

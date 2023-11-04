@@ -9,7 +9,7 @@
 
 namespace Chonps
 {
-	enum class GraphicsAPI
+	enum class GraphicsContext
 	{
 		None = 0,
 		OpenGL,
@@ -17,10 +17,10 @@ namespace Chonps
 		DirectX
 	};
 
-	bool setRenderContext(GraphicsAPI api);
+	bool setGraphicsContext(GraphicsContext api);
 
-	GraphicsAPI getGraphicsAPI();
-	std::string getGraphicsAPIName();
+	GraphicsContext getGraphicsContext();
+	std::string getGraphicsContextName();
 
 
 	class RendererAPI
@@ -46,13 +46,12 @@ namespace Chonps
 		virtual void RenderPassEnd() = 0;
 
 		virtual void BindBufferSet(Shader* shader, UniformBuffer* buffer, uint32_t setIndex) = 0;
-		virtual void PushConstant(uint32_t size, uint32_t offset, ShaderStage shaderStage, const void* pValues) = 0;
 
 	};
 
 	RendererAPI* getRendererAPI();
 	bool createRendererAPI(RendererBackends* rendererBackends);
-	void destroyRendererAPI();
+	bool destroyRendererAPI();
 
 	void textureBinding(uint32_t textureBinding, uint32_t samplerBinding, uint32_t frameBufferBinding, uint32_t cubemapBinding);
 }

@@ -242,7 +242,7 @@ namespace Chonps
 					if (!objMat.HasMaterials)
 					{
 						uint32_t whiteTextureData = 0xffffffff;
-						Texture* tex = createTexture(1, 1, &whiteTextureData);
+						Texture* tex = createTexture(1, 1, 4, &whiteTextureData);
 						objMat.map_Kd = tex;
 					}
 

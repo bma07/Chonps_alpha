@@ -19,87 +19,109 @@ namespace Chonps
 
 		switch (texFormat)
 		{
-			case Chonps::TexFormat::None:
+			case TexFormat::None:
 			{
-				gammaCorrect && nonGammaTexture ? format = VK_FORMAT_R8G8B8A8_SRGB : format = VK_FORMAT_R8G8B8A8_UNORM;
+				switch (channels)
+				{
+					case 1:
+					{
+						gammaCorrect&& nonGammaTexture ? format = VK_FORMAT_R8_SRGB : format = VK_FORMAT_R8_UNORM;
+						break;
+					}
+					case 3:
+					{
+						gammaCorrect&& nonGammaTexture ? format = VK_FORMAT_R8G8B8_SRGB : format = VK_FORMAT_R8G8B8_UNORM;
+						break;
+					}
+					case 4:
+					{
+						gammaCorrect&& nonGammaTexture ? format = VK_FORMAT_R8G8B8A8_SRGB : format = VK_FORMAT_R8G8B8A8_UNORM;
+						break;
+					}
+					default:
+					{
+						CHONPS_CORE_LOG_ERROR(Vulkan:Texture:Format, "Cannot find supported format with the given number of channels: {0}", channels);
+						break;
+					}
+				}
 				break;
 			}
-			case Chonps::TexFormat::RGB8:
+			case TexFormat::RGB8:
 			{
 				gammaCorrect && nonGammaTexture ? format = VK_FORMAT_R8G8B8_SRGB : format = VK_FORMAT_R8G8B8_UNORM;
 				break;
 			}
-			case Chonps::TexFormat::RGB16:
+			case TexFormat::RGB16:
 			{
 				gammaCorrect && nonGammaTexture ? format = VK_FORMAT_R16G16B16_SFLOAT : format = VK_FORMAT_R16G16B16_UNORM;
 				break;
 			}
-			case Chonps::TexFormat::RGB32F:
+			case TexFormat::RGB32F:
 			{
 				format = VK_FORMAT_R32G32B32_SFLOAT;
 				break;
 			}
-			case Chonps::TexFormat::RGB32I:
+			case TexFormat::RGB32I:
 			{
 				format = VK_FORMAT_R32G32B32_SINT;
 				break;
 			}
-			case Chonps::TexFormat::RGB32UI:
+			case TexFormat::RGB32UI:
 			{
 				format = VK_FORMAT_R32G32B32_UINT;
 				break;
 			}
-			case Chonps::TexFormat::RGB64F:
+			case TexFormat::RGB64F:
 			{
 				format = VK_FORMAT_R64G64B64_SFLOAT;
 				break;
 			}
-			case Chonps::TexFormat::RGB64I:
+			case TexFormat::RGB64I:
 			{
 				format = VK_FORMAT_R64G64B64_SINT;
 				break;
 			}
-			case Chonps::TexFormat::RGB64UI:
+			case TexFormat::RGB64UI:
 			{
 				format = VK_FORMAT_R64G64B64_UINT;
 				break;
 			}
-			case Chonps::TexFormat::RGBA8:
+			case TexFormat::RGBA8:
 			{
 				gammaCorrect && nonGammaTexture ? format = VK_FORMAT_R8G8B8A8_SRGB : format = VK_FORMAT_R8G8B8A8_UNORM;
 				break;
 			}
-			case Chonps::TexFormat::RGBA16:
+			case TexFormat::RGBA16:
 			{
 				gammaCorrect && nonGammaTexture ? format = VK_FORMAT_R16G16B16A16_SFLOAT : format = VK_FORMAT_R16G16B16A16_UNORM;
 				break;
 			}
-			case Chonps::TexFormat::RGBA32F:
+			case TexFormat::RGBA32F:
 			{
 				format = VK_FORMAT_R32G32B32A32_SFLOAT;
 				break;
 			}
-			case Chonps::TexFormat::RGBA32I:
+			case TexFormat::RGBA32I:
 			{
 				format = VK_FORMAT_R32G32B32A32_SINT;
 				break;
 			}
-			case Chonps::TexFormat::RGBA32UI:
+			case TexFormat::RGBA32UI:
 			{
 				format = VK_FORMAT_R32G32B32A32_UINT;
 				break;
 			}
-			case Chonps::TexFormat::RGBA64F:
+			case TexFormat::RGBA64F:
 			{
 				format = VK_FORMAT_R64G64B64A64_SFLOAT;
 				break;
 			}
-			case Chonps::TexFormat::RGBA64I:
+			case TexFormat::RGBA64I:
 			{
 				format = VK_FORMAT_R64G64B64A64_SINT;
 				break;
 			}
-			case Chonps::TexFormat::RGBA64UI:
+			case TexFormat::RGBA64UI:
 			{
 				format = VK_FORMAT_R64G64B64A64_UINT;
 				break;
@@ -182,26 +204,26 @@ namespace Chonps
 		VkFilter minFilter = VK_FILTER_NEAREST, magFilter = VK_FILTER_NEAREST;
 		switch (texFilter.min)
 		{
-		case TexFilter::Linear: { minFilter = VK_FILTER_LINEAR; break; }
-		case TexFilter::Nearest: { minFilter = VK_FILTER_NEAREST; break; }
-		case TexFilter::Linear_Mipmap_Linear: { minFilter = VK_FILTER_LINEAR; break; }
-		case TexFilter::Linear_Mipmap_Nearest: { minFilter = VK_FILTER_LINEAR; break; }
-		case TexFilter::Nearest_Mipmap_Linear: { minFilter = VK_FILTER_NEAREST; break; }
-		case TexFilter::Nearest_Mipmap_Nearest: { minFilter = VK_FILTER_NEAREST; break; }
-		default:
-		{
-			CHONPS_CORE_LOG_ERROR(Texture, "Given texture min filter not supported!");
-		}
+			case TexFilter::Linear: { minFilter = VK_FILTER_LINEAR; break; }
+			case TexFilter::Nearest: { minFilter = VK_FILTER_NEAREST; break; }
+			case TexFilter::Linear_Mipmap_Linear: { minFilter = VK_FILTER_LINEAR; break; }
+			case TexFilter::Linear_Mipmap_Nearest: { minFilter = VK_FILTER_LINEAR; break; }
+			case TexFilter::Nearest_Mipmap_Linear: { minFilter = VK_FILTER_NEAREST; break; }
+			case TexFilter::Nearest_Mipmap_Nearest: { minFilter = VK_FILTER_NEAREST; break; }
+			default:
+			{
+				CHONPS_CORE_LOG_ERROR(Texture, "Given texture min filter not supported!");
+			}
 		}
 
 		switch (texFilter.mag)
 		{
-		case TexFilter::Linear: { magFilter = VK_FILTER_LINEAR; break; }
-		case TexFilter::Nearest: { magFilter = VK_FILTER_NEAREST; break; }
-		default:
-		{
-			CHONPS_CORE_LOG_ERROR(Texture, "Given texture mag filter not supported!");
-		}
+			case TexFilter::Linear: { magFilter = VK_FILTER_LINEAR; break; }
+			case TexFilter::Nearest: { magFilter = VK_FILTER_NEAREST; break; }
+			default:
+			{
+				CHONPS_CORE_LOG_ERROR(Texture, "Given texture mag filter not supported!");
+			}
 		}
 
 		VkSamplerCreateInfo samplerInfo{};
@@ -209,7 +231,7 @@ namespace Chonps
 		samplerInfo.magFilter = magFilter;
 		samplerInfo.minFilter = minFilter;
 
-		VkSamplerAddressMode texAddressMode;
+		VkSamplerAddressMode texAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		if (texWrap == TexWrap::Repeat || texWrap == TexWrap::Default) texAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		else if (texWrap == TexWrap::ClampToEdge) texAddressMode = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 		else if (texWrap == TexWrap::MirroredRepeat) texAddressMode = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
@@ -235,33 +257,32 @@ namespace Chonps
 		CHONPS_CORE_ASSERT(vkCreateSampler(vkBackends->device, &samplerInfo, nullptr, &m_TexData.textureSampler) == VK_SUCCESS, "Failed to create texture sampler!");
 	}
 
-	VulkanTexture::VulkanTexture(uint32_t width, uint32_t height, const void* data, TexType texType, TexFilterPair texFilter, TexWrap texWrap)
-		: Texture(width, height, data, texType, texFilter, texWrap), m_Width(width), m_Height(height)
+	VulkanTexture::VulkanTexture(uint32_t width, uint32_t height, uint32_t channels, const void* data, TexType texType, TexFilterPair texFilter, TexWrap texWrap)
+		: Texture(width, height, channels, data, texType, texFilter, texWrap), m_Width(width), m_Height(height)
 	{
 		VulkanBackends* vkBackends = getVulkanBackends();
 		VmaAllocator vmaAllocator = getVmaAllocator();
 
 		m_ID = vkBackends->textureCountIDs.take_next();
 
+		VkDeviceSize imageSize = width * height * channels;
 		VkBuffer stagingBuffer;
 		VmaAllocation stagingBufferMemory;
-
-		VkDeviceSize imageSize = width * height * 4;
 
 		vks::createBuffer(imageSize, stagingBuffer, stagingBufferMemory, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
 		void* bufferData;
 		vmaMapMemory(vmaAllocator, stagingBufferMemory, &bufferData);
-		memcpy(bufferData, data, static_cast<size_t>(imageSize));
+		memcpy(bufferData, data, imageSize);
 		vmaUnmapMemory(vmaAllocator, stagingBufferMemory);
 
-		VkFormat format = getVulkanFormat(texType, TexFormat::RGBA8, 4);
+		VkFormat format = getVulkanFormat(texType, TexFormat::Auto, channels);
 
 		VkImageCreateInfo imageInfo{};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageInfo.imageType = VK_IMAGE_TYPE_2D;
-		imageInfo.extent.width = static_cast<uint32_t>(width);
-		imageInfo.extent.height = static_cast<uint32_t>(height);
+		imageInfo.extent.width = width;
+		imageInfo.extent.height = height;
 		imageInfo.extent.depth = 1;
 		imageInfo.mipLevels = 1;
 		imageInfo.arrayLayers = 1;
@@ -286,7 +307,7 @@ namespace Chonps
 		vmaBindImageMemory(vmaAllocator, m_TexData.textureImageMemory, m_TexData.textureImage);
 
 		vks::transitionImageLayout(m_TexData.textureImage, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		vks::copyBufferToImage(stagingBuffer, m_TexData.textureImage, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+		vks::copyBufferToImage(stagingBuffer, m_TexData.textureImage, width, height);
 
 		vks::transitionImageLayout(m_TexData.textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -298,26 +319,26 @@ namespace Chonps
 		VkFilter minFilter = VK_FILTER_NEAREST, magFilter = VK_FILTER_NEAREST;
 		switch (texFilter.min)
 		{
-		case TexFilter::Linear: { minFilter = VK_FILTER_LINEAR; break; }
-		case TexFilter::Nearest: { minFilter = VK_FILTER_NEAREST; break; }
-		case TexFilter::Linear_Mipmap_Linear: { minFilter = VK_FILTER_LINEAR; break; }
-		case TexFilter::Linear_Mipmap_Nearest: { minFilter = VK_FILTER_LINEAR; break; }
-		case TexFilter::Nearest_Mipmap_Linear: { minFilter = VK_FILTER_NEAREST; break; }
-		case TexFilter::Nearest_Mipmap_Nearest: { minFilter = VK_FILTER_NEAREST; break; }
-		default:
-		{
-			CHONPS_CORE_LOG_ERROR(Texture, "Given texture min filter not supported!");
-		}
+			case TexFilter::Linear: { minFilter = VK_FILTER_LINEAR; break; }
+			case TexFilter::Nearest: { minFilter = VK_FILTER_NEAREST; break; }
+			case TexFilter::Linear_Mipmap_Linear: { minFilter = VK_FILTER_LINEAR; break; }
+			case TexFilter::Linear_Mipmap_Nearest: { minFilter = VK_FILTER_LINEAR; break; }
+			case TexFilter::Nearest_Mipmap_Linear: { minFilter = VK_FILTER_NEAREST; break; }
+			case TexFilter::Nearest_Mipmap_Nearest: { minFilter = VK_FILTER_NEAREST; break; }
+			default:
+			{
+				CHONPS_CORE_LOG_ERROR(Texture, "Given texture min filter not supported!");
+			}
 		}
 
 		switch (texFilter.mag)
 		{
-		case TexFilter::Linear: { magFilter = VK_FILTER_LINEAR; break; }
-		case TexFilter::Nearest: { magFilter = VK_FILTER_NEAREST; break; }
-		default:
-		{
-			CHONPS_CORE_LOG_ERROR(Texture, "Given texture mag filter not supported!");
-		}
+			case TexFilter::Linear: { magFilter = VK_FILTER_LINEAR; break; }
+			case TexFilter::Nearest: { magFilter = VK_FILTER_NEAREST; break; }
+			default:
+			{
+				CHONPS_CORE_LOG_ERROR(Texture, "Given texture mag filter not supported!");
+			}
 		}
 
 		VkSamplerAddressMode texAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT;

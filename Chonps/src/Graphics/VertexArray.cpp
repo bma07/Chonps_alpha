@@ -9,19 +9,19 @@ namespace Chonps
 {
 	std::shared_ptr<VertexArray> createVertexArraySp()
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
 				CHONPS_CORE_LOG_WARN(VertexArray, "createVertexArraySp() - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL: { return std::make_shared<OpenGLVertexArray>(); }
+			case GraphicsContext::OpenGL: { return std::make_shared<OpenGLVertexArray>(); }
 
-			case GraphicsAPI::Vulkan: { return std::make_shared<VulkanVertexArray>(); }
+			case GraphicsContext::Vulkan: { return std::make_shared<VulkanVertexArray>(); }
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}
@@ -32,19 +32,19 @@ namespace Chonps
 
 	VertexArray* createVertexArray()
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
 				CHONPS_CORE_LOG_WARN(VertexArray, "createVertexArray() - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL: { return new OpenGLVertexArray(); }
+			case GraphicsContext::OpenGL: { return new OpenGLVertexArray(); }
 
-			case GraphicsAPI::Vulkan: { return new VulkanVertexArray(); }
+			case GraphicsContext::Vulkan: { return new VulkanVertexArray(); }
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}

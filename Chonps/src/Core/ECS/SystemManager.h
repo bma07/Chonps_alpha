@@ -18,7 +18,7 @@ namespace Chonps
 		template<typename T>
 		std::shared_ptr<T> register_system()
 		{
-			const type_info* systemName = &typeid(T);
+			const std::type_info* systemName = &typeid(T);
 			CHONPS_CORE_ASSERT(m_Systems.find(systemName) == m_Systems.end(), "System registered more than once!");
 
 			auto system = std::make_shared<T>();
@@ -29,7 +29,7 @@ namespace Chonps
 		template<typename T>
 		void set_signature(Signature signature)
 		{
-			const type_info* systemName = &typeid(T);
+			const std::type_info* systemName = &typeid(T);
 			CHONPS_CORE_ASSERT(m_Systems.find(systemName) != m_Systems.end(), "No system of that type was found! System may not be registered first");
 
 			// set the signature for this system
@@ -64,8 +64,8 @@ namespace Chonps
 		}
 
 	private:
-		std::unordered_map<const type_info*, Signature> m_Signatures{};
-		std::unordered_map<const type_info*, std::shared_ptr<System>> m_Systems{};
+		std::unordered_map<const std::type_info*, Signature> m_Signatures{};
+		std::unordered_map<const std::type_info*, std::shared_ptr<System>> m_Systems{};
 	};
 }
 

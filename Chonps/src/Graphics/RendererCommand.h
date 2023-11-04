@@ -35,8 +35,6 @@ namespace Chonps
 	void renderPassEnd();
 
 	void renderBindBufferSet(Shader* shader, UniformBuffer* buffer, uint32_t setIndex);
-
-	void renderPushConstant(uint32_t size, uint32_t offset, ShaderStage shaderStage, const void* pValues);
 }
 
 #endif

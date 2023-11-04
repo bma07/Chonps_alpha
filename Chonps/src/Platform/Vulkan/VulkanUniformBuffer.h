@@ -25,7 +25,6 @@ namespace Chonps
 	namespace vks
 	{
 		BufferLayout vkImplCreateBufferLayout(BufferBindingCreateLayoutsInfo* bufferBindings, uint32_t setIndex);
-		PushConstantRange vkImplCreatePushConstantRange(uint32_t size, uint32_t offset, ShaderStage shaderStage);
 	}
 }
 

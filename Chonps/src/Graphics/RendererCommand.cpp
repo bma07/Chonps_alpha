@@ -93,9 +93,4 @@ namespace Chonps
 	{
 		s_RendererAPIAddressRenderCommand->BindBufferSet(shader, buffer, setIndex);
 	}
-
-	void renderPushConstant(uint32_t size, uint32_t offset, ShaderStage shaderStage, const void* pValues)
-	{
-		s_RendererAPIAddressRenderCommand->PushConstant(size, offset, shaderStage, pValues);
-	}
 }

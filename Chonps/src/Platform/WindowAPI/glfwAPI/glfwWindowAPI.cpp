@@ -45,26 +45,26 @@ namespace Chonps
 
 	void glfwImplSetWindowContextRenderTarget(Window* window)
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case Chonps::GraphicsAPI::None:
+			case Chonps::GraphicsContext::None:
 			{
 				CHONPS_CORE_ASSERT(false, "No graphics API selected beforehand! Cannot create window without a rendering context!");
 			}
 
-			case Chonps::GraphicsAPI::OpenGL:
+			case Chonps::GraphicsContext::OpenGL:
 			{
 				gladInit(static_cast<GLFWwindow*>(window->GetNativeWindow()), window->GetWidth(), window->GetHeight());
 				break;
 			}
 
-			case Chonps::GraphicsAPI::Vulkan:
+			case Chonps::GraphicsContext::Vulkan:
 			{
 				setCurrentWindowForVulkanWindowSurface(static_cast<GLFWwindow*>(window->GetNativeWindow()));
 				break;
 			}
 
-			case Chonps::GraphicsAPI::DirectX:
+			case Chonps::GraphicsContext::DirectX:
 			{
 				break;
 			}
@@ -105,8 +105,8 @@ namespace Chonps
 		if (m_Data.fullscreen)
 			fullScreen = glfwGetPrimaryMonitor();
 
-		GraphicsAPI graphicsAPI = getGraphicsAPI();
-		if (graphicsAPI == GraphicsAPI::Vulkan)
+		GraphicsContext GraphicsContext = getGraphicsContext();
+		if (GraphicsContext == GraphicsContext::Vulkan)
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
@@ -147,14 +147,14 @@ namespace Chonps
 			WindowResizeEvent eventType(width, height);
 			data.EventCallback(eventType);
 
-			switch (getGraphicsAPI())
+			switch (getGraphicsContext())
 			{
-				case GraphicsAPI::OpenGL: 
+				case GraphicsContext::OpenGL: 
 				{
 					gladUpdateViewPort(window, width, height);
 					break;
 				}
-				case GraphicsAPI::Vulkan:
+				case GraphicsContext::Vulkan:
 				{
 					getVulkanBackends()->framebufferResized = true;
 					break;
@@ -171,14 +171,14 @@ namespace Chonps
 			WindowFramebufferResizeEvent eventType(width, height);
 			data.EventCallback(eventType);
 
-			switch (getGraphicsAPI())
+			switch (getGraphicsContext())
 			{
-				case GraphicsAPI::OpenGL:
+				case GraphicsContext::OpenGL:
 				{
 					gladUpdateViewPort(window, width, height);
 					break;
 				}
-				case GraphicsAPI::Vulkan:
+				case GraphicsContext::Vulkan:
 				{
 					getVulkanBackends()->framebufferResized = true;
 					break;
@@ -291,7 +291,7 @@ namespace Chonps
 
 	void glfwWindowAPI::OnUpdate()
 	{
-		if (getGraphicsAPI() == GraphicsAPI::OpenGL) glfwSwapBuffers(m_Window);
+		if (getGraphicsContext() == GraphicsContext::OpenGL) glfwSwapBuffers(m_Window);
 		glfwPollEvents();
 	}
 
@@ -310,13 +310,13 @@ namespace Chonps
 
 	void glfwWindowAPI::SetContextCurrent()
 	{
-		if (getGraphicsAPI() == GraphicsAPI::OpenGL)
+		if (getGraphicsContext() == GraphicsContext::OpenGL)
 			glfwMakeContextCurrent(m_Window);
 	}
 
 	void glfwWindowAPI::SetVSync(bool enabled)
 	{
-		if (getGraphicsAPI() == GraphicsAPI::OpenGL)
+		if (getGraphicsContext() == GraphicsContext::OpenGL)
 		{
 			glfwSwapInterval(enabled);
 			m_Data.vSync = enabled;
@@ -325,7 +325,7 @@ namespace Chonps
 
 	void glfwWindowAPI::Delete()
 	{
-		if (getGraphicsAPI() == GraphicsAPI::Vulkan)
+		if (getGraphicsContext() == GraphicsContext::Vulkan)
 			vkDeviceWaitIdle(getVulkanBackends()->device);
 
 		glfwDestroyWindow(m_Window);

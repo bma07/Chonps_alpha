@@ -4,6 +4,9 @@
 #include "Window.h"
 #include "DataTypes.h"
 
+#include "KeyCodes.h"
+#include "MouseButtonCodes.h"
+
 namespace Chonps
 {
 	void windowInputInit();
@@ -29,6 +32,7 @@ namespace Chonps
 		virtual void GetWindowSize(Window* window, int* width, int* height) = 0;
 
 		virtual void SetMouseModeHide(Window* window, bool hide) = 0;
+		virtual void SetMouseCursor(Window* window, int cursor) = 0;
 
 		virtual float GetTimestep() = 0;
 	};
@@ -52,6 +56,7 @@ namespace Chonps
 	void getWindowSize(Window* window, int* width, int* height);
 
 	void setMouseModeHide(Window* window, bool hide);
+	void setMouseCursor(Window* window, int cursor);
 
 	// Timestep Functions
 	float getTimeSeconds();

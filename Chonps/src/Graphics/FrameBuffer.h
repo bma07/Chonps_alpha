@@ -81,7 +81,6 @@ namespace Chonps
 		virtual unsigned int GetWidth() = 0;
 		virtual unsigned int GetHeight() = 0;
 	};
-	typedef FrameBuffer FBO;
 
 	std::shared_ptr<FrameBuffer> createFrameBufferSp(FrameBufferSpecificationInfo frameBufferSpecificationInfo, uint32_t setIndex);
 

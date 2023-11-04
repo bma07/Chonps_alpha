@@ -17,8 +17,9 @@ namespace Chonps
 		uint32_t indicesCount;
 	};
 
-	struct DrawList
+	class DrawList
 	{
+	public:
 		std::vector<DrawCommand> drawCommands;
 		size_t indexCount = 0;
 		size_t vertexCount = 0;

@@ -57,7 +57,8 @@ namespace Chonps
 
 	void BatchRenderer::DrawSubmit()
 	{
-		CHONPS_CORE_ASSERT(!m_DrawList.empty(), "Draw List is empty!");
+		if(m_DrawList.empty())
+			return;
 
 		m_VertexBuffer->Subdata(m_DrawList.vertices.data(), static_cast<uint32_t>(sizeof(float) * m_DrawList.vertices.size()));
 		m_IndexBuffer->Subdata(m_DrawList.indices.data(), static_cast<uint32_t>(sizeof(uint32_t) * m_DrawList.indices.size()));

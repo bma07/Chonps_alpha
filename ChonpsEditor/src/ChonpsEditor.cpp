@@ -44,6 +44,14 @@ struct CameraMatrixUniformBuffer
 
 namespace Chonps
 {
+	static std::string text = "plumb hum hello!@";
+
+	bool TextInput(KeyPressedEvent& e)
+	{
+
+		return e.Handled;
+	}
+
 	void CameraRotate(Camera* camera)
 	{
 		const float radius = 5.0f;
@@ -66,25 +74,25 @@ namespace Chonps
 
 	void ChonpsEditor::CameraMovment(Window* window, Camera* camera, float dt)
 	{
-		if (keyPressed(m_Window, CHONPS_KEY_W))
+		if (keyPressed(m_Window, ChonpsKeyCode_W))
 			camera->position += (m_CameraSpeed * camera->orientation) * dt;
 
-		if (keyPressed(m_Window, CHONPS_KEY_A))
+		if (keyPressed(m_Window, ChonpsKeyCode_A))
 			camera->position += (m_CameraSpeed * -glm::normalize(glm::cross(camera->orientation, camera->upVector))) * dt;
 
-		if (keyPressed(m_Window, CHONPS_KEY_S))
+		if (keyPressed(m_Window, ChonpsKeyCode_S))
 			camera->position += (m_CameraSpeed * -camera->orientation) * dt;
 
-		if (keyPressed(m_Window, CHONPS_KEY_D))
+		if (keyPressed(m_Window, ChonpsKeyCode_D))
 			camera->position += (m_CameraSpeed * glm::normalize(glm::cross(camera->orientation, camera->upVector))) * dt;
 
-		if (keyPressed(m_Window, CHONPS_KEY_SPACE))
+		if (keyPressed(m_Window, ChonpsKeyCode_Space))
 			camera->position += (m_CameraSpeed * camera->upVector) * dt;
 
-		if (keyPressed(m_Window, CHONPS_KEY_LEFT_CONTROL))
+		if (keyPressed(m_Window, ChonpsKeyCode_LeftControl))
 			camera->position += (m_CameraSpeed * -camera->upVector) * dt;
 
-		if (mouseButtonPressed(window, CHONPS_MOUSE_BUTTON_2))
+		if (mouseButtonPressed(window, ChonpsMouseButton_2))
 		{
 			auto mousePos = getMousePos(window);
 			
@@ -133,7 +141,7 @@ namespace Chonps
 				m_LastMouseY = m_Window->GetHeight() - m_CameraMouseMoveOffWindowOffset;
 			}
 		}
-		else if (mouseButtonReleased(m_Window, CHONPS_MOUSE_BUTTON_2))
+		else if (mouseButtonReleased(m_Window, ChonpsMouseButton_2))
 			m_CameraFirstClick = true;
 		
 	}
@@ -163,7 +171,8 @@ namespace Chonps
 
 	void ChonpsEditor::OnAttach()
 	{
-		gui::Init();
+		gui::CreateGuiContext();
+		gui::SetGuiWindowContext(m_Window);
 		m_Window->SetVSync(false);
 
 		// Viewport
@@ -259,20 +268,17 @@ namespace Chonps
 
 		m_VAO2->Unbind();
 
-
-		m_Font = Font("D:/Dev/Chonps/ChonpsEditor/res/Fonts/Helvetica.ttf");
-		gui::AddFontFromTTF(m_Font);
-
 		// Mesh
-		m_Meshes = loadModel("D:/Dev/Chonps/ChonpsEditor/res/models/gltf/saul_goodmans_office/scene.gltf");
+		m_Meshes = loadModel("D:/Dev/Chonps/ChonpsEditor/res/models/gltf/brick/brick.gltf");
+
 
 		// Textures
-		Texture* texture = createTexture("D:/Dev/Chonps/ChonpsEditor/res/textures/brick.png", TexType::Diffuse);
+		Texture* texture = createTexture("D:/Dev/Chonps/ChonpsEditor/output2.png", TexType::Diffuse, {TexFilter::Linear, TexFilter::Linear});
 		Texture* texture2 = createTexture("D:/Dev/Chonps/ChonpsEditor/res/textures/Checkerboard.png", TexType::Diffuse);
 
 		std::vector<TextureCreateInfo> textures =
 		{
-			{ texture, 0 },
+			{ texture, 0},
 			{ texture2, 1 }
 		};
 
@@ -303,6 +309,7 @@ namespace Chonps
 		frameBufferSpec.textureWrap = TexWrap::ClampToEdge;
 
 		m_FBO = createFrameBuffer(frameBufferSpec, 1);
+
 
 		// Pipelines
 		RenderPass renderPass = retrieveRenderPass(m_FBO);
@@ -347,7 +354,7 @@ namespace Chonps
 		pipelineLayoutInfo.pipelineSpecification;
 		pipelineLayoutInfo.pipelineSpecification = &pipelineSpec;
 
-		m_Shader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/shader_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/shader_frag.spv", &pipelineLayoutInfo);
+		m_Shader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/shader.vert", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/shader.frag", &pipelineLayoutInfo);
 
 		// Cubemap Pipeline
 		std::vector<VertexLayout> cubemapLayout =
@@ -368,7 +375,7 @@ namespace Chonps
 		cubemappipelineLayoutInfo.renderPass = &renderPass;
 		cubemappipelineLayoutInfo.pipelineSpecification = &pipelineSpec;
 
-		m_CubemapShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/cubemap_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/cubemap_frag.spv", &cubemappipelineLayoutInfo);
+		m_CubemapShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/cubemap.vert", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/cubemap.frag", &cubemappipelineLayoutInfo);
 
 		// Framebuffer Pipeline
 		std::vector<VertexLayout> FBlayouts =
@@ -388,67 +395,7 @@ namespace Chonps
 		FBpipelineLayoutInfo.layoutIncludeCount = 1;
 		FBpipelineLayoutInfo.pLayoutIncludes = &FBlayoutInclude;
 
-		m_FBOShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/FBOshader_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/FBOshader_frag.spv", &FBpipelineLayoutInfo);
-
-		// PreStencil Pipeline
-		std::vector<VertexLayout> guilayouts =
-		{
-			{ 0, 2, SDT::Float, 9 * sizeof(float), (void*)(0) },
-			{ 1, 4, SDT::Float, 9 * sizeof(float), (void*)(2 * sizeof(float)) },
-			{ 2, 2, SDT::Float, 9 * sizeof(float), (void*)(6 * sizeof(float)) },
-			{ 3, 1, SDT::Float, 9 * sizeof(float), (void*)(8 * sizeof(float)) },
-		};
-
-
-		PipelineSpecification preStencilPipelineSpec = getStandardPipelineSpecification();
-		preStencilPipelineSpec.rasterizer.cullMode = CullFaceMode::Disable;
-		preStencilPipelineSpec.depthstencil.enableStencil = true;
-		preStencilPipelineSpec.depthstencil.stencil.compareOp = CompareOperation::Always;
-		preStencilPipelineSpec.depthstencil.stencil.failOp = StencilOperation::Keep;
-		preStencilPipelineSpec.depthstencil.stencil.depthFailOp = StencilOperation::Keep;
-		preStencilPipelineSpec.depthstencil.stencil.passOp = StencilOperation::Replace;
-		preStencilPipelineSpec.depthstencil.stencil.reference = 1;
-		preStencilPipelineSpec.depthstencil.stencil.compareMask = 0xff;
-		preStencilPipelineSpec.depthstencil.stencil.writeMask = 0xff;
-
-		PipelineLayoutInfo preStencilPipelineLayoutInfo{};
-		preStencilPipelineLayoutInfo.bindingDescription = 9 * sizeof(float);
-		preStencilPipelineLayoutInfo.vertexLayoutLinkInfo.layoutCount = static_cast<uint32_t>(guilayouts.size());
-		preStencilPipelineLayoutInfo.vertexLayoutLinkInfo.pLayouts = guilayouts.data();
-		preStencilPipelineLayoutInfo.bufferLayoutsCount = 1;
-		preStencilPipelineLayoutInfo.pBufferLayouts = &bufferLayout;
-		preStencilPipelineLayoutInfo.layoutIncludeCount = 0;
-		preStencilPipelineLayoutInfo.pLayoutIncludes = nullptr;
-		preStencilPipelineLayoutInfo.pipelineSpecification = &preStencilPipelineSpec;
-
-		m_PreStencilShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/preStencil_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/preStencil_frag.spv", &preStencilPipelineLayoutInfo);
-
-		// GUI Pipeline
-		PipelineSpecification guiPipelineSpec = getStandardPipelineSpecification();
-		guiPipelineSpec.rasterizer.cullMode = CullFaceMode::Disable;
-		guiPipelineSpec.depthstencil.enableStencil = true;
-		guiPipelineSpec.depthstencil.stencil.compareOp = CompareOperation::Equal;
-		guiPipelineSpec.depthstencil.stencil.failOp = StencilOperation::Keep;
-		guiPipelineSpec.depthstencil.stencil.depthFailOp = StencilOperation::Keep;
-		guiPipelineSpec.depthstencil.stencil.passOp = StencilOperation::IncrementAndClamp;
-		guiPipelineSpec.depthstencil.stencil.reference = 1;
-		guiPipelineSpec.depthstencil.stencil.compareMask = 0xff;
-		guiPipelineSpec.depthstencil.stencil.writeMask = 0x00;
-		guiPipelineSpec.depthstencil.enableDepth = false;
-
-		PipelineLayoutInfo guipipelineLayoutInfo{};
-		guipipelineLayoutInfo.bindingDescription = 9 * sizeof(float);
-		guipipelineLayoutInfo.vertexLayoutLinkInfo.layoutCount = static_cast<uint32_t>(guilayouts.size());
-		guipipelineLayoutInfo.vertexLayoutLinkInfo.pLayouts = guilayouts.data();
-		guipipelineLayoutInfo.bufferLayoutsCount = 1;
-		guipipelineLayoutInfo.pBufferLayouts = &bufferLayout;
-		guipipelineLayoutInfo.layoutIncludeCount = 0;
-		guipipelineLayoutInfo.pLayoutIncludes = nullptr;
-		guipipelineLayoutInfo.pipelineSpecification = &guiPipelineSpec;
-
-		m_GuiShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/gui_vert.spv", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/spvShaders/gui_frag.spv", &guipipelineLayoutInfo);
-		gui::SetShader(m_PreStencilShader, m_GuiShader, m_CameraUniformBuffer);
-
+		m_FBOShader = createShader("D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/FBOshader.vert", "D:/Dev/Chonps/ChonpsEditor/res/shaders/vulkan/FBOshader.frag", &FBpipelineLayoutInfo);
 	}
 
 	void ChonpsEditor::OnDetach()
@@ -460,20 +407,18 @@ namespace Chonps
 		m_Shader->Delete();
 		m_FBOShader->Delete();
 		m_CubemapShader->Delete();
-		m_GuiShader->Delete();
-		m_PreStencilShader->Delete();
 		m_VAO->Delete();
 		m_VAO2->Delete();
 		m_VBO2->Delete();
 		m_IBO2->Delete();
 		m_TextureLayout->Delete();
 		m_FBO->Delete();
-		m_Font.Delete();
+
 
 		for (auto& meshes : m_Meshes)
 			meshes.Delete();
 
-		gui::Terminate();
+		gui::TerminateGuiContext();
 	}
 
 	void ChonpsEditor::OnUpdate()
@@ -487,7 +432,7 @@ namespace Chonps
 		//CHONPS_TRACE("{0}, {1}", vpmx, vpmy);
 
 		// Input
-		/*if (mouseButtonPressed(m_Window, CHONPS_MOUSE_BUTTON_1) && within<float>(mx, m_ViewportX, m_MouseDragRange) || m_FirstClickX)
+		/*if (mouseButtonPressed(m_Window, ChonpsMouseButton_1) && within<float>(mx, m_ViewportX, m_MouseDragRange) || m_FirstClickX)
 		{
 			if (!m_FirstClickX)
 			{
@@ -500,7 +445,7 @@ namespace Chonps
 			m_ViewportX = mx;
 			m_ViewportWidth = m_OldViewportWidth + dragAmount;
 		}
-		else if (mouseButtonPressed(m_Window, CHONPS_MOUSE_BUTTON_1) && within<float>(my, m_ViewportY, m_MouseDragRange) || m_FirstClickY)
+		else if (mouseButtonPressed(m_Window, ChonpsMouseButton_1) && within<float>(my, m_ViewportY, m_MouseDragRange) || m_FirstClickY)
 		{
 			if (!m_FirstClickY)
 			{
@@ -513,7 +458,7 @@ namespace Chonps
 			m_ViewportY = my;
 			m_ViewportHeight = m_OldViewportHeight + dragAmount;
 		}
-		if (mouseButtonReleased(m_Window, CHONPS_MOUSE_BUTTON_1))
+		if (mouseButtonReleased(m_Window, ChonpsMouseButton_1))
 		{
 			m_FirstClickX = false;
 			m_FirstClickY = false;
@@ -579,25 +524,12 @@ namespace Chonps
 		renderClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
 		m_FBOShader->Bind();
-
-		renderBindBufferSet(m_FBOShader, m_CameraUniformBuffer, 0);
-
-		camUBO.camMatrix = m_Camera.GetProjectionViewMatrix();
-
-		m_CameraUniformBuffer->Bind(&camUBO, sizeof(camUBO), 0);
-
 		m_FBO->Draw(m_FBOShader);
 
 		gui::BeginDraw();
 
-		camUBO.camMatrix = m_Camera.GetProjectionViewMatrix();
-		m_CameraUniformBuffer->Bind(&camUBO, sizeof(camUBO), 0);
-		renderBindBufferSet(m_PreStencilShader, m_CameraUniformBuffer, 0);
-
-		float change = std::abs(std::sin(getTimeSeconds()));
-
 		gui::DrawColor(0.9f, 0.3f, 0.7f, 0.8f);
-		gui::DrawRect(50.0f, 260.0f, 2.0f, 120.0f);
+		gui::DrawRect(50.0f, 260.0f, 150.0f, 120.0f);
 		gui::DrawColor(0.2f, 0.3f, 0.7f, 0.5f);
 		gui::DrawRect(100.0f, 200.0f, 600.0f, 400.0f);
 		gui::DrawColor(0.7f, 0.2f, 0.4f, 0.8f);
@@ -622,6 +554,7 @@ namespace Chonps
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<MouseScrolledEvent>(std::bind(&ChonpsEditor::MouseScrolled, this, std::placeholders::_1));
+		dispatcher.Dispatch<KeyPressedEvent>(std::bind(&TextInput, std::placeholders::_1));
 	}
 
 	void ChonpsEditor::OnGuiRender()

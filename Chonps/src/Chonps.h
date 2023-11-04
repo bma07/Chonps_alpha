@@ -9,7 +9,7 @@
 #include "Imgui/ImguiWindow.h"
 
 // ChonpsGui
-#include "GUI/ChonpsGui.h"
+#include "GUI/ChonpsGuiContext.h"
 
 // Graphics
 #include "Graphics/Graphics.h"

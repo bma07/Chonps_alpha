@@ -41,8 +41,6 @@ namespace Chonps
 		Shader* m_Shader;
 		Shader* m_FBOShader;
 		Shader* m_CubemapShader;
-		Shader* m_GuiShader;
-		Shader* m_PreStencilShader;
 
 		Cubemap* m_Cubemap;
 
@@ -53,8 +51,8 @@ namespace Chonps
 
 		std::vector<Mesh> m_Meshes;
 
+		Font m_Font;
 		TextureLayout* m_TextureLayout;
-		Chonps::Font m_Font;
 
 		FrameBuffer* m_FBO;
 

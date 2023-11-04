@@ -124,6 +124,18 @@ namespace Chonps
 		return factorial(n) / (factorial(r) * factorial(n - r));
 	}
 
+	unsigned int roundNumPowerSqared(unsigned int num)
+	{
+		num--;
+		num |= num >> 1;
+		num |= num >> 2;
+		num |= num >> 4;
+		num |= num >> 8;
+		num |= num >> 16;
+		num++;
+		return num;
+	}
+
 	double derivative(std::function<double(double)> func, double x, double delta)
 	{
 		// Calculate the derivative using the central difference formula

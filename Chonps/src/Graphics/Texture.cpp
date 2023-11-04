@@ -13,25 +13,25 @@ namespace Chonps
 		TexFilterPair texFilter, 
 		TexWrap texWrap)
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
 				CHONPS_CORE_LOG_WARN(Texture, "createTextureSp(filepath, texType, texFilter, texWrap) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
+			case GraphicsContext::OpenGL:
 			{
 				return std::make_shared<OpenGLTexture>(filepath, texType, texFilter, texWrap);
 			}
 
-			case GraphicsAPI::Vulkan:
+			case GraphicsContext::Vulkan:
 			{
 				return std::make_shared<VulkanTexture>(filepath, texType, texFilter, texWrap);
 			}
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}
@@ -40,30 +40,30 @@ namespace Chonps
 		return nullptr;
 	}
 
-	std::shared_ptr<Texture> createTextureSp(uint32_t width, uint32_t height, const void* data, 
+	std::shared_ptr<Texture> createTextureSp(uint32_t width, uint32_t height, uint32_t channels, const void* data,
 		TexType texType, 
 		TexFilterPair texFilter, 
 		TexWrap texWrap)
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
-				CHONPS_CORE_LOG_WARN(Texture, "createTextureSp(width, height, data, texType, texFilter, texWrap) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Texture, "createTextureSp(width, height, channels, data, texType, texFilter, texWrap) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
+			case GraphicsContext::OpenGL:
 			{
-				return std::make_shared<OpenGLTexture>(width, height, data, texType, texFilter, texWrap);
+				return std::make_shared<OpenGLTexture>(width, height, channels, data, texType, texFilter, texWrap);
 			}
 
-			case GraphicsAPI::Vulkan:
+			case GraphicsContext::Vulkan:
 			{
-				return std::make_shared<VulkanTexture>(width, height, data, texType, texFilter, texWrap);
+				return std::make_shared<VulkanTexture>(width, height, channels, data, texType, texFilter, texWrap);
 			}
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}
@@ -77,25 +77,25 @@ namespace Chonps
 		TexFilterPair texFilter, 
 		TexWrap texWrap)
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
 				CHONPS_CORE_LOG_WARN(Texture, "createTexture(filepath, texType, texFilter, texWrap) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
+			case GraphicsContext::OpenGL:
 			{
 				return new OpenGLTexture(filepath, texType, texFilter, texWrap);
 			}
 
-			case GraphicsAPI::Vulkan:
+			case GraphicsContext::Vulkan:
 			{
 				return new VulkanTexture(filepath, texType, texFilter, texWrap);
 			}
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}
@@ -104,30 +104,30 @@ namespace Chonps
 		return nullptr;
 	}
 
-	Texture* createTexture(uint32_t width, uint32_t height, const void* data, 
+	Texture* createTexture(uint32_t width, uint32_t height, uint32_t channels, const void* data,
 		TexType texType,
 		TexFilterPair texFilter, 
 		TexWrap texWrap)
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
-				CHONPS_CORE_LOG_WARN(Texture, "createTexture(width, height, data, texType, texFilter, texWrap) - No graphics API selected beforehand!");
+				CHONPS_CORE_LOG_WARN(Texture, "createTexture(width, height, channels, data, texType, texFilter, texWrap) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
+			case GraphicsContext::OpenGL:
 			{
-				return new OpenGLTexture(width, height, data, texType, texFilter, texWrap);
+				return new OpenGLTexture(width, height, channels, data, texType, texFilter, texWrap);
 			}
 
-			case GraphicsAPI::Vulkan:
+			case GraphicsContext::Vulkan:
 			{
-				return new VulkanTexture(width, height, data, texType, texFilter, texWrap);
+				return new VulkanTexture(width, height, channels, data, texType, texFilter, texWrap);
 			}
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}
@@ -138,25 +138,25 @@ namespace Chonps
 
 	TextureLayout* createTextureLayout(TextureCreateInfo* pTextures, uint32_t textureCount, uint32_t setIndex)
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
 				CHONPS_CORE_LOG_WARN(Texture, "createTextureLayout(pTextures, textureCount, setIndex) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
+			case GraphicsContext::OpenGL:
 			{
 				return new OpenGLTextureLayout(pTextures, textureCount, setIndex);
 			}
 
-			case GraphicsAPI::Vulkan:
+			case GraphicsContext::Vulkan:
 			{
 				return new VulkanTextureLayout(pTextures, textureCount, setIndex);
 			}
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}
@@ -167,25 +167,25 @@ namespace Chonps
 
 	std::shared_ptr<TextureLayout> createTextureLayoutSp(TextureCreateInfo* pTextures, uint32_t textureCount, uint32_t setIndex)
 	{
-		switch (getGraphicsAPI())
+		switch (getGraphicsContext())
 		{
-			case GraphicsAPI::None:
+			case GraphicsContext::None:
 			{
 				CHONPS_CORE_LOG_WARN(Texture, "createTextureLayout(pTextures, textureCount) - No graphics API selected beforehand!");
 				break;
 			}
 
-			case GraphicsAPI::OpenGL:
+			case GraphicsContext::OpenGL:
 			{
 				return std::make_shared<OpenGLTextureLayout>(pTextures, textureCount, setIndex);
 			}
 
-			case GraphicsAPI::Vulkan:
+			case GraphicsContext::Vulkan:
 			{
 				return std::make_shared<VulkanTextureLayout>(pTextures, textureCount, setIndex);
 			}
 
-			case GraphicsAPI::DirectX:
+			case GraphicsContext::DirectX:
 			{
 				break;
 			}

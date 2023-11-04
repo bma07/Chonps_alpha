@@ -1,0 +1,11 @@
+Model Information:
+* title:	M1887 Free Fire
+* source:	https://sketchfab.com/3d-models/m1887-free-fire-594e54fd1b3b4d8eb7c6a4977c41bc09
+* author:	Bernardo  Lucas (https://sketchfab.com/BernardoLucas)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "M1887 Free Fire" (https://sketchfab.com/3d-models/m1887-free-fire-594e54fd1b3b4d8eb7c6a4977c41bc09) by Bernardo  Lucas (https://sketchfab.com/BernardoLucas) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -9,14 +9,11 @@ out vec4 fragColor;
 out vec2 fragTexUV;
 out flat int fragTexIndex;
 
-layout(std140, binding = 2) uniform inUniforms
-{
-	mat4 camMatrix;
-};
+uniform mat4 u_CamMatrix;
 
 void main()
 {
-    gl_Position = camMatrix * vec4(inPos, 0.0, 1.0);
+    gl_Position = u_CamMatrix * vec4(inPos, 0.0, 1.0);
     fragColor = inColor;
     fragTexUV = inTexUV;
     fragTexIndex = int(texIndex);
