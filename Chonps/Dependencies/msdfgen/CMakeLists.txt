@@ -146,5 +146,6 @@ target_include_directories(msdfgen
 
 target_link_libraries(msdfgen 
 	PRIVATE
-		libpng 
+		libpng
+		freetype 
 )

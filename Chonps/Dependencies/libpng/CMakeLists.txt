@@ -39,3 +39,8 @@ add_library(libpng STATIC ${LIBPNG_SOURCE})
 target_include_directories(libpng 
 	PRIVATE ${PROJECT_SOURCE_DIR}/Chonps/Dependencies/zlib/include
 )
+
+target_link_libraries(libpng
+	PRIVATE
+		zlib
+)

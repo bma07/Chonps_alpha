@@ -178,8 +178,8 @@ set(PLATFORM_SOURCES
 
 set(LIB_SOURCES
 	# stb_image
-	Chonps/Dependencies/stb_image/stb_image.cpp
-	Chonps/Dependencies/stb_image/stb_image.h
+	Chonps/Dependencies/stb/stb_image.cpp
+	Chonps/Dependencies/stb/stb_image.h
 
 	# tinyxml2
 	Chonps/Dependencies/tinyxml2/include/tinyxml2.cpp
@@ -211,13 +211,12 @@ set(SOURCES
 	Chonps/src/Imgui/ImguiEditor.cpp
 	Chonps/src/Imgui/ImguiWindow.h
 	Chonps/src/Imgui/ImguiWindow.cpp
-		
+	 
 	# GUI
 	Chonps/src/GUI/ChonpsGuiContext.cpp
 	Chonps/src/GUI/ChonpsGuiContext.h
 	Chonps/src/GUI/ChonpsGuiShaders.h
 	Chonps/src/GUI/GuiWindow.cpp
-	Chonps/src/GUI/GuiWindow.h
 
 	# Core
 	Chonps/src/Core/Application.cpp
@@ -264,7 +263,7 @@ target_include_directories(Chonps
 		${PROJECT_SOURCE_DIR}/Chonps/Dependencies/glad/include
 		${PROJECT_SOURCE_DIR}/Chonps/Dependencies/imgui/include
 		${PROJECT_SOURCE_DIR}/Chonps/Dependencies/glm/include
-		${PROJECT_SOURCE_DIR}/Chonps/Dependencies/stb_image
+		${PROJECT_SOURCE_DIR}/Chonps/Dependencies/stb
 		${PROJECT_SOURCE_DIR}/Chonps/Dependencies/json/include
 		${PROJECT_SOURCE_DIR}/Chonps/Dependencies/vulkan/include
 		${PROJECT_SOURCE_DIR}/Chonps/Dependencies/vma/include
